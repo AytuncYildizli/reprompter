@@ -509,12 +509,14 @@ When team mode is selected, generate **N sub-prompts** (one per agent) instead o
 - Scope each sub-prompt strictly to that agent's responsibilities.
 - Include coordination context (dependencies, handoff expectations, shared files) in each agent's `<context>` or `<constraints>`.
 
-### agent-teams Skill Integration
+### Team Execution Integration
 
-When team mode is selected **and user confirms execution**, use the `agent-teams` skill to spawn and coordinate the team.
+When team mode is selected **and user confirms execution**, prefer **`sessions_spawn` parallel solo agents** as the default execution path.
 
+- Default: `sessions_spawn` (higher reliability, deterministic file artifacts)
+- Advanced/Experimental option: `agent-teams` PTY flow for cases needing live teammate coordination
 - Reference: `skills/agent-teams/SKILL.md` (if installed)
-- Do not duplicate agent-teams internals in this skill; only hand off with the generated team brief and sub-prompts.
+- Do not duplicate execution internals in this skill; hand off with generated team brief + sub-prompts + required output file paths.
 
 ### Default XML Template
 
@@ -1060,8 +1062,10 @@ v6.0 adds a **post-execution quality loop**. Instead of just improving prompts, 
 
 **Phase 2: EXECUTE**
 - Route to optimal model: coding → Codex, research → Gemini, analysis → Claude
-- Single agent or tmux team based on complexity
-- Collect output
+- **Default execution:** `sessions_spawn` with parallel solo agents for team-style tasks (highest reliability)
+- **Advanced/Experimental:** PTY tmux Agent Teams only when real-time teammate coordination is explicitly needed
+- **Fast single-agent fallback:** `claude --print --model opus` when full team orchestration is unnecessary
+- Collect output artifacts, verify required files exist, then synthesize in lead session
 
 **Phase 3: EVALUATE + RETRY**
 - Score output against success criteria (0-10)

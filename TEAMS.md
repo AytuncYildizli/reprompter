@@ -1,140 +1,165 @@
-# Reprompter Teams Integration
+# RePrompter Team Execution (Reality-Based)
 
-How Reprompter coordinates multi-agent execution for Team (Parallel) and Team (Sequential) modes.
+This document explains what actually works for RePrompter team execution today, what is fragile, and which strategy should be used by default.
 
----
-
-## Overview
-
-When the user selects a team execution mode during the Reprompter interview, the skill:
-
-1. Generates a **team brief** (shared mission, agent roles, coordination rules)
-2. Generates **per-agent sub-prompts** (one XML prompt per agent)
-3. Hands off to the `agent-teams` skill or Claude Code's Task tool for execution
+**TL;DR:**
+- Default to **sessions_spawn (solo agents)** for production reliability.
+- Use **Claude Code PTY Agent Teams (tmux)** only when you explicitly need teammate-to-teammate coordination.
+- Use **`claude --print --model opus` (single agent)** when you want fastest simple execution and can avoid true team orchestration.
 
 ---
 
-## Security
+## Current Reality (What Works vs What Breaks)
 
-### Permission Warning
+### Works reliably
+- Running multiple **independent solo agents in parallel** and merging results in the lead session.
+- Single-agent execution with `claude --print --model opus`.
+- Interactive Claude Code team sessions in PTY/tmux can start and run.
 
-> **Do NOT use `--dangerously-skip-permissions` when spawning team agents.**
->
-> This flag disables all permission checks and allows agents to execute arbitrary commands, write to any file, and make network requests without user approval.
->
-> **Safer alternative:** Use `--allowedTools` to explicitly whitelist the tools each agent needs:
-> ```bash
-> # Instead of:
-> claude --dangerously-skip-permissions  # DANGEROUS
->
-> # Use:
-> claude --allowedTools "Read,Write,Edit,Bash,Glob,Grep"  # Scoped
-> ```
->
-> For team agents that only need read access (e.g., researchers, reviewers), restrict further:
-> ```bash
-> claude --allowedTools "Read,Glob,Grep,WebFetch"  # Read-only
-> ```
-
-### XML Injection in Generated Prompts
-
-When Reprompter generates prompts that will be piped into other tools or agents:
-
-- **Risk:** User input embedded in `<task>` or `<context>` tags could contain malicious XML that alters prompt structure.
-- **Mitigation:** Reprompter escapes `<`, `>`, and `&` in user-provided content before embedding in XML tags.
-- **For pipeline usage:** Always validate generated prompts before passing them to automated execution systems. Review the generated prompt before confirming execution.
+### Fragile / frequently failing
+- Claude Code Agent Teams in `--print` mode (**not supported**).
+- PTY/tmux Agent Teams end-to-end reliability (teammates sometimes skip file writes, lead synthesis may be incomplete).
+- Teamwide model control (teammates may default to Sonnet even when lead is Opus).
+- Enterprise/OAuth billing auth continuity (token expiration can break long runs).
 
 ---
 
-## Cost and Token Budget
+## Execution Strategies (Ordered by Reliability)
 
-### Estimated Token Usage by Mode
+### 1) sessions_spawn (solo agents) — **DEFAULT / MOST RELIABLE**
 
-| Mode | Interview | Generation | Execution | Total Estimate |
-|------|-----------|------------|-----------|----------------|
-| Quick Mode | 0 | ~500 tokens | ~2K tokens | ~2.5K tokens |
-| Full Interview | ~300 tokens | ~1K tokens | ~5K tokens | ~6.3K tokens |
-| Team (2 agents) | ~300 tokens | ~2K tokens | ~10K tokens | ~12.3K tokens |
-| Team (4 agents) | ~300 tokens | ~4K tokens | ~20K tokens | ~24.3K tokens |
-| Team + Closed-Loop | ~300 tokens | ~4K tokens | ~40K tokens | ~44.3K tokens |
+Run N independent agents in parallel (OpenClaw `sessions_spawn` pattern), each with a clear scoped task and explicit output file. The lead session waits, reads outputs, and synthesizes the final answer.
 
-### Budget Recommendations
+### Reliability note
+**High** (best current option for reproducible execution).
 
-- **Quick tasks:** No special budget needed
-- **Team mode:** Expect 3-5x the cost of single-agent mode
-- **Closed-loop with retries:** Budget for up to 3x execution cost (original + 2 retries)
-- **Large teams (4 agents):** Each agent runs independently; cost scales linearly with agent count
+### When to use
+- You need dependable completion over “autonomous collaboration”.
+- Tasks can be split into independent workstreams (audit slices, module-level tasks, research tracks).
+- You need deterministic artifacts on disk before synthesis.
+- You want easier retries per failed slice.
 
-### Monitoring
+### When NOT to use
+- You truly need live teammate-to-teammate negotiation/coordination during execution.
+- The task depends on shared evolving state that must be jointly planned in real time.
 
-Track token usage via Claude Code's built-in token counter. If a team run exceeds expectations:
-1. Check if retries are being triggered unnecessarily (lower quality threshold from 7 to 6)
-2. Reduce agent count if tasks can be consolidated
-3. Use Quick Mode for simple sub-tasks within a team
+### Cost estimate
+- **Low to Medium** (scales mostly linearly with number of agents).
+- Usually cheaper than PTY Agent Teams because each worker prompt is narrow and bounded.
+
+### Practical pattern
+1. Lead creates a shared brief file + per-agent task files.
+2. Spawn parallel solo sessions (`sessions_spawn`) with strict scope.
+3. Each agent writes to a required output path (e.g. `/tmp/run/agent-1.md`).
+4. Lead verifies file existence/content.
+5. Lead synthesizes final output.
+
+### Why default
+- Fewer hidden runtime dependencies.
+- Better observability (file-per-agent artifacts).
+- Better recovery (rerun only failed slices).
 
 ---
 
-## Team Brief Files
+### 2) Claude Code PTY Agent Teams (tmux) — **MEDIUM RELIABILITY**
 
-### Location
+Run interactive Claude Code with PTY (`tmux` or equivalent), enable agent teams, and ask lead to orchestrate teammates.
 
-Team briefs are written to: `/tmp/reprompter-brief-{timestamp}.md`
+### Reliability note
+**Medium** (works, but brittle in real workloads).
 
-### Cleanup
+### When to use
+- You explicitly need native teammate communication.
+- You are experimenting and can supervise execution.
+- You can tolerate occasional incomplete writes/synthesis.
 
-Briefs in `/tmp/` are automatically cleaned up by the OS on reboot. For manual cleanup:
+### When NOT to use
+- Production-critical flows where missing output is unacceptable.
+- Unattended automation expecting deterministic file artifacts.
+- Tight budget/time windows where reruns are expensive.
+
+### Cost estimate
+- **Medium to High** (often higher than sessions_spawn due to orchestration overhead and retries).
+
+### Observed failure modes
+- Teammates may report done but not write expected files.
+- Lead may fail to synthesize all teammate results.
+- Some runs silently degrade quality without hard errors.
+
+### Mitigations (if you must use it)
+- Force explicit output contracts (`must write /tmp/...`).
+- Add verification step after run (check expected files).
+- Add a lead “final synthesis checklist”.
+- Keep team size small (2–3) and scope strict.
+
+---
+
+### 3) Claude Code `--print` (single agent) — **FASTEST SINGLE-AGENT FALLBACK**
+
+Use one strong prompt and run:
 
 ```bash
-# Remove all reprompter brief files
-rm -f /tmp/reprompter-brief-*.md
+claude --print --model opus
 ```
 
-> **Note:** Do not rely on `/tmp/` for persistent storage. If you need to keep a brief, copy it to your project directory before the next reboot.
+This is not a true team run. It is a single-agent shortcut that can still solve many “team-like” briefs in one pass.
 
-### Brief Lifecycle
+### Reliability note
+**High for single-agent tasks**, but **no real team orchestration**.
 
-1. **Created** during Reprompter team mode generation
-2. **Read** by each spawned agent at execution start
-3. **Referenced** during coordination checkpoints
-4. **Cleaned up** manually or on OS reboot
+### When to use
+- You want fastest turnaround.
+- Task can be solved by one strong agent pass.
+- You want predictable CLI behavior without PTY orchestration complexity.
 
----
+### When NOT to use
+- You need actual teammate spawning/coordination.
+- You need independent parallel outputs from multiple workers.
 
-## Execution Modes
-
-### Team (Parallel)
-
-- All agents start simultaneously
-- Each agent works on an independent sub-task
-- Integration checkpoint after all agents complete
-- Best for: frontend + backend, research + implementation
-
-### Team (Sequential)
-
-- Agents run in pipeline order
-- Each agent's output feeds the next agent's input
-- Best for: data fetch → transform → deploy, research → design → implement
-
-### Auto-Detection
-
-When user selects "Let Reprompter decide", complexity rules determine the mode:
-
-| Signal | Mode |
-|--------|------|
-| 2+ distinct systems | Team (Parallel) |
-| Pipeline/workflow | Team (Sequential) |
-| Single component | Single Agent |
-| Research + implement | Team (Parallel) |
+### Cost estimate
+- **Low to Medium** (usually cheapest for small/medium tasks).
 
 ---
 
-## Integration with agent-teams Skill
+## Execution Strategy Selection (Reliability-First)
 
-If the `agent-teams` skill is installed (`skills/agent-teams/SKILL.md`), Reprompter can hand off execution directly. The handoff includes:
+1. **sessions_spawn (solo agents)** → default for RePrompter team execution.
+2. **PTY Agent Teams (tmux)** → advanced/experimental for collaborative behavior.
+3. **`--print` single agent** → fast fallback when true team execution is unnecessary.
 
-1. The team brief file path
-2. Per-agent sub-prompts
-3. Coordination rules
-4. Success criteria for evaluation
+---
 
-If `agent-teams` is not installed, Reprompter uses Claude Code's built-in Task tool to spawn agents directly.
+## Known Issues (Must Be Documented)
+
+1. **Teammate model default may be Sonnet**
+   - Even if lead session is Opus, teammate model overrides may not propagate from `settings.json` as expected.
+
+2. **`--print` mode does not support Agent Teams**
+   - Agent Teams require interactive PTY; non-interactive print mode cannot run team toolchain.
+
+3. **File-writing reliability is inconsistent in Agent Teams**
+   - Teammates may skip expected writes; lead may not fully synthesize.
+
+4. **Billing/Auth fragility**
+   - Enterprise OAuth/token expiration can interrupt long or complex runs.
+
+---
+
+## Operational Guardrails
+
+- Always define **required output files** per worker.
+- Always run a **post-run verification** step before final synthesis.
+- Prefer **narrow scoped prompts** over broad autonomous instructions.
+- Add **retry-at-slice-level** for failed agents (not full rerun when possible).
+
+---
+
+## Integration Guidance for RePrompter
+
+When user selects Team mode:
+- RePrompter should generate team brief + per-agent prompts as usual.
+- Execution default should route to **sessions_spawn**.
+- PTY Agent Teams should be labeled **advanced/experimental**.
+- If user asks for fastest path or “single pass”, offer `claude --print --model opus` fallback.
+
+This keeps behavior realistic, debuggable, and usable by non-expert users.
