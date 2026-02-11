@@ -1,6 +1,6 @@
 # Reprompter v5.1
 
-> Turn rough prompts into well-structured, effective prompts. Works with Claude Code, OpenClaw, and any LLM. Supports English, Turkish, and any language.
+> Turn rough prompts into well-structured, effective prompts. Works with Claude Code, OpenClaw, and any LLM. 
 
 ## What is Reprompter?
 
