@@ -338,6 +338,16 @@ MIT — see [LICENSE](LICENSE).
 
 ---
 
+## Star History
+
+<p align="center">
+  <a href="https://www.star-history.com/#AytuncYildizli/reprompter&Date">
+    <img src="https://api.star-history.com/svg?repos=AytuncYildizli/reprompter&type=Date" alt="Star History Chart" width="600">
+  </a>
+</p>
+
+---
+
 <p align="center">
   <sub>If RePrompter saved you from writing another messy prompt, consider giving it a ⭐</sub>
 </p>
