@@ -1,0 +1,6 @@
+.DS_Store
+*.bak*
+*.swp
+*.swo
+node_modules/
+.env

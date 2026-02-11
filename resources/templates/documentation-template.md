@@ -1,0 +1,136 @@
+# Documentation Template
+
+Use this template for writing documentation.
+
+## Template
+
+```xml
+<role>
+{Technical writer specializing in [domain] documentation, developer experience, and clear communication}
+</role>
+
+<context>
+- Subject: {what to document}
+- Audience: {who will read this}
+- Format: {README, API docs, tutorial, etc.}
+- Existing docs: {current documentation state}
+</context>
+
+<task>
+Write {documentation type} for {subject} targeting {audience}.
+</task>
+
+<structure>
+1. {Section 1}: {purpose}
+2. {Section 2}: {purpose}
+3. {Section 3}: {purpose}
+</structure>
+
+<requirements>
+1. **Clarity**: {readability requirements}
+2. **Completeness**: {coverage requirements}
+3. **Examples**: {code example requirements}
+4. **Maintenance**: {how to keep docs updated}
+</requirements>
+
+<constraints>
+- Use clear, simple language
+- Include working code examples
+- Keep sections focused and scannable
+- Follow existing documentation style
+</constraints>
+
+<output_format>
+1. Documentation file(s)
+2. Code examples (tested)
+3. Diagrams if helpful
+</output_format>
+
+<success_criteria>
+- New developers can follow without confusion
+- All features/APIs documented
+- Examples work when copy-pasted
+- Follows documentation standards
+</success_criteria>
+```
+
+## When to Use
+
+- Writing README files
+- API documentation
+- Tutorial creation
+- Architecture documentation
+- User guides
+
+## Example
+
+**Raw input:** "document the payment api"
+
+**Generated:**
+```xml
+<role>
+Technical writer specializing in API documentation, developer experience, and payment system integration guides.
+</role>
+
+<context>
+- Subject: Payment API endpoints (/api/v1/payments/*)
+- Audience: Frontend developers integrating payments, third-party integrators
+- Format: API reference documentation with examples
+- Existing docs: Basic README exists, no API docs
+</context>
+
+<task>
+Write comprehensive API documentation for the payment endpoints targeting developers who need to integrate payment processing.
+</task>
+
+<structure>
+1. **Overview**: Payment flow explanation, prerequisites
+2. **Authentication**: How to authenticate API requests
+3. **Endpoints Reference**: Each endpoint with request/response
+4. **Webhooks**: Payment event notifications
+5. **Error Handling**: Error codes and troubleshooting
+6. **Examples**: Common integration patterns
+7. **Testing**: Test mode and test card numbers
+</structure>
+
+<requirements>
+1. **Clarity**:
+   - Each endpoint on its own section
+   - Request/response examples for every endpoint
+   - Clear parameter descriptions
+2. **Completeness**:
+   - All endpoints documented
+   - All parameters explained
+   - All error codes listed
+3. **Examples**:
+   - cURL examples for each endpoint
+   - JavaScript/TypeScript SDK examples
+   - Complete integration flow example
+4. **Maintenance**:
+   - Version number in docs
+   - Changelog section
+   - Last updated date
+</requirements>
+
+<constraints>
+- Use OpenAPI/Swagger format where appropriate
+- Include both success and error response examples
+- Keep sensitive data (API keys) as placeholders
+- Test all code examples before including
+</constraints>
+
+<output_format>
+1. docs/api/payments.md - Main API documentation
+2. docs/api/webhooks.md - Webhook documentation
+3. docs/api/examples/ - Code examples directory
+4. openapi/payments.yaml - OpenAPI spec (optional)
+</output_format>
+
+<success_criteria>
+- Developer can integrate payments using only docs
+- All endpoints have working examples
+- Error handling is clearly explained
+- Test mode instructions are clear
+- Docs pass technical review
+</success_criteria>
+```
