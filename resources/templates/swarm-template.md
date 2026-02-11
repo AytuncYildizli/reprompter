@@ -157,5 +157,5 @@ Task("Test Coverage", "[tester prompt]", "tester")
 Task("Code Review", "[reviewer prompt]", "reviewer")
 
 // Store coordination context
-mcp__claude-flow__memory_store({ key: "swarm-objective", value: "[objective]" })
+mcp__claude-flow__memory_usage({ action: "store", namespace: "swarm", key: "swarm-objective", value: "[objective]" })
 ```
