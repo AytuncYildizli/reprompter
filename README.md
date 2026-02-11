@@ -40,7 +40,7 @@ It turns that into a **9.0/10** prompt in ~15 seconds. No prompt engineering ski
 
 <br/>
 <p align="center">
-  <img src="assets/demo.svg" alt="RePrompter before/after demo" width="880">
+  <img src="assets/demo.gif" alt="RePrompter demo — rough prompt to structured output in 15 seconds" width="720">
 </p>
 <br/>
 
