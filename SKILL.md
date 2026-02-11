@@ -828,10 +828,11 @@ def should_use_quick_mode(prompt: str) -> bool:
         "integrate", "connect", "combine", "merge",  # Integration
     ]
 
+    import re
     prompt_lower = prompt.lower()
     for keyword in complexity_keywords:
-        if keyword in prompt_lower:
-            return False  # Force interview
+        if re.search(r'\b' + re.escape(keyword) + r'\b', prompt_lower):
+            return False  # Force interview (whole-word match only)
 
     # Count distinct systems/targets mentioned
     system_count = count_distinct_systems(prompt)
