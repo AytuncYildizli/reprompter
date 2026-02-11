@@ -1,10 +1,10 @@
 ---
 name: reprompter
 description: Transform messy dictated or rough prompts into well-structured, effective prompts. Use when you say "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", "reprompter", or paste rough text and want it refined into a proper prompt with XML tags and best practices.
-version: 5.1.0
+version: 6.0.0
 ---
 
-# Reprompter Skill v5.1
+# Reprompter Skill v6.0
 
 > **Prompt engineering skill for Claude Code, OpenClaw, and any LLM. Your prompt sucks. Let's fix that.**
 
@@ -1028,6 +1028,70 @@ Implement OAuth authentication with Google and GitHub providers, including sessi
 - **Say "quick"** - To skip interview for simple tasks
 - **Say "no context"** - To skip auto-detection and use generic context
 - **Context is per-project** - Switching directories = fresh context detection
+
+---
+
+## v6.0: Closed-Loop Quality (Execute → Evaluate → Retry)
+
+### Overview
+v6.0 adds a **post-execution quality loop**. Instead of just improving prompts, RePrompter now evaluates the output and retries if quality is insufficient.
+
+### How It Works
+
+**Phase 1: IMPROVE** (existing v5.1 behavior)
+- Score raw prompt → improve → generate structured prompt
+- Auto-detect execution mode (single/team parallel/team sequential)
+- Define success criteria from the task
+
+**Phase 2: EXECUTE**
+- Route to optimal model: coding → Codex, research → Gemini, analysis → Claude
+- Single agent or tmux team based on complexity
+- Collect output
+
+**Phase 3: EVALUATE + RETRY**
+- Score output against success criteria (0-10)
+- Score ≥ 7 → ACCEPT and deliver
+- Score 4-6 → RETRY with targeted delta prompt (address specific gaps)
+- Score < 4 → RETRY with full rewrite approach
+- Max 2 retries (3 total attempts)
+- Each retry includes previous output as context + specific gap analysis
+
+### Success Criteria Generation
+
+When generating the improved prompt, also generate machine-checkable success criteria:
+
+```xml
+<success_criteria>
+  <criterion type="completeness">All 5 requested sections present</criterion>
+  <criterion type="accuracy">File paths and function names verified</criterion>
+  <criterion type="actionability">Each finding has severity + fix suggestion</criterion>
+  <criterion type="quality">Minimum 3 findings per category</criterion>
+</success_criteria>
+```
+
+### Delta Prompt Pattern
+
+Retries use a delta prompt, not a full re-prompt:
+
+```
+Previous attempt scored 5/10.
+✅ Good: Sections 1-3 complete, well-structured
+❌ Missing: Section 4 empty, Section 5 has only 2 items (need 5+)
+❌ Issue: Line references in Section 2 don't match actual file
+
+This retry: Focus on Sections 4 and 5. Verify all line numbers with actual file reads.
+Previous output for context:
+<previous_output>...</previous_output>
+```
+
+### Companion Skill
+
+For full tmux agent team orchestration with this loop, see `reprompter-teams` skill.
+
+### Trigger Words
+- "reprompter teams" → full orchestration loop
+- "run with quality" → single agent with evaluate+retry
+- "smart run" → auto-detect best approach
 
 ---
 
