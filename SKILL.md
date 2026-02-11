@@ -1,10 +1,10 @@
 ---
 name: reprompter
 description: Transform messy dictated or rough prompts into well-structured, effective prompts. Use when you say "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", "reprompter", or paste rough text and want it refined into a proper prompt with XML tags and best practices.
-version: 6.0.0
+version: 6.1.0
 ---
 
-# Reprompter Skill v6.0
+# Reprompter Skill v6.1.0
 
 > **Prompt engineering skill for Claude Code, OpenClaw, and any LLM. Your prompt sucks. Let's fix that.**
 
@@ -56,6 +56,8 @@ Apply the template and show quality improvement metrics. For team modes, generat
 ## Smart Interview (AskUserQuestion Integration)
 
 **CRITICAL: Use the `AskUserQuestion` tool instead of free-form questions.**
+
+> **Platform Note:** `AskUserQuestion` is a Claude Code tool. On platforms without this tool, fall back to numbered free-text questions in a single message and ask the user to reply with their choices.
 
 ### Interview Questions (Batched)
 
@@ -123,53 +125,6 @@ Ask 2-5 questions maximum using `AskUserQuestion` with options:
   ]
 }
 ```
-
-### Execution Mode (Team-Aware)
-
-Add this as the second interview question (immediately after Task Type):
-
-```json
-{
-  "question": "How should this be executed?",
-  "header": "Execution Mode",
-  "options": [
-    {"label": "Single Agent", "description": "One Claude Code instance handles everything"},
-    {"label": "Team (Parallel)", "description": "Split into 2-4 specialized agents working simultaneously"},
-    {"label": "Team (Sequential)", "description": "Pipeline: one agent's output feeds the next"},
-    {"label": "Let Reprompter decide", "description": "Auto-detect based on complexity"}
-  ],
-  "multiSelect": false
-}
-```
-
-### Motivation Capture (Why This Matters)
-
-Include this interview question for non-Quick Mode prompts (or infer from user context when obvious):
-
-```json
-{
-  "question": "Why does this matter? (helps the model understand priorities)",
-  "header": "Motivation",
-  "options": [
-    {"label": "User-facing feature", "description": "End users will see/use this directly"},
-    {"label": "Internal tooling", "description": "For developer/team productivity"},
-    {"label": "Bug fix / urgent", "description": "Something is broken and needs fixing"},
-    {"label": "Exploration / research", "description": "Investigating options, not committing yet"},
-    {"label": "Skip", "description": "No additional context needed"}
-  ],
-  "multiSelect": false
-}
-```
-
-Map this to an optional `<motivation>` section in the generated prompt.
-
-```xml
-<motivation>
-This is a user-facing feature that end users will interact with directly. Prioritize UX quality and error handling.
-</motivation>
-```
-
-If user selects "Skip", omit `<motivation>`.
 
 #### Auto-Detect Complexity Rules (when user selects "Let Reprompter decide")
 
@@ -321,6 +276,16 @@ This is NOT optional. If the prompt mentions specific systems, features, or inte
 - User says "no context", "generic", or "manual context"
 - Working directory is home (`~`) or root (`/`)
 - No recognizable project structure in pwd
+
+### Edge Case Handling
+
+| Edge Case | Behavior |
+|-----------|----------|
+| **Empty input** | Ask user to provide a prompt. Do not generate. |
+| **Non-English input** | Proceed normally; detect language and generate prompt in the same language. |
+| **Input contains code blocks** | Treat code as context, not as the prompt itself. Extract intent from surrounding text. |
+| **Very long prompts (500+ words)** | Summarize key points, ask user to confirm before generating. Flag as complex. |
+| **Conflicting interview choices** | Ask a single clarifying follow-up (e.g., "You chose Bug Fix but also Team Parallel - is this a multi-service bug?"). |
 
 ---
 
@@ -762,6 +727,10 @@ Team tasks: score Decomposition on agent role clarity + sub-task independence.
 ✅ Prompt improved from Poor to Excellent
 ```
 
+### Self-Assessment Bias Note
+
+> **Disclosure:** Quality scores are self-assessed by the same model that generates the prompt. This creates an inherent bias toward higher "After" scores. Treat scores as directional indicators of improvement, not absolute quality measures. For objective evaluation, have a different model or human review the generated prompt.
+
 ---
 
 ## Quick Mode
@@ -806,6 +775,7 @@ def should_use_quick_mode(prompt: str) -> bool:
         "our", "the current", "existing", "fresh", "updated",  # References
         "better", "improved", "enhanced", "optimized",  # Vague
         "integrate", "connect", "combine", "merge",  # Integration
+        "build", "create", "dashboard", "app", "system", "platform", "service", "pipeline",  # Broad scope
     ]
 
     import re
@@ -882,6 +852,7 @@ The reprompter applies these prompt engineering techniques:
 9. **Uncertainty Permission** - Give the model explicit permission to express uncertainty — this reduces hallucinations
 10. **Verification Hooks** - For complex tasks, ask model to confirm understanding first
 11. **Quality Metrics** - Show improvement score to demonstrate value
+12. **Pipeline Safety** - When generated prompts will be piped to automated systems, escape user content in XML tags to prevent injection. Review generated prompts before automated execution.
 
 ## Context Engineering Awareness
 
@@ -1029,6 +1000,17 @@ Implement OAuth authentication with Google and GitHub providers, including sessi
 - **Say "no context"** - To skip auto-detection and use generic context
 - **Context is per-project** - Switching directories = fresh context detection
 
+### Cost Estimates (API Calls per Mode)
+
+| Mode | Estimated API Calls | Notes |
+|------|-------------------|-------|
+| Quick Mode | 1 | Direct generation, no interview |
+| Full Interview | 2 | 1 AskUserQuestion + 1 generation |
+| Team Mode | 5-8 | Interview + brief + N sub-prompts |
+| Team + Closed-Loop + Retry | 8-15 | Full loop with up to 2 retries per agent |
+
+These are approximate. Actual usage depends on interview depth and retry count.
+
 ---
 
 ## v6.0: Closed-Loop Quality (Execute → Evaluate → Retry)
@@ -1083,10 +1065,6 @@ This retry: Focus on Sections 4 and 5. Verify all line numbers with actual file 
 Previous output for context:
 <previous_output>...</previous_output>
 ```
-
-### Companion Skill
-
-For full tmux agent team orchestration with this loop, see `reprompter-teams` skill.
 
 ### Trigger Words
 - "reprompter teams" → full orchestration loop

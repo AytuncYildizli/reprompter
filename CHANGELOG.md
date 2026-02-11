@@ -1,67 +1,75 @@
-# Changelog
+# Reprompter Changelog
 
-## [6.1.0] - 2026-02-11
+## v6.1.1 (2026-02-11)
+
+### Fixed
+- Removed duplicated Execution Mode question (was defined twice in SKILL.md)
+- Removed duplicated Motivation question (was defined twice in SKILL.md)
+- Removed stray `</output>` tags from template files
+- Fixed version header mismatch (was v6.0, now v6.1.0 matching frontmatter)
+- Removed dead reference to non-existent `reprompter-teams` skill
 
 ### Added
-- **Repromptception** — Double-layer prompt improvement for agent teams (TEAMS.md v2.0)
-  - Layer 1: Team brief improvement (roles, coordination, overall plan)
-  - Layer 2: Each agent's sub-task individually RePrompted (scored, structured, with per-agent success criteria)
-  - Every agent starts with 8+/10 quality prompt instead of vague task derivative
-  - Before/after scoring for each agent's sub-prompt
-- 4-phase loop: Team Plan → Repromptception → Execute → Evaluate+Retry
+- Edge case handling section (empty input, non-English, code blocks, long prompts, conflicting choices)
+- Complexity keywords: build, create, dashboard, app, system, platform, service, pipeline
+- Cost documentation section (API calls per mode)
+- AskUserQuestion fallback note for non-Claude-Code platforms
+- `team-brief-template.md` extracted to resources/templates/
+- `TESTING.md` with 9 test scenarios and anti-pattern examples
+- Self-assessment bias acknowledgment in scoring section
+- Security notes: XML injection warning, --dangerously-skip-permissions warning
+- Cost/token budget section in TEAMS.md
+- /tmp cleanup note for brief files
 
 ### Changed
-- TEAMS.md v1.0 → v2.0: Phase 1 split into Team Plan + Repromptception
-- Phase numbering: Execute is now Phase 3, Evaluate is Phase 4
+- Renamed `ui-component-template.md` -> `ui-template.md` (matches SKILL.md table)
+- Renamed `documentation-template.md` -> `docs-template.md` (matches SKILL.md table)
 
-## [6.0.0] - 2026-02-11
+### Removed
+- `SKILL.md.bak.v4.1` backup file (outdated v4.1 backup)
 
-### Added
-- **Closed-Loop Quality System** — Post-execution output evaluation with automatic retry
-  - Score output against success criteria (0-10 scale)
-  - Targeted delta prompts for retries (not full re-prompts)
-  - Max 2 retries with progressive gap analysis
-  - Success criteria auto-generation from task analysis
-- **RePrompter Teams** — Companion skill for tmux agent team orchestration
-  - Phase 1: Improve (prompt engineering)
-  - Phase 2: Execute (single agent, team parallel, or team sequential)
-  - Phase 3: Evaluate + Retry (closed-loop quality)
-  - Auto-route to optimal model (Codex for coding, Gemini for research, Claude for analysis)
-- **New trigger words**: "reprompter teams", "run with quality", "smart run"
+## v6.0.0
 
-## [5.1.0] - 2026-02-11
+- Closed-loop quality: Execute -> Evaluate -> Retry
+- Delta prompt pattern for targeted retries
+- Success criteria generation (machine-checkable)
+- Max 2 retries (3 total attempts)
 
-### Added
-- Think tool support and guidance
-- Context engineering awareness
-- Extended thinking integration
-- Response prefilling patterns
-- Uncertainty handling in prompts
-- Motivation interview question
+## v5.1.0
 
-## [5.0.0] - 2026-02-11
+- Team mode: Parallel and Sequential execution
+- Team brief generation
+- Per-agent sub-prompt generation
+- Motivation capture in interview
+- Execution mode question
+- Auto-detect complexity rules
 
-### Added
-- Execution Mode detection (single/team parallel/sequential)
-- Auto-detect complexity for team recommendations
-- Team brief generation with per-agent sub-prompts
-- Agent-teams skill integration
-- Decomposition scoring dimension
+## v4.1.0
 
-## [4.1.0] - 2026-02-11
+- Fixed Quick Mode false positives for compound tasks
+- Task-specific follow-up questions
+- Whole-word regex matching for complexity keywords
 
-### Changed
-- Voice Input section removed (limits tool appeal)
-- Math corrections (+481% → +462%)
-- SKILL.md trimmed from 1153 to 1036 lines
-- Team brief template created
+## v4.0.0
 
-## [4.0.0] - 2026-02-10
+- Project-scoped context detection (pwd isolation)
+- Smart boundaries and session isolation
+- Context scope rules (no parent scanning, no cross-project)
 
-### Added
-- Initial public release
-- Smart interview with AskUserQuestion
-- 8 scoring dimensions
-- XML template generation
-- Quick Mode for simple prompts
-- Context auto-detection
+## v3.0.0
+
+- Chain-of-thought (`<thinking>`) section
+- RAG reference section
+- Swarm and research templates
+
+## v2.0.0
+
+- AskUserQuestion integration
+- Quality scoring (6 dimensions)
+- Quick Mode detection
+- 8 output templates
+
+## v1.0.0
+
+- Basic prompt transformation
+- XML template format
