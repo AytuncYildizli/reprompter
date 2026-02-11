@@ -1,64 +1,54 @@
 # Team Brief Template
 
-Use this template when execution mode is Team (Parallel or Sequential).
+Use this template when execution mode is Team (Parallel) or Team (Sequential).
 
----
-
-## Brief Structure
+## Template
 
 ```markdown
 # Reprompter Team Brief
 
-**Generated:** [timestamp]
-**Execution Mode:** [Parallel | Sequential]
-**Overall Task:** [one-line summary]
+- Generated: {timestamp}
+- Execution Mode: {Team (Parallel)|Team (Sequential)}
+- Overall Task: {high-level objective}
 
-## Agent Roles
-1. [Agent Name] — [responsibility summary]
-2. [Agent Name] — [responsibility summary]
-3. [Agent Name] — [responsibility summary]
+## Agent Roles (2-4)
+1. **Frontend Agent** - {scope}
+2. **Backend Agent** - {scope}
+3. **Tests Agent** - {scope}
+4. **Research Agent** - {scope}
 
-## Per-Agent Subtasks
+## Per-Agent Sub-Tasks
+### Frontend Agent
+- Task(s): {specific deliverables}
+- Constraints: {must/must-not}
+- Inputs/Dependencies: {what must exist first}
 
-### [Agent 1 Name]
-- [subtask 1]
-- [subtask 2]
-- [subtask 3]
-
-### [Agent 2 Name]
-- [subtask 1]
-- [subtask 2]
-- [subtask 3]
-
-### [Agent 3 Name]
-- [subtask 1]
-- [subtask 2]
-- [subtask 3]
+### Backend Agent
+- Task(s): {specific deliverables}
+- Constraints: {must/must-not}
+- Inputs/Dependencies: {what must exist first}
 
 ## Coordination Rules
-- [handoff rule 1]
-- [handoff rule 2]
-- [shared contract / DTO rule]
-- [integration checkpoint]
+- Shared files/modules: {list}
+- Ordering dependencies: {A before B, parallel-safe items}
+- Integration checkpoint: {when/how outputs are merged}
 
 ## Success Criteria
-- [criterion 1]
-- [criterion 2]
-- [criterion 3]
+- Frontend Agent: {measurable outcomes}
+- Backend Agent: {measurable outcomes}
+- Tests Agent: {measurable outcomes}
+- Research Agent: {measurable outcomes}
 ```
 
-## Usage Notes
+## When to Use
 
-- Save the generated brief to `/tmp/reprompter-brief-<timestamp>.md`
-- Each agent also gets a separate XML sub-prompt (use the standard template per agent)
-- Coordination rules should specify:
-  - Which agent publishes contracts/schemas first
-  - How agents share type definitions or DTOs
-  - When integration checkpoints happen
-  - Merge order if sequential
-- For **Parallel** mode: agents work simultaneously, share contracts
-- For **Sequential** mode: specify pipeline order and handoff format
+- Team (Parallel) execution mode selected
+- Team (Sequential) execution mode selected
+- Auto-detect resolves to team mode
+- Tasks involving 2+ distinct systems or layers
 
-## Example
+## Notes
 
-See the crypto dashboard example in SKILL.md for a complete team brief with 3 agents (Frontend, Backend, Tests).
+- Write brief to `/tmp/reprompter-brief-{timestamp}.md` during execution
+- Return file path and include summary in chat
+- Each agent gets their own sub-prompt derived from this brief
