@@ -40,6 +40,12 @@ Investigate and fix: {brief description of the bug}
 - Document the root cause
 </constraints>
 
+<avoid>
+- Do not suppress or silence the error without fixing the root cause
+- Do not apply a workaround that masks the underlying issue
+- Do not make unrelated changes while fixing the bug
+</avoid>
+
 <success_criteria>
 - Bug no longer reproduces
 - Related functionality still works
@@ -97,6 +103,12 @@ Investigate and fix the intermittent login button failure.
 - Ensure fix works on slow connections
 - Add loading state to prevent double-clicks
 </constraints>
+
+<avoid>
+- Do not suppress or silence the error without fixing the root cause
+- Do not apply a workaround that masks the underlying issue
+- Do not make unrelated changes while fixing the bug
+</avoid>
 
 <success_criteria>
 - Login modal opens reliably on every click
