@@ -179,7 +179,7 @@ with unit tests for both API and UI, without breaking existing API contracts.
 | Constraints | 0/10 | 8/10 | +∞ |
 | Verifiability | 1/10 | 9/10 | +800% |
 | Decomposition | 2/10 | 9/10 | +350% |
-| **Overall** | **1.6/10** | **9.0/10** | **+481%** |
+| **Overall** | **1.6/10** | **9.0/10** | **+462%** |
 
 ---
 

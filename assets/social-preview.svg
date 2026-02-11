@@ -58,7 +58,7 @@
   
   <!-- Stats -->
   <g transform="translate(0, 460)">
-    <text x="280" y="30" font-family="monospace" font-size="18" fill="#58a6ff" text-anchor="middle" font-weight="700">+481% quality</text>
+    <text x="280" y="30" font-family="monospace" font-size="18" fill="#58a6ff" text-anchor="middle" font-weight="700">+462% quality</text>
     <text x="280" y="52" font-family="monospace" font-size="13" fill="#484f58" text-anchor="middle">avg improvement</text>
     
     <text x="520" y="30" font-family="monospace" font-size="18" fill="#a371f7" text-anchor="middle" font-weight="700">6 dimensions</text>

@@ -126,7 +126,7 @@
     
     <!-- Stat boxes -->
     <g transform="translate(60, 20)">
-      <text x="0" y="16" class="sans" font-size="32" fill="#58a6ff" font-weight="700">+481%</text>
+      <text x="0" y="16" class="sans" font-size="32" fill="#58a6ff" font-weight="700">+462%</text>
       <text x="0" y="36" class="mono" font-size="11" fill="#484f58">quality improvement</text>
     </g>
     
