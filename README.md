@@ -8,7 +8,7 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-5.1.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-6.1.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 [![Issues](https://img.shields.io/github/issues/aytuncyildizli/reprompter?color=da3633)](https://github.com/aytuncyildizli/reprompter/issues)
@@ -308,6 +308,60 @@ Every transformation is scored on six weighted dimensions:
 | `team-brief-template` | Team orchestration brief |
 
 > Templates live in `resources/templates/`. Team brief is generated at runtime.
+
+---
+
+## v6.1 — Repromptception 🧠
+
+The big one. **Double-layer prompt improvement for agent teams.**
+
+Most agent orchestration tools improve the overall task, then hand vague sub-tasks to each agent. RePrompter v6.1 individually RePrompts every agent's prompt:
+
+```
+Raw task
+    ↓
+Layer 1: Team Plan — roles, coordination, brief
+    ↓
+Layer 2: Repromptception — each agent's sub-task gets its own
+         full RePrompter pass (score, improve, add constraints,
+         success criteria, output format)
+    ↓
+Execute — every agent starts with an 8+/10 prompt
+    ↓
+Evaluate — score output against success criteria
+    ↓
+Retry (if needed) — delta prompts targeting specific gaps
+```
+
+**Before Repromptception:**
+> "Security Auditor — scan for vulnerabilities"
+
+**After Repromptception:**
+```xml
+<role>Senior application security engineer specializing in Python web apps</role>
+<context>Codebase: Python 3, psycopg2, urllib. DB: Neon Postgres.</context>
+<task>Audit all Python files for security vulnerabilities</task>
+<requirements>
+- Check SQL injection (parameterized vs string formatting)
+- Check hardcoded secrets and API keys
+- Check SSRF in URL fetching functions
+- Check input validation on external API data
+</requirements>
+<constraints>Only audit tweet-engine dir. Report only, don't modify.</constraints>
+<success_criteria>
+- Minimum 3 findings with severity ratings
+- Each finding: file, line number, fix suggestion
+- No hallucinated file paths
+</success_criteria>
+```
+
+**4-phase loop:** Team Plan → Repromptception → Execute → Evaluate+Retry
+
+Trigger words: `"reprompter teams"`, `"run with quality"`, `"smart run"`
+
+Normal single-prompt usage is unchanged — Repromptception only activates for team/multi-agent tasks.
+
+See [TEAMS.md](TEAMS.md) for the full orchestration spec.
 
 ---
 
