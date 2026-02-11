@@ -8,10 +8,10 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-5.1.0-0969da)](https://github.com/cryptosquanch/reprompter/releases)
-[![License](https://img.shields.io/github/license/cryptosquanch/reprompter?color=2da44e)](LICENSE)
-[![Stars](https://img.shields.io/github/stars/cryptosquanch/reprompter?style=flat&color=f0883e)](https://github.com/cryptosquanch/reprompter/stargazers)
-[![Issues](https://img.shields.io/github/issues/cryptosquanch/reprompter?color=da3633)](https://github.com/cryptosquanch/reprompter/issues)
+[![Version](https://img.shields.io/badge/version-5.1.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
+[![Issues](https://img.shields.io/github/issues/aytuncyildizli/reprompter?color=da3633)](https://github.com/aytuncyildizli/reprompter/issues)
 ![Claude Code](https://img.shields.io/badge/Claude%20Code-primary-111111)
 ![OpenClaw](https://img.shields.io/badge/OpenClaw-supported-7c3aed)
 ![LLM](https://img.shields.io/badge/Any%20Structured%20LLM-compatible-0ea5e9)
@@ -255,7 +255,7 @@ When auto-detection finds multiple systems (UI + API + tests), it generates:
 
 ```bash
 mkdir -p skills/reprompter
-curl -sL https://github.com/cryptosquanch/reprompter/archive/main.tar.gz | \
+curl -sL https://github.com/aytuncyildizli/reprompter/archive/main.tar.gz | \
   tar xz --strip-components=1 -C skills/reprompter
 ```
 
@@ -326,8 +326,8 @@ Every transformation is scored on six weighted dimensions:
 
 Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-- 🐛 [Report a bug](https://github.com/cryptosquanch/reprompter/issues/new?template=bug_report.md)
-- 💡 [Request a feature](https://github.com/cryptosquanch/reprompter/issues/new?template=feature_request.md)
+- 🐛 [Report a bug](https://github.com/aytuncyildizli/reprompter/issues/new?template=bug_report.md)
+- 💡 [Request a feature](https://github.com/aytuncyildizli/reprompter/issues/new?template=feature_request.md)
 - 📝 Submit a template PR
 
 ---

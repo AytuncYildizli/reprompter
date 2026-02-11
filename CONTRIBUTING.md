@@ -5,13 +5,13 @@ Thanks for your interest in contributing! RePrompter is a prompt engineering ski
 ## Ways to Contribute
 
 ### 🐛 Bug Reports
-- Found a case where the interview produces bad output? [Open an issue](https://github.com/cryptosquanch/reprompter/issues/new?template=bug_report.md)
+- Found a case where the interview produces bad output? [Open an issue](https://github.com/aytuncyildizli/reprompter/issues/new?template=bug_report.md)
 - Include your rough input and the generated output
 - Describe what you expected vs. what you got
 
 ### 💡 Feature Requests
 - New template ideas? Quality dimension suggestions? Interview flow improvements?
-- [Open a feature request](https://github.com/cryptosquanch/reprompter/issues/new?template=feature_request.md)
+- [Open a feature request](https://github.com/aytuncyildizli/reprompter/issues/new?template=feature_request.md)
 
 ### 📝 Template Contributions
 Templates live in `resources/templates/`. To add one:
@@ -28,7 +28,7 @@ Templates live in `resources/templates/`. To add one:
 
 ```bash
 # Clone
-git clone https://github.com/cryptosquanch/reprompter.git
+git clone https://github.com/aytuncyildizli/reprompter.git
 cd reprompter
 
 # That's it — it's a skill file, not a compiled project
