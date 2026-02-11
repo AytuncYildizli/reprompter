@@ -1,10 +1,10 @@
 # Reprompter v5.1
 
-> Voice-to-prompt engineering for Claude Code. Turn rough, dictated prompts into well-structured, effective prompts with 200-400% quality improvement.
+> Turn rough prompts into well-structured, effective prompts. Works with Claude Code, OpenClaw, and any LLM. Supports English, Turkish, and any language.
 
 ## What is Reprompter?
 
-Reprompter is a [Claude Code skill](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/skills) that transforms messy, hastily-typed, or voice-dictated prompts into polished, well-engineered prompts. It works inside Claude Code as an interactive skill — just say "reprompt" and it guides you through the process.
+Reprompter is an AI skill that transforms messy, hastily-typed, or rough prompts into polished, well-engineered prompts. It works as a [Claude Code skill](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/skills), an [OpenClaw](https://github.com/openclaw/openclaw) skill, or with any LLM. Just say "reprompt" and it guides you through the process.
 
 ## Features
 
