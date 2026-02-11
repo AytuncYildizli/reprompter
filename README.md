@@ -64,6 +64,8 @@ In Claude Code, just say any of these:
 **Input:**
 > "uh we need some kind of auth thing, maybe oauth, users should sign in"
 
+**Interview (auto):** Task Type → Build Feature | Motivation → User-facing feature | Execution Mode → Single Agent
+
 **Output:**
 ```xml
 <role>
@@ -71,9 +73,15 @@ Senior full-stack developer specializing in authentication systems and OAuth 2.0
 </role>
 
 <context>
-Framework: Next.js 14 with App Router (detected from ./package.json)
+<!-- Auto-detected from: ./package.json -->
+Framework: Next.js 14 with App Router
 Current auth: None
 </context>
+
+<motivation>
+User-facing feature — end users interact with this directly.
+Prioritize UX quality, error handling, and security.
+</motivation>
 
 <task>
 Implement OAuth authentication with Google and GitHub providers,
@@ -99,9 +107,33 @@ including session management and protected route middleware.
 - Protected pages redirect unauthenticated users
 - Logout clears session completely
 </success_criteria>
+
+<uncertainty_handling>
+If any auth provider requires additional configuration not covered here,
+ask for clarification rather than guessing at implementation details.
+</uncertainty_handling>
 ```
 
-**Quality:** 0.8/10 → 9.0/10 (+1025% improvement)
+**Quality Score:**
+
+| Dimension | Before | After | Change |
+|-----------|--------|-------|--------|
+| Clarity | 2/10 | 9/10 | +350% |
+| Specificity | 1/10 | 9/10 | +800% |
+| Structure | 0/10 | 10/10 | +∞ |
+| Constraints | 0/10 | 8/10 | +∞ |
+| Verifiability | 1/10 | 9/10 | +800% |
+| Decomposition | 1/10 | 7/10 | +600% |
+| **Overall** | **0.8/10** | **9.0/10** | **+1025%** |
+
+### Team Mode Example
+
+**Input:**
+> "build a dashboard with real-time crypto prices, a backend API from CoinGecko, and unit tests for both"
+
+**Auto-detected:** Team (Parallel) — 3 agents (Frontend, Backend, Tests)
+
+Reprompter generates a **team brief** + **per-agent XML sub-prompts**, each scoped to their responsibility with coordination rules and shared contracts.
 
 ## Templates
 
