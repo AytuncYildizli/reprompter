@@ -1034,21 +1034,19 @@ Implement OAuth authentication with Google and GitHub providers, including sessi
 ## v6.0: Closed-Loop Quality (Execute → Evaluate → Retry)
 
 ### Overview
-v6.0 adds a **post-execution quality loop** designed for **Claude Code Agent Teams**. Instead of just improving prompts, RePrompter now evaluates the output and retries if quality is insufficient.
+v6.0 adds a **post-execution quality loop**. Instead of just improving prompts, RePrompter now evaluates the output and retries if quality is insufficient.
 
 ### How It Works
 
 **Phase 1: IMPROVE** (existing v5.1 behavior)
 - Score raw prompt → improve → generate structured prompt
-- Auto-detect execution mode: single agent or Claude Code Agent Teams
-- Generate team brief with per-agent sub-prompts (native agent teams format)
+- Auto-detect execution mode (single/team parallel/team sequential)
 - Define success criteria from the task
 
-**Phase 2: EXECUTE** (Claude Code Agent Teams)
-- Launch `claude` with `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`
-- Send the improved team brief — Claude Code spawns N agents
-- Each agent works independently: reads files, runs commands, produces findings
-- Claude Code synthesizes results when all agents complete
+**Phase 2: EXECUTE**
+- Route to optimal model: coding → Codex, research → Gemini, analysis → Claude
+- Single agent or tmux team based on complexity
+- Collect output
 
 **Phase 3: EVALUATE + RETRY**
 - Score output against success criteria (0-10)
@@ -1086,12 +1084,12 @@ Previous output for context:
 <previous_output>...</previous_output>
 ```
 
-### Companion File
+### Companion Skill
 
-See [TEAMS.md](TEAMS.md) for the full Claude Code Agent Teams orchestration guide with examples.
+For full tmux agent team orchestration with this loop, see `reprompter-teams` skill.
 
 ### Trigger Words
-- "reprompter teams" → Claude Code Agent Teams with quality loop
+- "reprompter teams" → full orchestration loop
 - "run with quality" → single agent with evaluate+retry
 - "smart run" → auto-detect best approach
 
