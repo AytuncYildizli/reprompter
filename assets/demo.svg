@@ -1,0 +1,157 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" fill="none">
+  <style>
+    @keyframes fadeInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes fadeInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes arrowPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+    @keyframes typewriter { from { width: 0; } to { width: 100%; } }
+    @keyframes scoreCount { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .left-panel { animation: fadeInLeft 0.6s ease-out; }
+    .right-panel { animation: fadeInRight 0.6s ease-out 0.3s both; }
+    .arrow { animation: arrowPulse 2s ease-in-out infinite; }
+    .score-row:nth-child(1) { animation: scoreCount 0.4s ease-out 0.8s both; }
+    .score-row:nth-child(2) { animation: scoreCount 0.4s ease-out 1.0s both; }
+    .score-row:nth-child(3) { animation: scoreCount 0.4s ease-out 1.2s both; }
+    .mono { font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace; }
+    .sans { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; }
+  </style>
+  
+  <!-- Background -->
+  <rect width="900" height="520" rx="16" fill="#0d1117"/>
+  
+  <!-- ===== LEFT: Before ===== -->
+  <g class="left-panel">
+    <!-- Terminal window -->
+    <rect x="24" y="24" width="390" height="340" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+    <!-- Title bar -->
+    <circle cx="44" cy="44" r="5" fill="#ff5f57"/>
+    <circle cx="60" cy="44" r="5" fill="#febc2e"/>
+    <circle cx="76" cy="44" r="5" fill="#28c840"/>
+    <text x="200" y="48" class="mono" font-size="11" fill="#484f58" text-anchor="middle">rough-prompt.txt</text>
+    
+    <!-- Label -->
+    <rect x="32" y="62" width="60" height="20" rx="4" fill="#da3633" opacity="0.15"/>
+    <text x="62" y="76" class="mono" font-size="10" fill="#f85149" text-anchor="middle" font-weight="600">BEFORE</text>
+    
+    <!-- Messy prompt text -->
+    <text x="40" y="106" class="mono" font-size="12" fill="#8b949e">
+      <tspan x="40" dy="0">uhh build a crypto dashboard,</tspan>
+      <tspan x="40" dy="20">maybe coingecko data, add</tspan>
+      <tspan x="40" dy="20">caching, test it too, don't</tspan>
+      <tspan x="40" dy="20">break existing api</tspan>
+    </text>
+    
+    <!-- Score bars (low) -->
+    <g transform="translate(40, 200)">
+      <text x="0" y="12" class="mono" font-size="10" fill="#484f58">Clarity</text>
+      <rect x="90" y="2" width="120" height="12" rx="3" fill="#21262d"/>
+      <rect x="90" y="2" width="36" height="12" rx="3" fill="#da3633"/>
+      <text x="218" y="12" class="mono" font-size="10" fill="#f85149">3/10</text>
+      
+      <text x="0" y="34" class="mono" font-size="10" fill="#484f58">Specificity</text>
+      <rect x="90" y="24" width="120" height="12" rx="3" fill="#21262d"/>
+      <rect x="90" y="24" width="24" height="12" rx="3" fill="#da3633"/>
+      <text x="218" y="34" class="mono" font-size="10" fill="#f85149">2/10</text>
+      
+      <text x="0" y="56" class="mono" font-size="10" fill="#484f58">Structure</text>
+      <rect x="90" y="46" width="120" height="12" rx="3" fill="#21262d"/>
+      <rect x="90" y="46" width="12" height="12" rx="3" fill="#da3633"/>
+      <text x="218" y="56" class="mono" font-size="10" fill="#f85149">1/10</text>
+      
+      <text x="0" y="78" class="mono" font-size="10" fill="#484f58">Constraints</text>
+      <rect x="90" y="68" width="120" height="12" rx="3" fill="#21262d"/>
+      <rect x="90" y="68" width="0" height="12" rx="3" fill="#da3633"/>
+      <text x="218" y="78" class="mono" font-size="10" fill="#f85149">0/10</text>
+      
+      <text x="0" y="100" class="mono" font-size="10" fill="#484f58">Overall</text>
+      <rect x="90" y="90" width="120" height="14" rx="3" fill="#21262d"/>
+      <rect x="90" y="90" width="19" height="14" rx="3" fill="#da3633"/>
+      <text x="218" y="102" class="mono" font-size="11" fill="#f85149" font-weight="700">1.6</text>
+    </g>
+  </g>
+  
+  <!-- ===== CENTER: Arrow ===== -->
+  <g class="arrow" transform="translate(424, 170)">
+    <rect x="0" y="0" width="52" height="36" rx="18" fill="#0969da" opacity="0.1"/>
+    <path d="M12 18 L34 18" stroke="url(#arrowGrad)" stroke-width="3" stroke-linecap="round"/>
+    <path d="M28 11 L36 18 L28 25" stroke="url(#arrowGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
+  <defs>
+    <linearGradient id="arrowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#0969da"/>
+      <stop offset="100%" style="stop-color:#a371f7"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- ===== RIGHT: After ===== -->
+  <g class="right-panel">
+    <rect x="486" y="24" width="390" height="340" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+    <circle cx="506" cy="44" r="5" fill="#ff5f57"/>
+    <circle cx="522" cy="44" r="5" fill="#febc2e"/>
+    <circle cx="538" cy="44" r="5" fill="#28c840"/>
+    <text x="680" y="48" class="mono" font-size="11" fill="#484f58" text-anchor="middle">reprompter-output.xml</text>
+    
+    <rect x="494" y="62" width="52" height="20" rx="4" fill="#238636" opacity="0.15"/>
+    <text x="520" y="76" class="mono" font-size="10" fill="#3fb950" text-anchor="middle" font-weight="600">AFTER</text>
+    
+    <!-- Structured output -->
+    <text x="502" y="100" class="mono" font-size="11">
+      <tspan fill="#7c3aed">&lt;role&gt;</tspan>
+    </text>
+    <text x="514" y="116" class="mono" font-size="10.5" fill="#e6edf3">Senior full-stack engineer</text>
+    <text x="502" y="132" class="mono" font-size="11"><tspan fill="#7c3aed">&lt;/role&gt;</tspan></text>
+    
+    <text x="502" y="156" class="mono" font-size="11"><tspan fill="#0969da">&lt;task&gt;</tspan></text>
+    <text x="514" y="172" class="mono" font-size="10.5" fill="#e6edf3">Deliver real-time crypto</text>
+    <text x="514" y="186" class="mono" font-size="10.5" fill="#e6edf3">dashboard with cache-aware</text>
+    <text x="514" y="200" class="mono" font-size="10.5" fill="#e6edf3">CoinGecko proxy API...</text>
+    <text x="502" y="216" class="mono" font-size="11"><tspan fill="#0969da">&lt;/task&gt;</tspan></text>
+    
+    <text x="502" y="240" class="mono" font-size="11"><tspan fill="#3fb950">&lt;constraints&gt;</tspan></text>
+    <text x="514" y="256" class="mono" font-size="10.5" fill="#8b949e">No breaking API changes</text>
+    <text x="514" y="270" class="mono" font-size="10.5" fill="#8b949e">Mock external boundaries</text>
+    <text x="502" y="286" class="mono" font-size="11"><tspan fill="#3fb950">&lt;/constraints&gt;</tspan></text>
+    
+    <!-- Score bars (high) -->
+    <g transform="translate(502, 300)">
+      <text x="0" y="12" class="mono" font-size="10" fill="#484f58">Overall</text>
+      <rect x="90" y="2" width="120" height="14" rx="3" fill="#21262d"/>
+      <rect x="90" y="2" width="108" height="14" rx="3" fill="#238636"/>
+      <text x="218" y="14" class="mono" font-size="11" fill="#3fb950" font-weight="700">9.0</text>
+    </g>
+  </g>
+  
+  <!-- ===== BOTTOM: Stats bar ===== -->
+  <g transform="translate(0, 390)">
+    <rect x="24" y="0" width="852" height="106" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+    
+    <!-- Stat boxes -->
+    <g transform="translate(60, 20)">
+      <text x="0" y="16" class="sans" font-size="32" fill="#58a6ff" font-weight="700">+481%</text>
+      <text x="0" y="36" class="mono" font-size="11" fill="#484f58">quality improvement</text>
+    </g>
+    
+    <line x1="240" y1="12" x2="240" y2="94" stroke="#21262d" stroke-width="1"/>
+    
+    <g transform="translate(280, 20)">
+      <text x="0" y="16" class="sans" font-size="32" fill="#a371f7" font-weight="700">6</text>
+      <text x="0" y="36" class="mono" font-size="11" fill="#484f58">quality dimensions</text>
+    </g>
+    
+    <line x1="430" y1="12" x2="430" y2="94" stroke="#21262d" stroke-width="1"/>
+    
+    <g transform="translate(470, 20)">
+      <text x="0" y="16" class="sans" font-size="32" fill="#3fb950" font-weight="700">11</text>
+      <text x="0" y="36" class="mono" font-size="11" fill="#484f58">prompt templates</text>
+    </g>
+    
+    <line x1="620" y1="12" x2="620" y2="94" stroke="#21262d" stroke-width="1"/>
+    
+    <g transform="translate(660, 20)">
+      <text x="0" y="16" class="sans" font-size="32" fill="#f0883e" font-weight="700">Team</text>
+      <text x="0" y="36" class="mono" font-size="11" fill="#484f58">multi-agent support</text>
+    </g>
+
+    <!-- Subtle tagline -->
+    <text x="220" y="76" class="mono" font-size="10" fill="#30363d">Your prompt sucks. Let's fix that. → Interview → Score → Ship it.</text>
+  </g>
+</svg>

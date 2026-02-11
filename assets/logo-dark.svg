@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 120" fill="none">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#58a6ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a371f7;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Icon: Terminal bracket with transform arrow -->
+  <g transform="translate(10, 10)">
+    <rect x="0" y="0" width="100" height="100" rx="12" fill="#0d1117" stroke="url(#grad1)" stroke-width="2.5"/>
+    <circle cx="18" cy="16" r="4.5" fill="#ff5f57"/>
+    <circle cx="32" cy="16" r="4.5" fill="#febc2e"/>
+    <circle cx="46" cy="16" r="4.5" fill="#28c840"/>
+    <rect x="14" y="36" width="30" height="3" rx="1.5" fill="#484f58" opacity="0.5"/>
+    <rect x="14" y="44" width="22" height="3" rx="1.5" fill="#484f58" opacity="0.4"/>
+    <rect x="14" y="52" width="28" height="3" rx="1.5" fill="#484f58" opacity="0.3"/>
+    <path d="M48 46 L62 46" stroke="url(#grad1)" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M57 41 L63 46 L57 51" stroke="url(#grad1)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <rect x="68" y="36" width="20" height="3" rx="1.5" fill="#58a6ff"/>
+    <rect x="68" y="44" width="16" height="3" rx="1.5" fill="#a371f7"/>
+    <rect x="68" y="52" width="18" height="3" rx="1.5" fill="#58a6ff"/>
+    <text x="14" y="78" font-family="monospace" font-size="14" fill="#484f58" opacity="0.5">~$</text>
+    <text x="55" y="78" font-family="monospace" font-size="14" fill="url(#grad1)">&lt;/&gt;</text>
+  </g>
+  
+  <text x="128" y="52" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="42" font-weight="700" fill="#f0f6fc">
+    Re<tspan fill="url(#grad1)">Prompter</tspan>
+  </text>
+  <text x="128" y="82" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" fill="#8b949e" font-weight="400">
+    Your prompt sucks. Let's fix that.
+  </text>
+</svg>
