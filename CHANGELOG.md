@@ -1,5 +1,22 @@
 # Reprompter Changelog
 
+## v6.1.2 (2026-02-12)
+
+### Fixed
+- **B1**: Version mismatch — SKILL.md now matches CHANGELOG (was v6.1.0, should have been v6.1.1+)
+- **B2**: Overly broad complexity keywords — "create"/"build" now only trigger interview when followed by broad-scope nouns (dashboard, app, system, etc.). "with" only triggers when connecting multiple items. Removed "the current" (too many false positives). Simple prompts like "create a button" now correctly use Quick Mode.
+- **B3**: MCP tool name in swarm-template — `memory_store` → `memory_usage` with `action: "store"` to match actual API
+- **B4**: Added `count_distinct_systems()` definition to Quick Mode pseudocode (was referenced but undefined)
+
+### Added
+- Template priority rules — explicit tiebreaking when multiple templates match (most specific wins)
+- Quick Mode examples for "create"/"build" edge cases
+- Per-Agent Sub-Task sections for Tests Agent and Research Agent in team-brief-template
+- Example section in team-brief-template (was the only template without one)
+
+### Changed
+- Complexity keywords refined: "build", "create", "with" moved to pattern-based detection instead of simple keyword match
+
 ## v6.1.1 (2026-02-11)
 
 ### Fixed

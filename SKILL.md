@@ -1,10 +1,10 @@
 ---
 name: reprompter
 description: Transform messy dictated or rough prompts into well-structured, effective prompts. Use when you say "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", "reprompter", or paste rough text and want it refined into a proper prompt with XML tags and best practices.
-version: 6.1.0
+version: 6.1.2
 ---
 
-# Reprompter Skill v6.1.0
+# Reprompter Skill v6.1.2
 
 > **Prompt engineering skill for Claude Code, OpenClaw, and any LLM. Your prompt sucks. Let's fix that.**
 
@@ -442,6 +442,18 @@ Choose template based on task type detected in interview:
 
 See `resources/templates/` for full templates.
 
+**Template Priority (when multiple match):** Most specific template wins. Priority order:
+1. `api-template` — if prompt mentions REST, API, endpoints, routes
+2. `security-template` — if prompt mentions audit, vulnerability, pentest
+3. `ui-template` — if prompt mentions component, UI, frontend, page
+4. `testing-template` — if prompt mentions test, coverage, spec
+5. `bugfix-template` — if prompt mentions fix, bug, error, debug
+6. `refactor-template` — if prompt mentions refactor, clean up, migrate
+7. `docs-template` — if prompt mentions docs, documentation, README
+8. `research-template` — if prompt mentions research, analyze, compare
+9. `swarm-template` — if execution mode is Multi-Agent/Swarm
+10. `feature-template` — default fallback for "Build Feature" tasks
+
 ### Team Brief Generation (`team-brief-template`)
 
 When execution mode is `Team (Parallel)`, `Team (Sequential)`, or auto-detect resolves to a team mode:
@@ -761,6 +773,15 @@ Enable Quick Mode when ALL of these are true:
 ### Quick Detection Logic (Pseudocode)
 
 ```python
+def count_distinct_systems(prompt: str) -> int:
+    """Count mentions of distinct systems/domains in the prompt."""
+    systems = [
+        "frontend", "backend", "api", "database", "ui", "dashboard",
+        "telegram", "webhook", "auth", "payment", "email", "storage",
+        "cache", "queue", "cdn", "search", "notification", "analytics",
+    ]
+    return sum(1 for s in systems if s in prompt.lower())
+
 def should_use_quick_mode(prompt: str) -> bool:
     words = prompt.split()
 
@@ -770,12 +791,18 @@ def should_use_quick_mode(prompt: str) -> bool:
 
     # Complexity indicators that FORCE interview
     complexity_keywords = [
-        "and", "with", "plus", "also",  # Compound tasks
+        "and", "plus", "also",  # Compound tasks
         "track", "tracking", "sync", "persist", "remember",  # State
-        "our", "the current", "existing", "fresh", "updated",  # References
+        "our", "existing", "fresh", "updated",  # References (removed "the current" — too many false positives)
         "better", "improved", "enhanced", "optimized",  # Vague
         "integrate", "connect", "combine", "merge",  # Integration
-        "build", "create", "dashboard", "app", "system", "platform", "service", "pipeline",  # Broad scope
+        "dashboard", "system", "platform", "service", "pipeline",  # Broad scope nouns
+    ]
+
+    # "build"/"create" only trigger when followed by broad-scope nouns
+    broad_scope_patterns = [
+        r'\b(build|create)\s+(a\s+)?(dashboard|app|system|platform|service|pipeline|api|backend|frontend)\b',
+        r'\bwith\b.*\b(and|plus|also)\b',  # "with" only when connecting multiple items
     ]
 
     import re
@@ -783,6 +810,10 @@ def should_use_quick_mode(prompt: str) -> bool:
     for keyword in complexity_keywords:
         if re.search(r'\b' + re.escape(keyword) + r'\b', prompt_lower):
             return False  # Force interview (whole-word match only)
+
+    for pattern in broad_scope_patterns:
+        if re.search(pattern, prompt_lower):
+            return False  # Broad-scope build/create or compound "with"
 
     # Count distinct systems/targets mentioned
     system_count = count_distinct_systems(prompt)
@@ -802,6 +833,8 @@ def should_use_quick_mode(prompt: str) -> bool:
 | "change our alerts and add tracking" | **Interview** | "and" + "our" + multiple actions |
 | "connect the API to dashboard" | **Interview** | Integration work |
 | "add dark mode" | Quick | Single target, single action |
+| "create a button" | Quick | Simple single action (no broad-scope noun) |
+| "build a REST API for a todo app" | **Interview** | "build" + broad-scope "api" |
 | "improve the performance" | **Interview** | "improve" is vague |
 
 ### Quick Mode Flow
