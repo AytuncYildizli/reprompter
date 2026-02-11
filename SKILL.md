@@ -556,7 +556,7 @@ When team mode is selected, generate **N sub-prompts** (one per agent) instead o
 
 When team mode is selected **and user confirms execution**, use the `agent-teams` skill to spawn and coordinate the team.
 
-- Reference: `~/clawd/skills/agent-teams/SKILL.md`
+- Reference: `skills/agent-teams/SKILL.md` (if installed)
 - Do not duplicate agent-teams internals in this skill; only hand off with the generated team brief and sub-prompts.
 
 ### Default XML Template
