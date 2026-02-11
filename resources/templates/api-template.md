@@ -40,6 +40,12 @@ Use this template for API endpoint work (REST, GraphQL, etc.).
 - Add rate limiting if public endpoint
 </constraints>
 
+<avoid>
+- Do not expose internal error details or stack traces in API responses
+- Do not skip input validation for "trusted" internal endpoints
+- Do not create inconsistent response formats across endpoints
+</avoid>
+
 <output_format>
 1. API route file(s)
 2. Request/response type definitions
@@ -117,6 +123,12 @@ Create CRUD API endpoints for user profile management.
 - Use Zod schemas for validation
 - Log all profile deletions
 </constraints>
+
+<avoid>
+- Do not expose internal error details or stack traces in API responses
+- Do not skip input validation for "trusted" internal endpoints
+- Do not create inconsistent response formats across endpoints
+</avoid>
 
 <output_format>
 1. src/app/api/v1/profile/route.ts (GET, PUT, DELETE own profile)

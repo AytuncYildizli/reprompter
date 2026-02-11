@@ -13,6 +13,7 @@
 - Quick Mode examples for "create"/"build" edge cases
 - Per-Agent Sub-Task sections for Tests Agent and Research Agent in team-brief-template
 - Example section in team-brief-template (was the only template without one)
+- `<avoid>` sections in feature-template, bugfix-template, and api-template (template + example) — explicit anti-patterns per task type
 
 ### Changed
 - Complexity keywords refined: "build", "create", "with" moved to pattern-based detection instead of simple keyword match

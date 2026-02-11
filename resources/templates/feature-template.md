@@ -33,6 +33,12 @@ Use this template for building new features or functionality.
 - Maintain backward compatibility with {existing features}
 </constraints>
 
+<avoid>
+- Do not add unrelated refactoring or "improvements" outside the feature scope
+- Do not introduce new dependencies when existing libraries suffice
+- Do not skip edge case handling for the sake of quick delivery
+</avoid>
+
 <output_format>
 1. Implementation files (components, services, etc.)
 2. Any necessary configuration changes
@@ -87,6 +93,12 @@ Add a search functionality to the products page that filters products by name an
 - Do not modify ProductCard component
 - Preserve existing URL structure
 </constraints>
+
+<avoid>
+- Do not add unrelated refactoring or "improvements" outside the feature scope
+- Do not introduce new dependencies when existing libraries suffice
+- Do not skip edge case handling for the sake of quick delivery
+</avoid>
 
 <output_format>
 1. SearchInput component
