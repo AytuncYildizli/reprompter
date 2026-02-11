@@ -1,5 +1,19 @@
 # Changelog
 
+## [6.1.0] - 2026-02-11
+
+### Added
+- **Repromptception** — Double-layer prompt improvement for agent teams (TEAMS.md v2.0)
+  - Layer 1: Team brief improvement (roles, coordination, overall plan)
+  - Layer 2: Each agent's sub-task individually RePrompted (scored, structured, with per-agent success criteria)
+  - Every agent starts with 8+/10 quality prompt instead of vague task derivative
+  - Before/after scoring for each agent's sub-prompt
+- 4-phase loop: Team Plan → Repromptception → Execute → Evaluate+Retry
+
+### Changed
+- TEAMS.md v1.0 → v2.0: Phase 1 split into Team Plan + Repromptception
+- Phase numbering: Execute is now Phase 3, Evaluate is Phase 4
+
 ## [6.0.0] - 2026-02-11
 
 ### Added
