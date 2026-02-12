@@ -16,6 +16,8 @@ Use this template for research tasks, complex analysis, or tasks requiring chain
 - Time/depth constraints: {quick scan vs deep dive}
 </context>
 
+<task>{Clear research objective — what decision or understanding this produces}</task>
+
 <research_questions>
 1. {Primary question to answer}
 2. {Secondary question}
@@ -103,6 +105,8 @@ Technical research specialist with expertise in Node.js ORMs, database patterns,
 - Prior knowledge: Project uses Next.js 14, PostgreSQL, TypeScript strict mode
 - Depth: Comprehensive analysis for long-term decision
 </context>
+
+<task>Evaluate and recommend the best ORM for a Next.js 14 + PostgreSQL project, comparing Prisma, Drizzle, and TypeORM across performance, DX, and maintainability.</task>
 
 <research_questions>
 1. Which ORM has better TypeScript integration and type safety?

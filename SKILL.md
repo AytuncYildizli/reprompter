@@ -126,7 +126,17 @@ All templates follow this core structure (8 required tags). Some templates add d
 | `<endpoints>` | api | Endpoint specifications |
 | `<component_spec>` | ui | Component props, states, layout |
 | `<agents>` | swarm | Agent role definitions |
+| `<task_decomposition>` | swarm | Work split per agent |
 | `<coordination>` | swarm | Inter-agent handoff rules |
+| `<research_questions>` | research | Specific questions to answer |
+| `<methodology>` | research | Research approach and methods |
+| `<thinking>` | research | Chain-of-thought reasoning space |
+| `<current_state>` | refactor | Before state of the code |
+| `<target_state>` | refactor | Desired after state |
+| `<coverage_requirements>` | testing | What needs test coverage |
+| `<threat_model>` | security | Threat landscape and vectors |
+| `<structure>` | docs | Document organization |
+| `<reference>` | docs | Source material to reference |
 
 Extended tags are optional additions — always include all 8 base tags first. Use as fallback if no specific template matches:
 
@@ -405,4 +415,4 @@ Same audit task, 4 Opus agents:
 
 ## Test Scenarios
 
-See [TESTING.md](TESTING.md) for 9 verification scenarios + anti-pattern examples.
+See [TESTING.md](TESTING.md) for 13 verification scenarios + anti-pattern examples.
