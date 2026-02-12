@@ -11,11 +11,12 @@ Use this template when execution mode is Team (Parallel) or Team (Sequential).
 - Execution Mode: {Team (Parallel)|Team (Sequential)}
 - Overall Task: {high-level objective}
 
-## Agent Roles (2-4)
+## Agent Roles (2-5)
 1. **Frontend Agent** - {scope}
 2. **Backend Agent** - {scope}
 3. **Tests Agent** - {scope}
 4. **Research Agent** - {scope}
+5. **Integration/Ops Agent (optional)** - {scope}
 
 ## Per-Agent Sub-Tasks
 ### Frontend Agent
@@ -38,6 +39,11 @@ Use this template when execution mode is Team (Parallel) or Team (Sequential).
 - Constraints: {must/must-not}
 - Inputs/Dependencies: {what must exist first}
 
+### Integration/Ops Agent (optional)
+- Task(s): {specific deliverables}
+- Constraints: {must/must-not}
+- Inputs/Dependencies: {what must exist first}
+
 ## Coordination Rules
 - Shared files/modules: {list}
 - Ordering dependencies: {A before B, parallel-safe items}
@@ -48,6 +54,7 @@ Use this template when execution mode is Team (Parallel) or Team (Sequential).
 - Backend Agent: {measurable outcomes}
 - Tests Agent: {measurable outcomes}
 - Research Agent: {measurable outcomes}
+- Integration/Ops Agent (optional): {measurable outcomes}
 ```
 
 ## Example
@@ -100,6 +107,6 @@ Use this template when execution mode is Team (Parallel) or Team (Sequential).
 
 ## Notes
 
-- Write brief to `/tmp/reprompter-brief-{timestamp}.md` during execution
+- Write brief to `/tmp/rpt-brief-{timestamp}.md` during execution
 - Return file path and include summary in chat
 - Each agent gets their own sub-prompt derived from this brief
