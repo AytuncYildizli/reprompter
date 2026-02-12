@@ -101,6 +101,47 @@ Verification scenarios for the Reprompter skill. Run these manually to validate 
 
 ---
 
+## Scenario 10: Repromptception E2E
+
+**Input:** "reprompter teams - audit the auth module for security issues and test coverage gaps"
+**Expected:** Full Repromptception pipeline (Phase 1-4).
+**Verify:**
+- Phase 1: Team brief written to `/tmp/rpt-brief-*.md` with 2-3 agents
+- Phase 2: Per-agent XML prompts written to `/tmp/rpt-agent-prompts-*.md`, each scored 8+/10
+- Phase 3: tmux session created, agents execute in parallel
+- Phase 4: Results evaluated, each agent output has required sections
+- Final synthesis delivered to user
+
+## Scenario 11: Delta Retry
+
+**Setup:** Manually create a partial output file that would score 5/10 (missing sections).
+**Input:** Trigger Phase 4 evaluation on the partial output.
+**Expected:** Retry triggered with delta prompt specifying exact gaps.
+**Verify:**
+- Delta prompt lists ✅ good sections and ❌ missing sections
+- Retry uses the same agent role and constraints
+- Max 2 retries enforced (3 total attempts)
+
+## Scenario 12: Template Loading
+
+**Input:** "reprompt - fix the login timeout bug" (should load bugfix-template)
+**Expected:** bugfix-template.md read from `docs/examples/`, not base XML.
+**Verify:**
+- Template file actually read (not just base structure used)
+- Bug-specific sections present (symptoms, investigation steps)
+- If template file deleted, falls back to Base XML Structure gracefully
+
+## Scenario 13: Concurrent Sessions
+
+**Setup:** Start two Repromptception runs simultaneously with different tasknames.
+**Expected:** No file collisions between runs.
+**Verify:**
+- Each run uses unique taskname in file paths
+- Output files don't overwrite each other
+- Both sessions complete independently
+
+---
+
 ## Anti-Patterns (Should NOT Happen)
 
 | Anti-Pattern | Why It's Wrong |
