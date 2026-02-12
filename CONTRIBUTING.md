@@ -43,7 +43,7 @@ cp -R . /path/to/your-project/skills/reprompter/
 3. Make your changes
 4. Test with at least 3 different rough prompts **and** run the relevant scenarios from `TESTING.md` (minimum: one Quick Mode, one Full Interview, one Repromptception/Team scenario when applicable)
 5. Run template contract validation: `bash scripts/validate-templates.sh` (all templates must pass; `team-brief-template.md` is an explicit Markdown exception)
-5. Open a PR with:
+6. Open a PR with:
    - What you changed
    - Before/after examples showing the improvement
    - Which quality dimensions are affected

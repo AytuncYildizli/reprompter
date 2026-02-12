@@ -54,7 +54,7 @@ Lead orchestrator coordinating specialized agents to deliver the overall task sa
 - Do NOT merge outputs before dependency prerequisites are complete
 
 ## Output Format
-- Team brief path: `/tmp/rpt-brief-{taskname}-{timestamp}.md`
+- Team brief path: `/tmp/rpt-brief-{taskname}.md`
 - Per-agent outputs: `/tmp/rpt-{taskname}-{agent-domain}.md`
 - Final synthesis: `/tmp/rpt-{taskname}-final.md`
 
@@ -138,7 +138,7 @@ MVP deadline in 2 weeks. Three distinct skill domains (backend, frontend, testin
 - Do NOT skip API contract publication before integration
 
 ## Output Format
-- Team brief: /tmp/rpt-brief-chat-api-20260212T003000Z.md
+- Team brief: /tmp/rpt-brief-chat-api.md
 - Backend output: /tmp/rpt-chat-api-backend.md
 - Frontend output: /tmp/rpt-chat-api-frontend.md
 - Tests output: /tmp/rpt-chat-api-tests.md
@@ -179,6 +179,6 @@ MVP deadline in 2 weeks. Three distinct skill domains (backend, frontend, testin
 
 ## Notes
 
-- Write brief to `/tmp/rpt-brief-{taskname}-{timestamp}.md` during execution
+- Write brief to `/tmp/rpt-brief-{taskname}.md` during execution
 - Return file path and include summary in chat
 - Each agent gets their own sub-prompt derived from this brief

@@ -19,7 +19,7 @@ Verification scenarios for the RePrompter skill. Run these manually to validate 
 ## Scenario 3: Full Interview Flow
 
 **Input:** "we need some kind of authentication thing, maybe oauth"
-**Expected:** Full interview with AskUserQuestion. All standard questions asked.
+**Expected:** Full interview with AskUserQuestion. All required high-priority questions asked (lower-priority questions may be dropped when replaced by task-specific mandatory questions).
 **Verify:**
 - Task Type question appears
 - Execution Mode question appears

@@ -252,7 +252,7 @@ tmux kill-session -t {session}
 | Always `send-keys -l` (literal flag) | Without it, special chars break |
 | Enter sent SEPARATELY | Combined fails for multiline |
 | sleep 0.5 between text and Enter | Buffer processing time |
-| sleep 8 after session start | Claude Code init time |
+| sleep 12 after session start | Claude Code init time |
 | `--model opus` in CLI AND prompt | Default teammate = HAIKU |
 | Each agent writes own file | Prevents file conflicts |
 | Unique taskname per run | Prevents collisions between concurrent sessions |
