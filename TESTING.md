@@ -30,10 +30,10 @@ Verification scenarios for the Reprompter skill. Run these manually to validate 
 ## Scenario 4: Team Mode
 
 **Input:** "build a real-time chat system with websockets, database, and React frontend"
-**Expected:** Team mode detected or offered. Team brief generated with 2-4 agent roles.
+**Expected:** Team mode detected or offered. Team brief generated with 2-5 agent roles.
 **Verify:**
 - Execution Mode question offers team options
-- If team selected: team brief is generated at `/tmp/reprompter-brief-*.md`
+- If team selected: team brief is generated at `/tmp/rpt-brief-*.md`
 - Per-agent sub-prompts are generated (one per agent)
 - Each sub-prompt is scoped to that agent's responsibility
 
