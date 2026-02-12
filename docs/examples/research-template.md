@@ -174,6 +174,8 @@ Relevant sources to consult:
 - Consider our team's TypeScript expertise level
 - Prioritize long-term maintainability over short-term convenience
 - Acknowledge that both are valid choices
+- Do not recommend based on GitHub stars alone
+- Do not ignore licensing differences between ORMs
 </constraints>
 
 <output_format>

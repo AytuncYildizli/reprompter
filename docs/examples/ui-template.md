@@ -134,6 +134,8 @@ App currently has no notification system — errors and confirmations go unnotic
 - Follow existing design system colors
 - No external toast libraries
 - Support both light and dark mode
+- Do not use setTimeout for debounce — use a proper debounce utility
+- Do not break existing ProductCard component API
 </constraints>
 
 <output_format>

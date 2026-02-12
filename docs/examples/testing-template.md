@@ -123,6 +123,8 @@ Checkout flow is completely untested — any regression directly impacts revenue
 - Mock inventory API for out-of-stock tests
 - Tests must complete in under 2 minutes total
 - Don't create real orders in test database
+- Do not test internal component state directly
+- Do not use hardcoded test data that couples to production schema
 </constraints>
 
 <output_format>

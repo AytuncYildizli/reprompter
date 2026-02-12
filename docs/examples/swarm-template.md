@@ -157,6 +157,8 @@ Full-stack migration spanning 3 domains (backend, frontend, tests) — too compl
 - Maintain backward compatibility during migration (REST still works)
 - Each agent focuses on their domain only
 - Maximum 3 sync points to minimize overhead
+- Do not let the frontend agent modify backend schema files
+- Do not skip the review agent's approval before merging
 </constraints>
 
 <output_format>

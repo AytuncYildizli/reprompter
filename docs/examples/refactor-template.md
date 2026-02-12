@@ -127,6 +127,8 @@ Refactor DashboardPage.tsx into a clean component architecture with separated co
 - Don't change URL routes or data requirements
 - Preserve existing test assertions
 - Make each change a separate, reviewable commit
+- Do not change route paths or response formats
+- Do not combine this refactor with the planned auth migration
 </constraints>
 
 <output_format>

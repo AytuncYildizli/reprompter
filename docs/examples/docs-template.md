@@ -128,6 +128,8 @@ No API docs exist — developers spend 2+ hours reverse-engineering endpoints. S
 - Include both success and error response examples
 - Keep sensitive data (API keys) as placeholders
 - Test all code examples before including
+- Do not reference deprecated getServerSession API
+- Do not assume reader has TypeScript experience without stating prerequisite
 </constraints>
 
 <output_format>
