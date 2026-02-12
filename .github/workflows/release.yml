@@ -19,12 +19,16 @@ jobs:
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: Extract changelog for this version
-        id: changelog
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
-          VERSION="${{ steps.version.outputs.VERSION }}"
-          awk "/^## ${VERSION//./\\.}/{found=1; next} /^## v[0-9]/{if(found) exit} found{print}" CHANGELOG.md > /tmp/release_notes.md
+          awk -v ver="$VERSION" '
+            $0 ~ "^## v" ver { found=1; next }
+            /^## v[0-9]/ { if(found) exit }
+            found { print }
+          ' CHANGELOG.md > /tmp/release_notes.md
           if [ ! -s /tmp/release_notes.md ]; then
-            echo "Release ${VERSION}" > /tmp/release_notes.md
+            echo "Release v${VERSION}" > /tmp/release_notes.md
           fi
 
       - name: Create GitHub Release
