@@ -14,7 +14,7 @@
 - **content-template:** added for blog posts, articles, and marketing copy (12 templates total)
 
 ### Changed
-- SKILL.md trimmed from 1130 lines to ~350 lines (69% reduction)
+- SKILL.md trimmed from 1130 lines to ~459 lines (59% reduction)
 - All team execution patterns consolidated (tmux send-keys -l, separate Enter, Opus default)
 - Quality scoring section streamlined
 - Templates section condensed to reference table

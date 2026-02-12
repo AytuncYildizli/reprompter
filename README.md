@@ -727,7 +727,6 @@ The pipeline runs via **Claude Code Agent Teams** with `teammateMode: "tmux"` fo
 
 ## Other Features
 
-- **Think tool-aware** — Prefer dedicated thinking tools when available, keep prompts outcome-focused
 - **Extended thinking** — Favors outcome clarity over rigid step scripting
 - **Response prefilling** — Suggests `{` prefills for JSON-first API workflows
 - **Context engineering** — Prompts complement runtime context, don't duplicate it
