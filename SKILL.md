@@ -117,7 +117,18 @@ Detect task type from input. Each type has a dedicated template in `docs/example
 
 ### Base XML Structure
 
-All templates follow this structure. Use as fallback if no specific template matches:
+All templates follow this core structure (8 required tags). Some templates add domain-specific tags:
+
+| Extended Tag | Used In | Purpose |
+|-------------|---------|---------|
+| `<symptoms>` | bugfix | What the user sees, error messages |
+| `<investigation_steps>` | bugfix | Systematic debugging steps |
+| `<endpoints>` | api | Endpoint specifications |
+| `<component_spec>` | ui | Component props, states, layout |
+| `<agents>` | swarm | Agent role definitions |
+| `<coordination>` | swarm | Inter-agent handoff rules |
+
+Extended tags are optional additions — always include all 8 base tags first. Use as fallback if no specific template matches:
 
 ```xml
 <role>{Expert role matching task type and domain}</role>
