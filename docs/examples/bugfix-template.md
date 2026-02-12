@@ -54,7 +54,10 @@ Investigate and fix: {brief description of the bug}
 </constraints>
 
 <output_format>
-{Fix description, root cause, regression test, before/after}
+1. {Fix description with exact code changes}
+2. {Root cause analysis — why the bug existed}
+3. {Regression test added or updated}
+4. {Before/after behavior comparison}
 </output_format>
 
 <success_criteria>

@@ -4,7 +4,12 @@
      Team briefs coordinate multiple agents and are consumed by the orchestrator, not individual agents.
      The Markdown structure maps to XML concepts: sections ≈ XML elements, bullets ≈ content. -->
 
-Use this template when execution mode is Team (Parallel) or Team (Sequential).
+## When to Use
+
+- Team (Parallel) execution mode selected
+- Team (Sequential) execution mode selected
+- Auto-detect resolves to team mode
+- Tasks involving 2+ distinct systems or layers
 
 ## Template
 
@@ -107,13 +112,6 @@ MVP deadline in 2 weeks. Three distinct skill domains (backend, frontend, testin
 - Frontend Agent: Login flow works, dashboard renders data from API
 - Tests Agent: 80%+ coverage, all E2E tests pass
 ```
-
-## When to Use
-
-- Team (Parallel) execution mode selected
-- Team (Sequential) execution mode selected
-- Auto-detect resolves to team mode
-- Tasks involving 2+ distinct systems or layers
 
 ## Notes
 
