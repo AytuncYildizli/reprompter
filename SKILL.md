@@ -20,7 +20,7 @@ version: 7.0.0
 | Mode | Trigger | What happens |
 |------|---------|-------------|
 | **Single** | "reprompt this", "clean up this prompt" | Interview → structured prompt → score |
-| **Repromptception** | "reprompter teams", "repromptception", "run with quality", "smart run" | Plan team → reprompt each agent → tmux Agent Teams → evaluate → retry |
+| **Repromptception** | "reprompter teams", "repromptception", "run with quality", "smart run", "smart agents" | Plan team → reprompt each agent → tmux Agent Teams → evaluate → retry |
 
 Auto-detection: if task mentions 2+ systems, "audit", or "parallel" → ask: "This looks like a multi-agent task. Want to use Repromptception mode?"
 
@@ -127,6 +127,8 @@ Detect task type from input. Each type has a dedicated template in `docs/example
 
 All templates follow this core structure (8 required tags). Use as fallback if no specific template matches:
 
+Exception: `team-brief-template.md` uses Markdown format for orchestration briefs. This is intentional — see template header for rationale.
+
 ```xml
 <role>{Expert role matching task type and domain}</role>
 
@@ -185,6 +187,7 @@ Phase 4: Read results, score, retry if needed (YOU do this)
 ### Phase 1: Team Plan (~30 seconds)
 
 1. **Score raw prompt** (1-10): Clarity, Specificity, Structure, Constraints, Decomposition
+   - Phase 1 uses 5 quick-assessment dimensions. The full 6-dimension scoring (adding Verifiability) is used in Phase 4 evaluation.
 2. **Pick mode:** parallel (independent agents) or sequential (pipeline with dependencies)
 3. **Define team:** 2-5 agents max, each owns ONE domain, no overlap
 4. **Write team brief** to `/tmp/rpt-brief-{taskname}.md` (use unique tasknames to avoid collisions between concurrent runs)
