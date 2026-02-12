@@ -419,6 +419,25 @@ Use `SKILL.md` as the behavior spec. Templates are in `docs/examples/`.
 
 ---
 
+## Quick Start
+
+After installing, just say one of these trigger phrases:
+
+```
+reprompt this: build a REST API with auth and rate limiting
+```
+
+```
+reprompter teams - audit the auth module for security and test coverage
+```
+
+**Single mode** triggers: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt"
+**Team mode** triggers: "reprompter teams", "repromptception", "run with quality", "smart run"
+
+RePrompter will interview you (2-5 questions), generate a structured XML prompt, and show a before/after quality score.
+
+---
+
 ## Quality Dimensions
 
 Every transformation is scored on six weighted dimensions:
@@ -448,6 +467,7 @@ Every transformation is scored on six weighted dimensions:
 | `ui-template` | UI component implementation |
 | `security-template` | Security hardening/audit tasks |
 | `docs-template` | Technical docs |
+| `content-template` | Blog posts, articles, marketing copy |
 | `research-template` | Analysis / option exploration |
 | `swarm-template` | Multi-agent coordination |
 | `team-brief-template` | Team orchestration brief |
