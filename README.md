@@ -128,19 +128,21 @@ uhh build a crypto dashboard, maybe coingecko data, add caching, test it too, do
 ### Output
 ```xml
 <role>
-Senior full-stack engineer for real-time dashboard systems and API integration
+Senior full-stack engineer specializing in real-time dashboard systems,
+REST API integration, and cache-aware data pipelines.
 </role>
 
 <context>
-- Frontend + backend + tests required
-- Data source: CoinGecko
-- Existing API behavior must be preserved
-- Execution mode: Team (Parallel) due to cross-layer scope
+- Frontend + backend + tests required (cross-layer scope)
+- Data source: CoinGecko API (free tier, 30 calls/min rate limit)
+- Existing API behavior must be preserved — consumers depend on current response schema
+- Execution mode: Team (Parallel) due to independent frontend/backend/test workstreams
 </context>
 
 <motivation>
-User-facing feature with reliability requirements. Prioritize correctness,
-resilience, and non-breaking integration.
+User-facing feature with reliability requirements. Users need real-time crypto
+prices without page refresh. Prioritize correctness, cache resilience, and
+non-breaking backward compatibility for existing API consumers.
 </motivation>
 
 <task>
@@ -149,23 +151,31 @@ with unit tests for both API and UI, without breaking existing API contracts.
 </task>
 
 <requirements>
-- Build dashboard UI with loading/error/stale states
-- Implement backend CoinGecko proxy with validation + cache TTL
-- Preserve backward compatibility for existing API consumers
-- Add deterministic unit tests for frontend and backend
+- Build dashboard UI with loading, error, empty, and stale-data states
+- Implement backend CoinGecko proxy with JSON schema validation + configurable cache TTL
+- Preserve backward compatibility for all existing API consumers
+- Add deterministic unit tests for frontend rendering states and backend edge cases
+- Cache must serve stale data on upstream failure (stale-while-revalidate pattern)
 </requirements>
 
 <constraints>
-- No direct client-side calls to CoinGecko
-- No breaking changes to existing API response fields
-- Mock external network boundaries in tests
+- No direct client-side calls to CoinGecko (all traffic through proxy)
+- No breaking changes to existing API response fields or status codes
+- Mock all external network boundaries in tests — zero real HTTP calls
+- Rate limit CoinGecko calls to stay within free tier (30/min)
 </constraints>
 
+<output_format>
+- Backend: /api/prices endpoint returning { prices: [...], cached: bool, updatedAt: ISO }
+- Frontend: React component with 5s auto-refresh interval
+- Tests: Vitest suite with ≥80% branch coverage
+</output_format>
+
 <success_criteria>
-- Dashboard updates on interval and handles failures gracefully
-- Proxy endpoint returns normalized, validated data
-- Existing API integration tests still pass
-- New unit tests cover success, error, and stale-cache paths
+- Dashboard auto-updates every 5s and shows "stale" indicator when cache is old
+- Proxy returns normalized data within 200ms (cache hit) / 2s (cache miss)
+- Existing API integration tests still pass with zero modifications
+- New unit tests cover: success, upstream error, cache hit, cache miss, rate limit paths
 </success_criteria>
 ```
 
@@ -201,48 +211,183 @@ When auto-detection finds multiple systems (UI + API + tests), it generates:
 - Overall Task: Real-time crypto dashboard with cache-aware backend and full unit coverage
 
 ## Agent Roles
-1. Frontend Agent — dashboard UI, polling behavior, loading/error/stale states
+1. Frontend Agent — dashboard UI, polling, loading/error/stale states
 2. Backend Agent — CoinGecko proxy API, schema validation, cache strategy
 3. Tests Agent — deterministic unit tests for frontend + backend behavior
 
 ## Coordination Rules
-- Backend publishes API contract first
+- Backend publishes API contract to /tmp/api-contract.md first
 - Frontend consumes contract without shape drift
 - Tests use shared DTO definitions from backend contract
-- Integration checkpoint before final merge
+- Each agent writes to own output file (no conflicts)
+- Integration checkpoint: lead reads all 3 outputs before final merge
 ```
 
 </details>
 
 <details>
-<summary><strong>🎨 Frontend Agent sub-prompt</strong></summary>
+<summary><strong>🎨 Frontend Agent — full Repromptception prompt</strong></summary>
 
 ```xml
-<role>Senior frontend engineer specialized in real-time React dashboards</role>
-<task>Implement dashboard UI for real-time crypto prices with loading, error, and stale states.</task>
-<constraints>Do not call CoinGecko directly from client</constraints>
+<role>
+Senior frontend engineer specializing in real-time React dashboards
+with WebSocket/polling patterns and graceful degradation.
+</role>
+
+<context>
+- Framework: Next.js 14 with App Router (detected from package.json)
+- Backend agent is building /api/prices endpoint (see /tmp/api-contract.md)
+- No direct CoinGecko calls from client — all data via backend proxy
+- Other agents handle backend (Agent 2) and tests (Agent 3)
+</context>
+
+<task>
+Implement the dashboard UI component for real-time crypto price display
+with 5-second auto-refresh, loading/error/stale states, and responsive layout.
+</task>
+
+<requirements>
+- Auto-refresh every 5 seconds via polling (not WebSocket)
+- Show loading skeleton on initial fetch
+- Show error state with retry button on fetch failure
+- Show "stale" indicator when data is older than 30 seconds
+- Display: coin name, price, 24h change (green/red), sparkline
+- Responsive: mobile-first, 1-column on mobile, grid on desktop
+</requirements>
+
+<constraints>
+- Do NOT call CoinGecko directly — only use /api/prices
+- Do NOT modify any existing pages or components
+- Use existing design system tokens (colors, spacing, fonts)
+- Keep component tree shallow (max 3 levels deep)
+</constraints>
+
+<output_format>
+Write complete implementation to /tmp/rpt-frontend.md including:
+- Component code (React/TSX)
+- Custom hook for polling logic
+- CSS/Tailwind styles
+- Type definitions
+</output_format>
+
+<success_criteria>
+- All 4 states render correctly (loading, data, error, stale)
+- No CoinGecko imports in any frontend file
+- Component renders within 100ms (no heavy computation in render)
+- Lighthouse accessibility score ≥ 90
+</success_criteria>
 ```
 
 </details>
 
 <details>
-<summary><strong>⚙️ Backend Agent sub-prompt</strong></summary>
+<summary><strong>⚙️ Backend Agent — full Repromptception prompt</strong></summary>
 
 ```xml
-<role>Senior backend engineer focused on API integration and resilient caching</role>
-<task>Build a cache-aware /api/prices endpoint that proxies CoinGecko and returns normalized responses.</task>
-<constraints>No breaking response schema changes</constraints>
+<role>
+Senior backend engineer specializing in API integration,
+resilient caching patterns, and rate-limit-aware proxy design.
+</role>
+
+<context>
+- Next.js 14 API routes (App Router, /app/api/)
+- CoinGecko free tier: 30 calls/min rate limit
+- Existing /api/ routes must not break — consumers depend on current schema
+- Frontend agent (Agent 1) will consume /api/prices
+- Tests agent (Agent 3) will test this endpoint
+</context>
+
+<task>
+Build a cache-aware /api/prices endpoint that proxies CoinGecko,
+validates responses, and serves stale data on upstream failure.
+</task>
+
+<requirements>
+- GET /api/prices returns { prices: CoinPrice[], cached: boolean, updatedAt: string }
+- In-memory cache with configurable TTL (default 10s)
+- Stale-while-revalidate: serve cached data when CoinGecko is down
+- JSON schema validation on CoinGecko response before caching
+- Rate limiter: max 25 calls/min to CoinGecko (5 call buffer)
+- Publish API contract to /tmp/api-contract.md for other agents
+</requirements>
+
+<constraints>
+- Do NOT modify existing API routes or their response schemas
+- Do NOT expose CoinGecko API key to frontend
+- Do NOT use external cache (Redis) — in-memory only for now
+- Error responses must follow existing API error format
+</constraints>
+
+<output_format>
+Write complete implementation to /tmp/rpt-backend.md including:
+- API route handler code
+- Cache module with TTL logic
+- Rate limiter module
+- Type definitions + API contract
+</output_format>
+
+<success_criteria>
+- Cache hit returns in < 50ms
+- Upstream failure returns last cached data (not 500)
+- Rate limiter prevents > 25 calls/min to CoinGecko
+- Zero breaking changes to existing routes (verified by existing tests)
+</success_criteria>
 ```
 
 </details>
 
 <details>
-<summary><strong>🧪 Tests Agent sub-prompt</strong></summary>
+<summary><strong>🧪 Tests Agent — full Repromptception prompt</strong></summary>
 
 ```xml
-<role>Senior test engineer specialized in deterministic unit and integration boundary tests</role>
-<task>Create robust unit tests for backend API behavior and frontend rendering states.</task>
-<constraints>Mock all external network boundaries, no flaky timer-dependent assertions</constraints>
+<role>
+Senior test engineer specializing in deterministic unit tests,
+API boundary mocking, and React component testing with Vitest.
+</role>
+
+<context>
+- Test framework: Vitest + React Testing Library (from vitest.config.ts)
+- Frontend agent (Agent 1) builds dashboard component
+- Backend agent (Agent 2) builds /api/prices endpoint
+- Read their outputs from /tmp/rpt-frontend.md and /tmp/rpt-backend.md
+- All external HTTP calls must be mocked — zero real network in tests
+</context>
+
+<task>
+Create comprehensive unit tests for both the frontend dashboard component
+and the backend /api/prices endpoint, covering all edge cases.
+</task>
+
+<requirements>
+- Backend tests: success, upstream error, cache hit, cache miss, rate limit, schema validation failure
+- Frontend tests: loading state, data render, error state + retry, stale indicator, auto-refresh
+- Minimum 15 test cases total (8 backend + 7 frontend)
+- Each test must be deterministic — no timers, no real HTTP, no flaky assertions
+- Mock CoinGecko responses with realistic fixtures
+- Test cache TTL expiry with fake timers (vi.useFakeTimers)
+</requirements>
+
+<constraints>
+- Do NOT make real HTTP calls to any external service
+- Do NOT modify existing test files or test utilities
+- Use vi.mock() for fetch/HTTP, vi.useFakeTimers() for time-dependent logic
+- Each test must complete in < 100ms
+</constraints>
+
+<output_format>
+Write complete test suite to /tmp/rpt-tests.md including:
+- Backend test file (*.test.ts)
+- Frontend test file (*.test.tsx)
+- Mock fixtures (CoinGecko response shapes)
+- Coverage expectations
+</output_format>
+
+<success_criteria>
+- All 15+ tests pass deterministically
+- ≥ 80% branch coverage on both frontend and backend
+- Zero network calls in test execution
+- Tests run in < 2 seconds total
+</success_criteria>
 ```
 
 </details>
@@ -333,25 +478,60 @@ Evaluate — score output against success criteria
 Retry (if needed) — delta prompts targeting specific gaps
 ```
 
-**Before Repromptception:**
+**Before Repromptception (score: 2.0/10):**
 > "Security Auditor — scan for vulnerabilities"
 
-**After Repromptception:**
+**After Repromptception (score: 8.9/10):**
 ```xml
-<role>Senior application security engineer specializing in Python web apps</role>
-<context>Codebase: Python 3, psycopg2, urllib. DB: Neon Postgres.</context>
-<task>Audit all Python files for security vulnerabilities</task>
+<role>
+Senior application security engineer specializing in Python web applications,
+OWASP Top 10, and credential hygiene in git-tracked repositories.
+</role>
+
+<context>
+- Codebase: Python 3.11, psycopg2, urllib3, FastAPI. DB: Neon Postgres + SQLite.
+- 76 Python files across scripts/whatsapp-memory/, scripts/finance/, scripts/norget/
+- Known issue: .gitignore was recently expanded but credentials may exist in git history
+- Other agents handle: token costs (Agent 2), config settings (Agent 3), memory bloat (Agent 4)
+- YOUR scope: source code security ONLY — do not audit config files or memory files
+</context>
+
+<task>
+Audit all Python source files for security vulnerabilities, hardcoded credentials,
+injection risks, and unsafe patterns. Report findings with exact file paths and line numbers.
+</task>
+
 <requirements>
-- Check SQL injection (parameterized vs string formatting)
-- Check hardcoded secrets and API keys
-- Check SSRF in URL fetching functions
-- Check input validation on external API data
+- Check SQL injection: parameterized queries vs string formatting in all DB calls
+- Check hardcoded secrets: API keys, OAuth tokens, passwords in source code (not .env)
+- Check SSRF: URL construction in urllib/requests calls — user input in URLs
+- Check input validation: external API data consumed without schema validation
+- Check subprocess calls: shell=True, unsanitized arguments
+- Check file path traversal: user-controlled paths in open()/read()
+- Minimum 8 findings across at least 3 severity levels
 </requirements>
-<constraints>Only audit tweet-engine dir. Report only, don't modify.</constraints>
+
+<constraints>
+- Audit source code ONLY — do not audit .env files, memory/, or config (other agents do that)
+- READ-ONLY: do not modify any files, only report findings
+- Verify every file:line reference before reporting (no hallucinated paths)
+- Use severity framework: CRITICAL / HIGH / MEDIUM / LOW
+</constraints>
+
+<output_format>
+Write findings to /tmp/rpc2-audit-security.md with:
+- Executive summary (1 paragraph)
+- Findings table: | # | Severity | File:Line | Issue | Fix Suggestion |
+- Detailed analysis per finding (code snippet + explanation)
+- Remediation priority list
+</output_format>
+
 <success_criteria>
-- Minimum 3 findings with severity ratings
-- Each finding: file, line number, fix suggestion
-- No hallucinated file paths
+- Minimum 8 findings with severity ratings
+- Every finding has exact file:line reference (verified, not guessed)
+- At least 1 CRITICAL and 2 HIGH findings
+- Each finding includes a concrete fix suggestion (not generic advice)
+- No false positives — every reported issue must be a real vulnerability
 </success_criteria>
 ```
 
