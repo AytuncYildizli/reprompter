@@ -415,7 +415,7 @@ cp -R reprompter /path/to/workspace/skills/reprompter
 
 ### Any Structured-Prompt LLM
 
-Use `SKILL.md` as the behavior spec. Templates are in `resources/templates/`.
+Use `SKILL.md` as the behavior spec. Templates are in `docs/examples/`.
 
 ---
 
@@ -452,7 +452,7 @@ Every transformation is scored on six weighted dimensions:
 | `swarm-template` | Multi-agent coordination |
 | `team-brief-template` | Team orchestration brief |
 
-> Templates live in `resources/templates/`. Team brief is generated at runtime.
+> Templates live in `docs/examples/`. Team brief is generated at runtime.
 
 ---
 
