@@ -452,7 +452,7 @@ Every transformation is scored on six weighted dimensions:
 | `swarm-template` | Multi-agent coordination |
 | `team-brief-template` | Team orchestration brief |
 
-> Templates live in `docs/examples/`. Team brief is generated at runtime.
+> Templates live in `docs/examples/` and are read on demand (not loaded into context). Team brief is generated during Repromptception Phase 1.
 
 ---
 

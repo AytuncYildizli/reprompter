@@ -22,7 +22,7 @@ version: 7.0.0
 | **Single** | "reprompt this", "clean up this prompt" | Interview → structured prompt → score |
 | **Repromptception** | "reprompter teams", "repromptception", "run with quality", "smart run" | Plan team → reprompt each agent → tmux Agent Teams → evaluate → retry |
 
-Auto-detection: if task mentions 2+ systems, "audit", or "parallel" → suggest Repromptception.
+Auto-detection: if task mentions 2+ systems, "audit", or "parallel" → ask: "This looks like a multi-agent task. Want to use Repromptception mode?"
 
 ## Don't Use When
 
@@ -228,7 +228,7 @@ Write all to `/tmp/rpt-agent-prompts-{taskname}.md`
 # 1. Start Claude Code with Agent Teams
 tmux new-session -d -s {session} "cd /path/to/workdir && CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 claude --model opus"
 
-# 2. Wait for startup (MUST wait 8+ seconds)
+# 2. Wait for startup (8s minimum — increase to 12s on slower machines)
 sleep 8
 
 # 3. Send prompt — MUST use -l (literal), Enter SEPARATE
@@ -256,6 +256,7 @@ tmux kill-session -t {session}
 | sleep 8 after session start | Claude Code init time |
 | `--model opus` in CLI AND prompt | Default teammate = HAIKU |
 | Each agent writes own file | Prevents file conflicts |
+| Unique taskname per run | Prevents collisions between concurrent sessions |
 
 ### Phase 4: Evaluate + Retry
 
@@ -299,6 +300,8 @@ sessions_spawn(task: "<per-agent prompt>", model: "opus", label: "rpt-{role}")
 ```
 Note: `sessions_spawn` is an OpenClaw-specific tool. Not available in standalone Claude Code.
 
+**No tmux or OpenClaw?** Run agents sequentially: execute each agent's prompt one at a time in the same Claude Code session. Slower but works everywhere.
+
 ---
 
 ## Quality Scoring
@@ -320,9 +323,9 @@ Note: `sessions_spawn` is an OpenClaw-specific tool. Not available in standalone
 | Clarity | 3/10 | 9/10 | +200% |
 | Specificity | 2/10 | 8/10 | +300% |
 | Structure | 1/10 | 10/10 | +900% |
-| Constraints | 0/10 | 7/10 | +∞ |
+| Constraints | 0/10 | 7/10 | new |
 | Verifiability | 2/10 | 8/10 | +300% |
-| Decomposition | 0/10 | 8/10 | +∞ |
+| Decomposition | 0/10 | 8/10 | new |
 | **Overall** | **1.45/10** | **8.35/10** | **+476%** |
 ```
 
@@ -354,12 +357,17 @@ Prefill assistant response start to enforce format:
 ### Context Engineering
 Generated prompts should COMPLEMENT runtime context (CLAUDE.md, skills, MCP tools), not duplicate it.
 
+### Token Budget
+Keep generated prompts under ~2K tokens for single mode, ~1K per agent for Repromptception. Longer prompts waste context window without improving quality.
+
 ### Uncertainty Handling
 Always include explicit permission for the model to express uncertainty rather than fabricate.
 
 ---
 
 ## Settings (for Repromptception mode)
+
+> Note: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is an experimental flag that may change in future Claude Code versions. Check [Claude Code docs](https://docs.anthropic.com/en/docs/claude-code) for current status.
 
 In `~/.claude/settings.json`:
 ```json
@@ -409,7 +417,7 @@ Same audit task, 4 Opus agents:
 ## Tips
 
 - **More context = fewer questions** — mention tech stack, files
-- **"expand"** — if Quick Mode gave too simple a result
+- **"expand"** — if Quick Mode gave too simple a result, re-run with full interview
 - **"quick"** — skip interview for simple tasks
 - **"no context"** — skip auto-detection
 - Context is per-project — switching directories = fresh detection
