@@ -86,35 +86,25 @@ Enable when ALL true: < 20 words, single action verb, single target, no ambiguit
 
 **Force interview if ANY present:** compound tasks ("and", "plus"), state management ("track", "sync"), vague modifiers ("better", "improved"), integration work ("connect", "combine"), broad scope nouns after build/create.
 
-### Templates
+### Task Types
 
-Select based on task type. Templates in `resources/templates/`:
+Detect task type from input and adapt the XML template accordingly:
 
-| Template | Use case |
-|----------|---------|
-| `feature-template` | New functionality (default fallback) |
-| `bugfix-template` | Debug + fix |
-| `refactor-template` | Structural cleanup |
-| `testing-template` | Test writing |
-| `api-template` | Endpoint/API work |
-| `ui-template` | UI components |
-| `security-template` | Security audit/hardening |
-| `docs-template` | Documentation |
-| `research-template` | Analysis/exploration |
-| `swarm-template` | Multi-agent coordination |
-| `team-brief-template` | Team orchestration brief |
+Feature / Bugfix / Refactor / Testing / API / UI / Security / Docs / Research / Content / Multi-Agent
 
-**Priority:** Most specific wins. api > security > ui > testing > bugfix > refactor > docs > research > swarm > feature.
+**Priority** (most specific wins): api > security > ui > testing > bugfix > refactor > docs > content > research > feature.
 
-### Default XML Template
+> **No separate template files.** Use the single XML template below. Adapt `<role>`, `<context>`, and `<requirements>` based on detected task type. For example: a security task gets a security-focused role and security-specific constraints; a bugfix gets reproduction steps in requirements.
+
+### XML Template
 
 ```xml
-<role>{Expert role matching task domain}</role>
+<role>{Expert role matching task type and domain}</role>
 
 <context>
-{Auto-detected + user-provided context}
 - Working environment, frameworks, tools
 - Available resources, current state
+- {Task-type-specific context: e.g., bug reproduction for bugfix, threat model for security}
 </context>
 
 <task>{Clear, unambiguous single-sentence task}</task>
@@ -123,20 +113,20 @@ Select based on task type. Templates in `resources/templates/`:
 
 <requirements>
 - {Specific, measurable requirement 1}
-- {Requirement 2}
-- {At least 3-5 requirements}
+- {At least 3-5 requirements, adapted to task type}
 </requirements>
 
 <constraints>
 - {What NOT to do}
 - {Boundaries and limits}
+- {Task-type-specific: e.g., "no breaking changes" for refactor, "OWASP top 10" for security}
 </constraints>
 
 <output_format>{Expected format, structure, length}</output_format>
 
 <success_criteria>
 - {Testable condition 1}
-- {Expected behavior 2}
+- {Measurable outcome 2}
 </success_criteria>
 ```
 
@@ -174,43 +164,14 @@ Phase 4: Read results, score, retry if needed (YOU do this)
 
 ### Phase 2: Repromptception (~2 minutes)
 
-For EACH agent, write a full XML prompt with ALL sections:
+For EACH agent, use the XML template from above with these **per-agent adaptations**:
 
-```xml
-<role>Specific expert title for THIS agent's domain</role>
-
-<context>
-- Exact file paths this agent needs (verified with ls)
-- Technology stack relevant to their domain
-- Known issues or prior findings
-- What OTHER agents are handling (boundary awareness)
-</context>
-
-<task>One clear sentence: what this agent must do</task>
-
-<requirements>
-- At least 5 specific, measurable requirements
-- Each independently verifiable
-</requirements>
-
-<constraints>
-- Scope boundary with other agents
-- Read-only vs write permission
-- File/directory boundaries
-</constraints>
-
-<output_format>
-- Exact output file path: /tmp/rpt-{taskname}-{agent-domain}.md
-- Required sections
-- Table format if applicable
-</output_format>
-
-<success_criteria>
-- Minimum N findings/items
-- Every finding has file:line reference
-- No hallucinated paths
-</success_criteria>
-```
+- `<role>`: Specific expert title for THIS agent's domain
+- `<context>`: Add exact file paths (verified with `ls`), what OTHER agents handle (boundary awareness)
+- `<requirements>`: At least 5 specific, independently verifiable requirements
+- `<constraints>`: Scope boundary with other agents, read-only vs write, file/directory boundaries
+- `<output_format>`: Exact path `/tmp/rpt-{taskname}-{agent-domain}.md`, required sections
+- `<success_criteria>`: Minimum N findings, file:line references, no hallucinated paths
 
 **Score each prompt — target 8+/10.** If under 8, add more context/constraints.
 
