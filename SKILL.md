@@ -3,7 +3,7 @@ name: reprompter
 description: |
   Transform messy prompts into well-structured, effective prompts — single or multi-agent.
   Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", rough text needing XML tags and best practices, "reprompter teams", "repromptception", "run with quality", "smart run", "smart agents", multi-agent tasks, audits, parallel work, anything going to agent teams.
-  Don't use when: simple one-line Q&A, direct code edits, chat/conversation, tasks that don't involve prompt generation or multi-agent orchestration. For code tasks use coding-agent, for research use x-research.
+  Don't use when: simple one-line Q&A, pure chat/conversation, or tasks that do not need prompt improvement or multi-agent orchestration. RePrompter can improve prompts for feature/bugfix/API/code tasks, but it does not execute code edits directly unless Repromptception execution mode is explicitly requested. For direct execution-only coding tasks, use coding-agent; for research-only execution, use x-research.
   Outputs: Structured XML/Markdown prompt, quality score (before/after), optional team brief + per-agent sub-prompts, agent team output files.
   Success criteria: Quality score ≥ 7/10, all required sections present, actionable and specific.
 version: 7.0.0
@@ -23,6 +23,15 @@ version: 7.0.0
 | **Repromptception** | "reprompter teams", "repromptception", "run with quality", "smart run" | Plan team → reprompt each agent → tmux Agent Teams → evaluate → retry |
 
 Auto-detection: if task mentions 2+ systems, "audit", or "parallel" → suggest Repromptception.
+
+## Don't Use When
+
+- User wants a simple direct answer (no prompt generation needed)
+- User wants casual chat/conversation
+- Task is immediate execution-only with no reprompting step
+- Scope does not involve prompt design, structure, or orchestration
+
+> Clarification: RePrompter **does** support code-related tasks (feature, bugfix, API, refactor) by generating better prompts. It does **not** directly apply code changes in Single mode. Direct code execution belongs to coding-agent unless Repromptception execution mode is explicitly requested.
 
 ---
 
@@ -77,33 +86,38 @@ Enable when ALL true: < 20 words, single action verb, single target, no ambiguit
 
 **Force interview if ANY present:** compound tasks ("and", "plus"), state management ("track", "sync"), vague modifiers ("better", "improved"), integration work ("connect", "combine"), broad scope nouns after build/create.
 
-### Templates
+### Task Types & Templates
 
-Select based on task type. Templates in `resources/templates/`:
+Detect task type from input. Each type has a dedicated template in `docs/examples/`:
 
-| Template | Use case |
-|----------|---------|
-| `feature-template` | New functionality (default fallback) |
-| `bugfix-template` | Debug + fix |
-| `refactor-template` | Structural cleanup |
-| `testing-template` | Test writing |
-| `api-template` | Endpoint/API work |
-| `ui-template` | UI components |
-| `security-template` | Security audit/hardening |
-| `docs-template` | Documentation |
-| `research-template` | Analysis/exploration |
-| `swarm-template` | Multi-agent coordination |
-| `team-brief-template` | Team orchestration brief |
+| Type | Template | Use when |
+|------|----------|----------|
+| Feature | `feature-template.md` | New functionality (default fallback) |
+| Bugfix | `bugfix-template.md` | Debug + fix |
+| Refactor | `refactor-template.md` | Structural cleanup |
+| Testing | `testing-template.md` | Test writing |
+| API | `api-template.md` | Endpoint/API work |
+| UI | `ui-template.md` | UI components |
+| Security | `security-template.md` | Security audit/hardening |
+| Docs | `docs-template.md` | Documentation |
+| Research | `research-template.md` | Analysis/exploration |
+| Multi-Agent | `swarm-template.md` | Multi-agent coordination |
+| Team Brief | `team-brief-template.md` | Team orchestration brief |
 
-**Priority:** Most specific wins. api > security > ui > testing > bugfix > refactor > docs > research > swarm > feature.
+**Priority** (most specific wins): api > security > ui > testing > bugfix > refactor > docs > research > swarm > feature.
 
-### Default XML Template
+**How it works:** Read the matching template from `docs/examples/{type}-template.md`, then fill it with task-specific context. Templates are NOT loaded into context by default — only read on demand when generating a prompt.
+
+> To add a new task type: create `docs/examples/{type}-template.md` following the XML structure below. No SKILL.md changes needed.
+
+### Base XML Structure
+
+All templates follow this structure. Use as fallback if no specific template matches:
 
 ```xml
-<role>{Expert role matching task domain}</role>
+<role>{Expert role matching task type and domain}</role>
 
 <context>
-{Auto-detected + user-provided context}
 - Working environment, frameworks, tools
 - Available resources, current state
 </context>
@@ -114,7 +128,6 @@ Select based on task type. Templates in `resources/templates/`:
 
 <requirements>
 - {Specific, measurable requirement 1}
-- {Requirement 2}
 - {At least 3-5 requirements}
 </requirements>
 
@@ -127,7 +140,7 @@ Select based on task type. Templates in `resources/templates/`:
 
 <success_criteria>
 - {Testable condition 1}
-- {Expected behavior 2}
+- {Measurable outcome 2}
 </success_criteria>
 ```
 
@@ -165,43 +178,16 @@ Phase 4: Read results, score, retry if needed (YOU do this)
 
 ### Phase 2: Repromptception (~2 minutes)
 
-For EACH agent, write a full XML prompt with ALL sections:
+For EACH agent:
+1. Pick the best-matching template from `docs/examples/` (or use base XML structure)
+2. Read it, then apply these **per-agent adaptations**:
 
-```xml
-<role>Specific expert title for THIS agent's domain</role>
-
-<context>
-- Exact file paths this agent needs (verified with ls)
-- Technology stack relevant to their domain
-- Known issues or prior findings
-- What OTHER agents are handling (boundary awareness)
-</context>
-
-<task>One clear sentence: what this agent must do</task>
-
-<requirements>
-- At least 5 specific, measurable requirements
-- Each independently verifiable
-</requirements>
-
-<constraints>
-- Scope boundary with other agents
-- Read-only vs write permission
-- File/directory boundaries
-</constraints>
-
-<output_format>
-- Exact output file path: /tmp/{prefix}-{agent-domain}.md
-- Required sections
-- Table format if applicable
-</output_format>
-
-<success_criteria>
-- Minimum N findings/items
-- Every finding has file:line reference
-- No hallucinated paths
-</success_criteria>
-```
+- `<role>`: Specific expert title for THIS agent's domain
+- `<context>`: Add exact file paths (verified with `ls`), what OTHER agents handle (boundary awareness)
+- `<requirements>`: At least 5 specific, independently verifiable requirements
+- `<constraints>`: Scope boundary with other agents, read-only vs write, file/directory boundaries
+- `<output_format>`: Exact path `/tmp/rpt-{taskname}-{agent-domain}.md`, required sections
+- `<success_criteria>`: Minimum N findings, file:line references, no hallucinated paths
 
 **Score each prompt — target 8+/10.** If under 8, add more context/constraints.
 
@@ -210,14 +196,17 @@ Write all to `/tmp/rpt-agent-prompts-{taskname}.md`
 ### Phase 3: Execute (tmux Agent Teams)
 
 ```bash
-# 1. Start Claude Code with Agent Teams
-tmux new-session -d -s {session} "cd /path/to/workdir && CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 claude --model opus --dangerously-skip-permissions"
+# 1. Start Claude Code with Agent Teams (SAFE default)
+tmux new-session -d -s {session} "cd /path/to/workdir && CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 claude --model opus"
+
+# Optional: trusted/sandboxed environments only (disables permission prompts)
+# tmux new-session -d -s {session} "cd /path/to/workdir && CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 claude --model opus --dangerously-skip-permissions"
 
 # 2. Wait for startup (MUST wait 8+ seconds)
 sleep 8
 
 # 3. Send prompt — MUST use -l (literal), Enter SEPARATE
-tmux send-keys -t {session} -l 'Create an agent team with N teammates. CRITICAL: Use model opus for ALL tasks. Teammate 1 (ROLE): TASK. Write output to /tmp/prefix-domain.md. ... After all complete, synthesize into /tmp/prefix-final.md'
+tmux send-keys -t {session} -l 'Create an agent team with N teammates. CRITICAL: Use model opus for ALL tasks. Teammate 1 (ROLE): TASK. Write output to /tmp/rpt-{taskname}-{domain}.md. ... After all complete, synthesize into /tmp/rpt-{taskname}-final.md'
 sleep 0.5
 tmux send-keys -t {session} Enter
 
@@ -225,7 +214,7 @@ tmux send-keys -t {session} Enter
 tmux capture-pane -t {session} -p -S -100
 
 # 5. Verify outputs
-ls -la /tmp/prefix-*.md
+ls -la /tmp/rpt-{taskname}-*.md
 
 # 6. Cleanup
 tmux kill-session -t {session}
