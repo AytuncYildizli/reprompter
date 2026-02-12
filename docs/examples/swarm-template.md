@@ -53,8 +53,11 @@ Use this template for tasks requiring multiple coordinated agents.
 
 <constraints>
 - {Resource limits}
-- {Agent boundaries - what each agent should NOT do}
+- {Agent boundaries — what each agent should NOT do}
 - {Coordination overhead limits}
+- Do not let agents modify files outside their assigned scope
+- Do not allow agents to duplicate each other's work
+- Do not skip the synthesis step — individual outputs must be merged
 </constraints>
 
 <output_format>

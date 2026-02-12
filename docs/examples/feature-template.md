@@ -25,9 +25,9 @@ Use this template for building new features or functionality.
 </motivation>
 
 <requirements>
-1. {Primary requirement - the core functionality}
-2. {Secondary requirement - supporting functionality}
-3. {Tertiary requirement - edge cases or UX considerations}
+1. **Core functionality**: {Primary requirement — the main feature behavior}
+2. **Supporting features**: {Secondary requirement — complementary functionality}
+3. **Edge cases**: {Tertiary requirement — error states, empty states, UX considerations}
 </requirements>
 
 <constraints>

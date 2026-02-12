@@ -62,6 +62,9 @@ Relevant sources to consult:
 - Distinguish between facts and opinions
 - Acknowledge uncertainty where it exists
 - {Specific scope limitations}
+- Do not present a single source as definitive without corroboration
+- Do not omit significant counterarguments or limitations
+- Do not conflate correlation with causation
 </constraints>
 
 <output_format>
