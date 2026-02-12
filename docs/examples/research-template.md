@@ -1,6 +1,6 @@
 # Research/Analysis Template
 
-Use this template for research tasks, complex analysis, or tasks requiring chain-of-thought reasoning.
+Use this template for research tasks, complex analysis, or tasks requiring structured reasoning and evidence synthesis.
 
 ## Template
 
@@ -41,7 +41,7 @@ Before researching, consider:
 3. What biases or assumptions might affect my analysis?
 4. What would constitute strong vs weak evidence?
 
-Think through each question systematically before forming conclusions.
+Use this as a systematic checklist before forming conclusions; summarize rationale concisely in the final output.
 </thinking>
 
 <methodology>
@@ -196,7 +196,7 @@ Relevant sources to consult:
 </success_criteria>
 ```
 
-## Chain-of-Thought Integration
+## Reasoning & Evidence Planning
 
 The `<thinking>` section is crucial for research tasks. It:
 1. Surfaces hidden assumptions
@@ -204,7 +204,7 @@ The `<thinking>` section is crucial for research tasks. It:
 3. Acknowledges biases
 4. Sets evidence standards
 
-For complex analysis, expand thinking:
+For complex analysis, expand the planning checklist:
 
 ```xml
 <thinking>
@@ -223,6 +223,6 @@ For complex analysis, expand thinking:
 - Weight criteria by: {importance ranking}
 - Final decision based on: {decision framework}
 
-Think through each step. Show your reasoning.
+Think through each step, then provide concise rationale summaries with citations (do not expose hidden internal reasoning).
 </thinking>
 ```

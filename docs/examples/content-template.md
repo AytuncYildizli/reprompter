@@ -1,6 +1,6 @@
 # Content Template
 
-Use for blog posts, articles, marketing copy, social media content, and other written content tasks.
+Use this template for blog posts, articles, marketing copy, social media content, and other written content tasks.
 
 ## Template
 
@@ -48,6 +48,14 @@ Use for blog posts, articles, marketing copy, social media content, and other wr
 - {Clear, compelling call to action}
 </success_criteria>
 ```
+
+## When to Use
+
+- Writing blog posts or long-form articles
+- Creating marketing copy or landing-page content
+- Drafting newsletters and campaign content
+- Producing social media content strategy
+- Writing technical content for developer audiences
 
 ## Example
 

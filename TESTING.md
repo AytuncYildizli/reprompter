@@ -1,6 +1,6 @@
-# Reprompter Test Scenarios
+# RePrompter Test Scenarios
 
-Verification scenarios for the Reprompter skill. Run these manually to validate behavior after changes.
+Verification scenarios for the RePrompter skill. Run these manually to validate behavior after changes.
 
 ---
 
@@ -66,7 +66,7 @@ Verification scenarios for the Reprompter skill. Run these manually to validate 
 - Generic prompt generated
 - Opt-out keyword detected ("no context")
 
-## Scenario 8: Closed-Loop Quality (v6.0)
+## Scenario 8: Closed-Loop Quality (v6.0+)
 
 **Input:** "reprompter run with quality - audit the auth module"
 **Expected:** Full loop: improve prompt -> execute -> evaluate -> retry if needed.

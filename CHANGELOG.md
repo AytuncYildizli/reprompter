@@ -11,6 +11,7 @@
 - **Two-mode architecture:** Single prompt mode + Repromptception mode in one skill
 - **Repromptception vs Raw comparison data** — 4-agent audit: +100% CRITICALs, +160% findings, +30% cost savings
 - **Auto-detection:** suggests Repromptception when task mentions 2+ systems or "audit"
+- **content-template:** added for blog posts, articles, and marketing copy (12 templates total)
 
 ### Changed
 - SKILL.md trimmed from 1130 lines to ~350 lines (69% reduction)

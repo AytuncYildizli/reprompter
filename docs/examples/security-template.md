@@ -42,6 +42,9 @@ Consider these threat vectors:
 <constraints>
 - Follow OWASP Top 10 guidelines
 - Do not log sensitive data
+- Do not hardcode secrets, API keys, or credentials in source code
+- Do not disable security controls (CORS/CSP/rate limiting) for convenience
+- Do not trust client-side validation as the only security boundary
 - Maintain existing functionality
 - Document all security decisions
 </constraints>
@@ -125,6 +128,9 @@ API handles user PII and payment references under GDPR. No security audit has be
 <constraints>
 - Follow OWASP Top 10 2021 guidelines
 - Do not log passwords, tokens, or PII
+- Do not store plaintext passwords or reversible credential encryption
+- Do not expose internal stack traces or implementation details in API responses
+- Do not disable authentication/authorization checks to make tests pass
 - Maintain API backward compatibility
 - Document all security decisions in code comments
 </constraints>
