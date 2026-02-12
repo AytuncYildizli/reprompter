@@ -1,7 +1,12 @@
 ---
 name: reprompter
-description: Transform messy dictated or rough prompts into well-structured, effective prompts. Use when you say "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", "reprompter", or paste rough text and want it refined into a proper prompt with XML tags and best practices.
-version: 6.1.2
+description: |
+  Transform messy dictated or rough prompts into well-structured, effective prompts.
+  Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", rough text needing XML tags and best practices, team brief generation, multi-agent task decomposition.
+  Don't use when: simple one-line Q&A, direct code edits, chat/conversation, tasks that don't involve prompt generation. For code tasks use coding-agent, for research use x-research.
+  Outputs: Structured XML/Markdown prompt, quality score (before/after), optional team brief + sub-prompts.
+  Success criteria: Quality score ≥ 7/10, all required sections present, actionable and specific.
+version: 6.1.3
 ---
 
 # Reprompter Skill v6.1.2
@@ -511,12 +516,19 @@ When team mode is selected, generate **N sub-prompts** (one per agent) instead o
 
 ### Team Execution Integration
 
-When team mode is selected **and user confirms execution**, prefer **`sessions_spawn` parallel solo agents** as the default execution path.
+When team mode is selected **and user confirms execution**, use **Claude Code Agent Teams via tmux** as the primary execution path.
 
-- Default: `sessions_spawn` (higher reliability, deterministic file artifacts)
-- Advanced/Experimental option: `agent-teams` PTY flow for cases needing live teammate coordination
-- Reference: `skills/agent-teams/SKILL.md` (if installed)
-- Do not duplicate execution internals in this skill; hand off with generated team brief + sub-prompts + required output file paths.
+- **Primary:** Agent Teams via tmux PTY — proven working, parallel teammates with fan-out/fan-in
+- **Fallback:** `sessions_spawn` solo agents when tmux/Claude Code unavailable
+- **Reference:** `TEAMS.md` for full execution pattern (send-keys literal, separate Enter, monitoring)
+
+**Execution steps:**
+1. Write team brief to `/tmp/reprompter-brief-{timestamp}.md`
+2. Generate single-line team prompt from brief (no newlines, explicit output paths per teammate)
+3. Start tmux session: `tmux new-session -d -s rpt-exec "cd <workdir> && CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 claude --model opus --dangerously-skip-permissions"`
+4. Wait 8s for startup, send prompt with `send-keys -l` + separate `Enter`
+5. Monitor progress, verify output files, synthesize results
+6. **CRITICAL:** Always include "CRITICAL: Use model opus for ALL tasks" in team prompt — default is Haiku
 
 ### Default XML Template
 
@@ -1062,10 +1074,13 @@ v6.0 adds a **post-execution quality loop**. Instead of just improving prompts, 
 
 **Phase 2: EXECUTE**
 - Route to optimal model: coding → Codex, research → Gemini, analysis → Claude
-- **Default execution:** `sessions_spawn` with parallel solo agents for team-style tasks (highest reliability)
-- **Advanced/Experimental:** PTY tmux Agent Teams only when real-time teammate coordination is explicitly needed
+- **Team execution via Claude Code Agent Teams** (PTY/tmux, `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`)
+- **CRITICAL: Always include "CRITICAL: Use model opus for ALL tasks" in team prompt.** Default teammate model is Haiku — without explicit instruction, teammates run on Haiku.
+- **tmux pattern:** `send-keys -l` (literal) for prompt text + SEPARATE `send-keys Enter` — this is the proven working pattern
+- **Fallback:** `sessions_spawn` solo agents if Agent Teams/tmux unavailable
 - **Fast single-agent fallback:** `claude --print --model opus` when full team orchestration is unnecessary
 - Collect output artifacts, verify required files exist, then synthesize in lead session
+- See `TEAMS.md` for complete execution pattern with copy-paste commands
 
 **Phase 3: EVALUATE + RETRY**
 - Score output against success criteria (0-10)

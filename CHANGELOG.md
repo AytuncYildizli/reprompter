@@ -1,5 +1,17 @@
 # Reprompter Changelog
 
+## v6.1.3 (2026-02-12)
+
+### Added
+- **Repromptception end-to-end test results** — 3-agent sequential pipeline proven: 2.15/10 → 9.15/10 (+326%), audit PASS 99.1%, 24/24 weaknesses addressed
+- **Skill description routing logic** — "Use when / Don't use when" block following OpenAI's skill routing best practices
+- **TEAMS.md** — Full Agent Teams execution guide with `teammateMode: "tmux"` split pane monitoring
+- **`send-keys -l` pattern** — Critical fix for tmux multiline prompt delivery (literal flag mandatory)
+
+### Changed
+- Skill description rewritten as routing logic (triggers, anti-triggers, outputs, success criteria) instead of marketing copy
+- README updated with proven test results table and v6.1.2 badge
+
 ## v6.1.2 (2026-02-12)
 
 ### Fixed

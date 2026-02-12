@@ -8,7 +8,7 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-6.1.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-6.1.2-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 [![Issues](https://img.shields.io/github/issues/aytuncyildizli/reprompter?color=da3633)](https://github.com/aytuncyildizli/reprompter/issues)
@@ -360,6 +360,22 @@ Retry (if needed) — delta prompts targeting specific gaps
 Trigger words: `"reprompter teams"`, `"run with quality"`, `"smart run"`
 
 Normal single-prompt usage is unchanged — Repromptception only activates for team/multi-agent tasks.
+
+### Proven Results
+
+End-to-end test with 3 Opus agents in a sequential dependency chain:
+
+| Metric | Value |
+|--------|-------|
+| Original prompt score | 2.15 / 10 |
+| After Repromptception | **9.15 / 10** |
+| Delta | **+7.00 points (+326%)** |
+| Quality audit | **PASS (99.1%)** |
+| Weaknesses found → fixed | 24 → 24 (100%) |
+| Cost | $1.39 |
+| Time | ~8 minutes |
+
+The pipeline (PromptAnalyzer → PromptEngineer → QualityAuditor) runs via **Claude Code Agent Teams** with `teammateMode: "tmux"` for real-time monitoring of all agents in split panes.
 
 See [TEAMS.md](TEAMS.md) for the full orchestration spec.
 
