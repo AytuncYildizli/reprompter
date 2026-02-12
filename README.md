@@ -733,7 +733,7 @@ The pipeline runs via **Claude Code Agent Teams** with `teammateMode: "tmux"` fo
 - **Token budget** — Keeps prompts compact (~2K single mode, ~1-2K per agent)
 - **Uncertainty handling** — Explicit permission to ask, not fabricate
 - **Motivation capture** — Maps "why this matters" into `<motivation>` so priority survives execution
-- **Closed-loop quality** — Execute → Evaluate → Retry (max 2 retries, delta prompts)
+- **Closed-loop quality** — Execute → Evaluate → Retry (Repromptception mode only — Single mode generates prompts, does not execute; max 2 retries, delta prompts)
 
 ---
 
