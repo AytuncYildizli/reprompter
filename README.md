@@ -478,10 +478,18 @@ Evaluate — score output against success criteria
 Retry (if needed) — delta prompts targeting specific gaps
 ```
 
-**Before Repromptception (score: 2.0/10):**
-> "Security Auditor — scan for vulnerabilities"
+**Before Repromptception:** Raw task given to 4 agents:
+> "audit my system for security, cost waste, config issues, and memory bloat"
+>
+> That's a **2.5/10** prompt. Each agent gets a vague one-liner and has to guess scope, output format, and success criteria.
 
-**After Repromptception (score: 8.9/10):**
+**After Repromptception:** Each agent gets a structured XML prompt (all 4 shown below).
+
+The team lead sends all 4 agents in parallel. Each writes to their own `/tmp/` file. No scope overlap.
+
+<details open>
+<summary><strong>🔒 Agent 1: SecurityAuditor (score: 2.0 → 8.9)</strong></summary>
+
 ```xml
 <role>
 Senior application security engineer specializing in Python web applications,
@@ -492,48 +500,172 @@ OWASP Top 10, and credential hygiene in git-tracked repositories.
 - Codebase: Python 3.11, psycopg2, urllib3, FastAPI. DB: Neon Postgres + SQLite.
 - 76 Python files across scripts/whatsapp-memory/, scripts/finance/, scripts/norget/
 - Known issue: .gitignore was recently expanded but credentials may exist in git history
-- Other agents handle: token costs (Agent 2), config settings (Agent 3), memory bloat (Agent 4)
-- YOUR scope: source code security ONLY — do not audit config files or memory files
+- Other agents: TokenCostAuditor (#2), ConfigAuditor (#3), MemoryBloatAuditor (#4)
+- YOUR scope: source code security ONLY
 </context>
 
-<task>
-Audit all Python source files for security vulnerabilities, hardcoded credentials,
-injection risks, and unsafe patterns. Report findings with exact file paths and line numbers.
-</task>
+<task>Audit all Python source files for security vulnerabilities, hardcoded credentials,
+injection risks, and unsafe patterns.</task>
 
 <requirements>
-- Check SQL injection: parameterized queries vs string formatting in all DB calls
-- Check hardcoded secrets: API keys, OAuth tokens, passwords in source code (not .env)
-- Check SSRF: URL construction in urllib/requests calls — user input in URLs
-- Check input validation: external API data consumed without schema validation
-- Check subprocess calls: shell=True, unsanitized arguments
-- Check file path traversal: user-controlled paths in open()/read()
+- SQL injection: parameterized queries vs string formatting in all DB calls
+- Hardcoded secrets: API keys, OAuth tokens, passwords in source code
+- SSRF: URL construction in urllib/requests — user input in URLs
+- Subprocess calls: shell=True, unsanitized arguments
 - Minimum 8 findings across at least 3 severity levels
 </requirements>
 
 <constraints>
-- Audit source code ONLY — do not audit .env files, memory/, or config (other agents do that)
-- READ-ONLY: do not modify any files, only report findings
-- Verify every file:line reference before reporting (no hallucinated paths)
-- Use severity framework: CRITICAL / HIGH / MEDIUM / LOW
+- Source code ONLY — do not audit .env, memory/, or config (other agents do that)
+- READ-ONLY: report only, do not modify files
+- Verify every file:line reference before reporting
 </constraints>
 
 <output_format>
-Write findings to /tmp/rpc2-audit-security.md with:
-- Executive summary (1 paragraph)
-- Findings table: | # | Severity | File:Line | Issue | Fix Suggestion |
-- Detailed analysis per finding (code snippet + explanation)
-- Remediation priority list
+/tmp/rpc2-audit-security.md — findings table with severity, file:line, fix suggestion
 </output_format>
 
 <success_criteria>
-- Minimum 8 findings with severity ratings
-- Every finding has exact file:line reference (verified, not guessed)
-- At least 1 CRITICAL and 2 HIGH findings
-- Each finding includes a concrete fix suggestion (not generic advice)
-- No false positives — every reported issue must be a real vulnerability
+- ≥8 findings, every one with exact file:line, ≥1 CRITICAL + 2 HIGH, concrete fixes
 </success_criteria>
 ```
+
+</details>
+
+<details>
+<summary><strong>💸 Agent 2: TokenCostAuditor (score: 2.2 → 9.0)</strong></summary>
+
+```xml
+<role>
+Cost optimization engineer specializing in LLM API usage analysis,
+cron job efficiency, and AI session token consumption patterns.
+</role>
+
+<context>
+- 52 cron jobs in .openclaw/cron/jobs.json (each spawns isolated AI session)
+- 3 gateways: Mahmut (port 18789), Ziggy (18795), ZeroClaw (18790)
+- Model: Claude Opus 4.6 ($15/M input, $75/M output)
+- Known waste: some crons use full AI sessions to run simple bash scripts
+- Other agents: SecurityAuditor (#1), ConfigAuditor (#3), MemoryBloatAuditor (#4)
+</context>
+
+<task>Analyze all cron jobs for token waste, calculate monthly costs per job,
+identify redundancies, and propose a tiered savings plan.</task>
+
+<requirements>
+- Calculate cost per job: frequency × avg tokens × model pricing
+- Identify jobs that can be converted from AI sessions to pure bash/launchd
+- Find duplicate jobs across gateways
+- Group savings into tiers: immediate ($0 effort), this week, this month
+- Total monthly spend and achievable target
+</requirements>
+
+<constraints>
+- Analyze cron jobs ONLY — do not audit source code or memory files
+- Use real pricing ($15/M input, $75/M output for Opus 4.6)
+- Do not disable or modify any jobs — report recommendations only
+</constraints>
+
+<output_format>
+/tmp/rpc2-audit-tokens.md — cost table per job, savings tiers, total reduction
+</output_format>
+
+<success_criteria>
+- Every job has estimated monthly cost, ≥$200/mo in identified savings, tiered action plan
+</success_criteria>
+```
+
+</details>
+
+<details>
+<summary><strong>⚙️ Agent 3: ConfigSettingsAuditor (score: 1.8 → 8.9)</strong></summary>
+
+```xml
+<role>
+DevSecOps engineer specializing in configuration security, secrets management,
+.gitignore hygiene, and mechanical enforcement of safety rules.
+</role>
+
+<context>
+- OpenClaw config: openclaw.json + .openclaw/ directory
+- Claude Code settings: ~/.claude/settings.json (deny list, env vars)
+- Safety rules in SOUL.md (8 hard rules — but are they mechanically enforced?)
+- .gitignore recently expanded but may still miss sensitive paths
+- Other agents: SecurityAuditor (#1), TokenCostAuditor (#2), MemoryBloatAuditor (#4)
+</context>
+
+<task>Audit all configuration files for security gaps, missing enforcement of safety rules,
+credential exposure risks, and .gitignore completeness.</task>
+
+<requirements>
+- Check .gitignore covers: .env, memory/, secrets/, logs/, *.sqlite, PII files
+- Check settings.json deny list enforces SOUL.md rules (kill commands, tweet posting)
+- Check for credentials in config files, entity files, memory summaries
+- Check gateway config for unnecessary permissions or exposed endpoints
+- Verify each SOUL.md hard rule has mechanical enforcement (not just prompt compliance)
+</requirements>
+
+<constraints>
+- Config and settings ONLY — do not audit Python source code or cron jobs
+- Do not modify any config files — report gaps only
+- Check both Mahmut and ZeroClaw configs if accessible
+</constraints>
+
+<output_format>
+/tmp/rpc2-audit-config.md — gap analysis table, SOUL.md enforcement matrix, remediation steps
+</output_format>
+
+<success_criteria>
+- Every SOUL.md rule checked for mechanical enforcement, ≥10 findings, prioritized P0/P1/P2
+</success_criteria>
+```
+
+</details>
+
+<details>
+<summary><strong>🧠 Agent 4: MemoryBloatAuditor (score: 2.0 → 8.7)</strong></summary>
+
+```xml
+<role>
+Systems optimization engineer specializing in context window management,
+memory file deduplication, and token budget analysis for LLM-powered assistants.
+</role>
+
+<context>
+- Memory files: MEMORY.md, memory/*.md, memory/entities/*.md, memory/summaries/*.json
+- Entity files auto-generated by PARA synthesis (daily cron)
+- Known issue: openclaw-setup.md is 29K words (38K tokens) — largest single file
+- Context window: 1M tokens (Opus 4.6), but bloat reduces useful conversation space
+- Other agents: SecurityAuditor (#1), TokenCostAuditor (#2), ConfigAuditor (#3)
+</context>
+
+<task>Analyze all memory and entity files for bloat, duplication, misfiled facts,
+and stale content. Quantify token savings from cleanup.</task>
+
+<requirements>
+- Measure total tokens loaded per session (all injected files)
+- Identify duplicate content across: MEMORY.md ↔ entity files ↔ SESSION_STATE.md
+- Find misfiled entity facts (e.g., unrelated content in wrong entity file)
+- Identify stale/completed TODOs, old audit reports, obsolete sections
+- Calculate token savings per cleanup action
+</requirements>
+
+<constraints>
+- Memory and entity files ONLY — do not audit source code, config, or cron jobs
+- Do not delete or modify files — report recommendations with exact paths + line numbers
+- Count tokens using ~4 chars per token approximation
+</constraints>
+
+<output_format>
+/tmp/rpc2-audit-bloat.md — bloat inventory table, per-file token count, cleanup actions with savings
+</output_format>
+
+<success_criteria>
+- Total token count for all injected files, ≥50K tokens in identified savings, specific line ranges to remove
+</success_criteria>
+```
+
+</details>
 
 **4-phase loop:** Team Plan → Repromptception → Execute → Evaluate+Retry
 
