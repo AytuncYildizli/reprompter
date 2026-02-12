@@ -6,10 +6,10 @@ description: |
   Don't use when: simple one-line Q&A, pure chat/conversation, or tasks that do not need prompt improvement or multi-agent orchestration. RePrompter can improve prompts for feature/bugfix/API/code tasks, but it does not execute code edits directly unless Repromptception execution mode is explicitly requested. For direct execution-only coding tasks, use coding-agent; for research-only execution, use x-research.
   Outputs: Structured XML/Markdown prompt, quality score (before/after), optional team brief + per-agent sub-prompts, agent team output files.
   Success criteria: Quality score ≥ 7/10, all required sections present, actionable and specific.
-version: 7.0.0
+version: 7.1.0
 ---
 
-# RePrompter v7.0
+# RePrompter v7.1
 
 > **Your prompt sucks. Let's fix that.** Single prompts or full agent teams — one skill, two modes.
 
