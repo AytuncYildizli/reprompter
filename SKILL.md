@@ -120,28 +120,7 @@ Detect task type from input. Each type has a dedicated template in `docs/example
 
 ### Base XML Structure
 
-All templates follow this core structure (8 required tags). Some templates add domain-specific tags:
-
-| Extended Tag | Used In | Purpose |
-|-------------|---------|---------|
-| `<symptoms>` | bugfix | What the user sees, error messages |
-| `<investigation_steps>` | bugfix | Systematic debugging steps |
-| `<endpoints>` | api | Endpoint specifications |
-| `<component_spec>` | ui | Component props, states, layout |
-| `<agents>` | swarm | Agent role definitions |
-| `<task_decomposition>` | swarm | Work split per agent |
-| `<coordination>` | swarm | Inter-agent handoff rules |
-| `<research_questions>` | research | Specific questions to answer |
-| `<methodology>` | research | Research approach and methods |
-| `<thinking>` | research | Chain-of-thought reasoning space |
-| `<current_state>` | refactor | Before state of the code |
-| `<target_state>` | refactor | Desired after state |
-| `<coverage_requirements>` | testing | What needs test coverage |
-| `<threat_model>` | security | Threat landscape and vectors |
-| `<structure>` | docs | Document organization |
-| `<reference>` | docs | Source material to reference |
-
-Extended tags are optional additions — always include all 8 base tags first. Use as fallback if no specific template matches:
+All templates follow this core structure (8 required tags). Use as fallback if no specific template matches:
 
 ```xml
 <role>{Expert role matching task type and domain}</role>
@@ -347,21 +326,30 @@ For both modes, RePrompter supports post-execution evaluation:
 ## Advanced Features
 
 ### Extended Thinking (Claude 4.x)
-With extended thinking enabled, prompts should be less prescriptive about HOW. Focus on WHAT — clear task, requirements, constraints, success criteria. Let the model's own reasoning handle execution.
+With extended thinking enabled, prompts should be less prescriptive about HOW. Focus on WHAT — clear task, requirements, constraints, success criteria. Let the model's own reasoning handle execution strategy.
+
+**Example:** Instead of "Step 1: read the file, Step 2: extract the function" → "Extract the authentication logic from auth.ts into a reusable middleware. Requirements: ..."
 
 ### Response Prefilling (API only)
 Prefill assistant response start to enforce format:
-- `{` → forces JSON
-- `## Analysis` → skips preamble
+- `{` → forces JSON output
+- `## Analysis` → skips preamble, starts with content
+- `| Column |` → forces table format
 
 ### Context Engineering
-Generated prompts should COMPLEMENT runtime context (CLAUDE.md, skills, MCP tools), not duplicate it.
+Generated prompts should COMPLEMENT runtime context (CLAUDE.md, skills, MCP tools), not duplicate it. Before generating:
+1. Check what context is already loaded (project files, skills, MCP servers)
+2. Reference existing context: "Using the project structure from CLAUDE.md..."
+3. Add ONLY what's missing — avoid restating what the model already knows
 
 ### Token Budget
-Keep generated prompts under ~2K tokens for single mode, ~1K per agent for Repromptception. Longer prompts waste context window without improving quality.
+Keep generated prompts under ~2K tokens for single mode, ~1K per agent for Repromptception. Longer prompts waste context window without improving quality. If a prompt exceeds budget, split into phases or move detail into constraints.
 
 ### Uncertainty Handling
-Always include explicit permission for the model to express uncertainty rather than fabricate.
+Always include explicit permission for the model to express uncertainty rather than fabricate:
+- Add to constraints: "If unsure about any requirement, ask for clarification rather than assuming"
+- For research tasks: "Clearly label confidence levels (high/medium/low) for each finding"
+- For code tasks: "Flag any assumptions about the codebase with TODO comments"
 
 ---
 
@@ -381,6 +369,12 @@ In `~/.claude/settings.json`:
   }
 }
 ```
+
+| Setting | Values | Effect |
+|---------|--------|--------|
+| `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` | `"1"` | Enables agent team spawning |
+| `teammateMode` | `"tmux"` / `"default"` | `tmux`: each teammate gets a visible split pane. `default`: teammates run in background |
+| `model` | `"opus"` / `"sonnet"` | Default model for lead AND teammates. Always set to `opus` — teammates default to Haiku otherwise |
 
 ---
 
@@ -427,3 +421,28 @@ Same audit task, 4 Opus agents:
 ## Test Scenarios
 
 See [TESTING.md](TESTING.md) for 13 verification scenarios + anti-pattern examples.
+
+---
+
+## Appendix: Extended XML Tags
+
+Templates may add domain-specific tags beyond the 8 required base tags. Always include all base tags first.
+
+| Extended Tag | Used In | Purpose |
+|-------------|---------|---------|
+| `<symptoms>` | bugfix | What the user sees, error messages |
+| `<investigation_steps>` | bugfix | Systematic debugging steps |
+| `<endpoints>` | api | Endpoint specifications |
+| `<component_spec>` | ui | Component props, states, layout |
+| `<agents>` | swarm | Agent role definitions |
+| `<task_decomposition>` | swarm | Work split per agent |
+| `<coordination>` | swarm | Inter-agent handoff rules |
+| `<research_questions>` | research | Specific questions to answer |
+| `<methodology>` | research | Research approach and methods |
+| `<thinking>` | research | Chain-of-thought reasoning space |
+| `<current_state>` | refactor | Before state of the code |
+| `<target_state>` | refactor | Desired after state |
+| `<coverage_requirements>` | testing | What needs test coverage |
+| `<threat_model>` | security | Threat landscape and vectors |
+| `<structure>` | docs | Document organization |
+| `<reference>` | docs | Source material to reference |
