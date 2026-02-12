@@ -394,7 +394,7 @@ In `~/.claude/settings.json`:
 |---------|--------|--------|
 | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` | `"1"` | Enables agent team spawning |
 | `teammateMode` | `"tmux"` / `"default"` | `tmux`: each teammate gets a visible split pane. `default`: teammates run in background |
-| `model` | `"opus"` / `"sonnet"` | Default model for lead AND teammates. Always set to `opus` — teammates default to Haiku otherwise |
+| `model` | `"opus"` / `"sonnet"` | Teammates default to Haiku. Always set `model: opus` explicitly in your prompt — do not rely on runtime defaults. |
 
 ---
 
