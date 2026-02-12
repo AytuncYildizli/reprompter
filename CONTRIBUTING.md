@@ -14,10 +14,10 @@ Thanks for your interest in contributing! RePrompter is a prompt engineering ski
 - [Open a feature request](https://github.com/aytuncyildizli/reprompter/issues/new?template=feature_request.md)
 
 ### 📝 Template Contributions
-Templates live in `resources/templates/`. To add one:
+Templates live in `docs/examples/`. To add one:
 1. Fork the repo
-2. Create your template in `resources/templates/your-template.md`
-3. Add it to the template table in `SKILL.md`
+2. Create your template in `docs/examples/your-template.md`
+3. No SKILL.md changes needed — it auto-discovers templates by task type
 4. Open a PR with a before/after example
 
 ### 📖 Documentation
