@@ -30,10 +30,6 @@ Use this template for tasks requiring multiple coordinated agents.
 3. **Conflict resolution**: {How disagreements or conflicts are resolved}
 </requirements>
 
-<objective>
-{High-level goal that requires multiple agents}
-</objective>
-
 <agents>
 | Agent | Role | Responsibility |
 |-------|------|----------------|
@@ -111,10 +107,6 @@ Full-stack migration spanning 3 domains (backend, frontend, tests) — too compl
 2. **Handoff protocol**: Schema stored in shared memory before implementation begins
 3. **Conflict resolution**: Architect has final say on schema; reviewer decides implementation disputes
 </requirements>
-
-<objective>
-Migrate the existing REST API to GraphQL while maintaining all functionality, updating the frontend to use GraphQL queries, and ensuring comprehensive test coverage.
-</objective>
 
 <agents>
 | Agent | Role | Responsibility |
