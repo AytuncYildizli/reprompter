@@ -3,7 +3,7 @@ name: reprompter
 description: |
   Transform messy prompts into well-structured, effective prompts — single or multi-agent.
   Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", rough text needing XML tags and best practices, "reprompter teams", "repromptception", "run with quality", "smart run", "smart agents", multi-agent tasks, audits, parallel work, anything going to agent teams.
-  Don't use when: simple one-line Q&A, direct code edits, chat/conversation, tasks that don't involve prompt generation or multi-agent orchestration. For code tasks use coding-agent, for research use x-research.
+  Don't use when: simple one-line Q&A, pure chat/conversation, or tasks that do not need prompt improvement or multi-agent orchestration. RePrompter can improve prompts for feature/bugfix/API/code tasks, but it does not execute code edits directly unless Repromptception execution mode is explicitly requested. For direct execution-only coding tasks, use coding-agent; for research-only execution, use x-research.
   Outputs: Structured XML/Markdown prompt, quality score (before/after), optional team brief + per-agent sub-prompts, agent team output files.
   Success criteria: Quality score ≥ 7/10, all required sections present, actionable and specific.
 version: 7.0.0
@@ -23,6 +23,15 @@ version: 7.0.0
 | **Repromptception** | "reprompter teams", "repromptception", "run with quality", "smart run" | Plan team → reprompt each agent → tmux Agent Teams → evaluate → retry |
 
 Auto-detection: if task mentions 2+ systems, "audit", or "parallel" → suggest Repromptception.
+
+## Don't Use When
+
+- User wants a simple direct answer (no prompt generation needed)
+- User wants casual chat/conversation
+- Task is immediate execution-only with no reprompting step
+- Scope does not involve prompt design, structure, or orchestration
+
+> Clarification: RePrompter **does** support code-related tasks (feature, bugfix, API, refactor) by generating better prompts. It does **not** directly apply code changes in Single mode. Direct code execution belongs to coding-agent unless Repromptception execution mode is explicitly requested.
 
 ---
 
@@ -191,7 +200,7 @@ For EACH agent, write a full XML prompt with ALL sections:
 </constraints>
 
 <output_format>
-- Exact output file path: /tmp/{prefix}-{agent-domain}.md
+- Exact output file path: /tmp/rpt-{taskname}-{agent-domain}.md
 - Required sections
 - Table format if applicable
 </output_format>
@@ -210,14 +219,17 @@ Write all to `/tmp/rpt-agent-prompts-{taskname}.md`
 ### Phase 3: Execute (tmux Agent Teams)
 
 ```bash
-# 1. Start Claude Code with Agent Teams
-tmux new-session -d -s {session} "cd /path/to/workdir && CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 claude --model opus --dangerously-skip-permissions"
+# 1. Start Claude Code with Agent Teams (SAFE default)
+tmux new-session -d -s {session} "cd /path/to/workdir && CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 claude --model opus"
+
+# Optional: trusted/sandboxed environments only (disables permission prompts)
+# tmux new-session -d -s {session} "cd /path/to/workdir && CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 claude --model opus --dangerously-skip-permissions"
 
 # 2. Wait for startup (MUST wait 8+ seconds)
 sleep 8
 
 # 3. Send prompt — MUST use -l (literal), Enter SEPARATE
-tmux send-keys -t {session} -l 'Create an agent team with N teammates. CRITICAL: Use model opus for ALL tasks. Teammate 1 (ROLE): TASK. Write output to /tmp/prefix-domain.md. ... After all complete, synthesize into /tmp/prefix-final.md'
+tmux send-keys -t {session} -l 'Create an agent team with N teammates. CRITICAL: Use model opus for ALL tasks. Teammate 1 (ROLE): TASK. Write output to /tmp/rpt-{taskname}-{domain}.md. ... After all complete, synthesize into /tmp/rpt-{taskname}-final.md'
 sleep 0.5
 tmux send-keys -t {session} Enter
 
@@ -225,7 +237,7 @@ tmux send-keys -t {session} Enter
 tmux capture-pane -t {session} -p -S -100
 
 # 5. Verify outputs
-ls -la /tmp/prefix-*.md
+ls -la /tmp/rpt-{taskname}-*.md
 
 # 6. Cleanup
 tmux kill-session -t {session}
