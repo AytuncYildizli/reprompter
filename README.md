@@ -8,7 +8,7 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-6.1.2-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-7.0.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 [![Issues](https://img.shields.io/github/issues/aytuncyildizli/reprompter?color=da3633)](https://github.com/aytuncyildizli/reprompter/issues)
@@ -18,7 +18,7 @@
 
 ---
 
-RePrompter interviews you, figures out what you actually want, and writes the prompt you were too lazy to write yourself. It detects complexity, picks execution mode (single-agent or team), and scores the output.
+RePrompter interviews you, figures out what you actually want, and writes the prompt you were too lazy to write yourself. **v7 merges single-prompt and team orchestration into one skill** — it detects complexity, picks execution mode, and scores everything.
 
 Works with **Claude Code**, **OpenClaw**, or **any LLM**.
 
@@ -311,11 +311,11 @@ Every transformation is scored on six weighted dimensions:
 
 ---
 
-## v6.1 — Repromptception 🧠
+## v7.0 — Unified Skill + Repromptception 🧠
 
-The big one. **Double-layer prompt improvement for agent teams.**
+**v7.0 merges `reprompter` + `reprompter-teams` into a single skill with two modes.** No more separate skills — one SKILL.md handles both single prompts and full agent team orchestration.
 
-Most agent orchestration tools improve the overall task, then hand vague sub-tasks to each agent. RePrompter v6.1 individually RePrompts every agent's prompt:
+Most agent orchestration tools improve the overall task, then hand vague sub-tasks to each agent. RePrompter individually RePrompts every agent's prompt:
 
 ```
 Raw task
@@ -357,13 +357,13 @@ Retry (if needed) — delta prompts targeting specific gaps
 
 **4-phase loop:** Team Plan → Repromptception → Execute → Evaluate+Retry
 
-Trigger words: `"reprompter teams"`, `"run with quality"`, `"smart run"`
+Trigger words: `"reprompter teams"`, `"repromptception"`, `"run with quality"`, `"smart run"`
 
 Normal single-prompt usage is unchanged — Repromptception only activates for team/multi-agent tasks.
 
 ### Proven Results
 
-End-to-end test with 3 Opus agents in a sequential dependency chain:
+**E2E test** — 3 Opus agents, sequential pipeline:
 
 | Metric | Value |
 |--------|-------|
@@ -375,20 +375,28 @@ End-to-end test with 3 Opus agents in a sequential dependency chain:
 | Cost | $1.39 |
 | Time | ~8 minutes |
 
-The pipeline (PromptAnalyzer → PromptEngineer → QualityAuditor) runs via **Claude Code Agent Teams** with `teammateMode: "tmux"` for real-time monitoring of all agents in split panes.
+**Repromptception vs Raw Agent Teams** — same audit, 4 Opus agents:
 
-See [TEAMS.md](TEAMS.md) for the full orchestration spec.
+| Metric | Raw | Repromptception | Delta |
+|--------|-----|----------------|-------|
+| CRITICAL findings | 7 | 14 | **+100%** |
+| Total findings | ~40 | 104 | **+160%** |
+| Cost savings found | $377/mo | $490/mo | **+30%** |
+| Cross-validated findings | 0 | 5 | — |
+
+The pipeline runs via **Claude Code Agent Teams** with `teammateMode: "tmux"` for real-time split-pane monitoring. All orchestration docs are now in SKILL.md (TEAMS.md removed in v7).
 
 ---
 
-## v5.1 Features
+## Other Features
 
-- **Think tool-aware** — Supports Claude 4.x dedicated think tool workflows
+- **Think tool-aware** — Claude 4.x dedicated think tool workflows
 - **Context engineering** — Prompts complement runtime context, don't duplicate it
 - **Extended thinking** — Favors outcome clarity over rigid step scripting
 - **Response prefilling** — Suggests `{` prefills for JSON-first API workflows
-- **Uncertainty handling** — Explicit permission for the model to ask, not fabricate
+- **Uncertainty handling** — Explicit permission to ask, not fabricate
 - **Motivation capture** — Maps "why this matters" into `<motivation>` so priority survives execution
+- **Closed-loop quality** — Execute → Evaluate → Retry (max 2 retries, delta prompts)
 
 ---
 
