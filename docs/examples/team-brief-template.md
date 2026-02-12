@@ -115,6 +115,6 @@ MVP deadline in 2 weeks. Three distinct skill domains (backend, frontend, testin
 
 ## Notes
 
-- Write brief to `/tmp/rpt-brief-{timestamp}.md` during execution
+- Write brief to `/tmp/rpt-brief-{taskname}-{timestamp}.md` during execution
 - Return file path and include summary in chat
 - Each agent gets their own sub-prompt derived from this brief

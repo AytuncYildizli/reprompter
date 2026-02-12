@@ -30,6 +30,12 @@ Write {documentation type} for {subject} targeting {audience}.
 3. {Section 3}: {purpose}
 </structure>
 
+<reference>
+- {Source 1}: {why it's relevant}
+- {Source 2}: {why it's relevant}
+- {Documentation}: {specific sections}
+</reference>
+
 <requirements>
 1. **Clarity**: {readability requirements}
 2. **Completeness**: {coverage requirements}
@@ -103,6 +109,12 @@ No API docs exist — developers spend 2+ hours reverse-engineering endpoints. S
 6. **Examples**: Common integration patterns
 7. **Testing**: Test mode and test card numbers
 </structure>
+
+<reference>
+- OpenAPI spec (if available): canonical endpoint and schema source
+- Existing API route files: `/app/api/v1/payments/*` for implementation truth
+- Product requirements doc: expected business behavior and edge cases
+</reference>
 
 <requirements>
 1. **Clarity**:

@@ -5,7 +5,7 @@ description: |
   Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", rough text needing XML tags and best practices, "reprompter teams", "repromptception", "run with quality", "smart run", "smart agents", multi-agent tasks, audits, parallel work, anything going to agent teams.
   Don't use when: simple Q&A, pure chat, immediate execution-only tasks. See "Don't Use When" section for details.
   Outputs: Structured XML/Markdown prompt, quality score (before/after), optional team brief + per-agent sub-prompts, agent team output files.
-  Success criteria: Quality score ≥ 7/10, all required sections present, actionable and specific.
+  Success criteria: Prompt quality score ≥ 7.0/10, output quality score ≥ 7.0/10 when executed, all required sections present, actionable and specific.
 version: 7.0.0
 ---
 
@@ -19,10 +19,10 @@ version: 7.0.0
 
 | Mode | Trigger | What happens |
 |------|---------|-------------|
-| **Single** | "reprompt this", "clean up this prompt" | Interview → structured prompt → score |
-| **Repromptception** | "reprompter teams", "repromptception", "run with quality", "smart run" | Plan team → reprompt each agent → tmux Agent Teams → evaluate → retry |
+| **Single** | "reprompt", "reprompt this", "clean up this prompt", "structure my prompt" | Input guard → Quick Mode or interview → structured prompt → score |
+| **Repromptception** | "reprompter teams", "repromptception", "run with quality", "smart run", "smart agents" | Input guard → plan team → reprompt each agent → tmux Agent Teams → evaluate → retry |
 
-Auto-detection: if task mentions 2+ systems, "audit", or "parallel" → ask: "This looks like a multi-agent task. Want to use Repromptception mode?"
+Auto-detection (runs inside Mode 1, step 2.5): if task mentions 2+ systems, "audit", or "parallel" → ask: "This looks like a multi-agent task. Want to switch to Repromptception mode?"
 
 ## Don't Use When
 
@@ -31,7 +31,7 @@ Auto-detection: if task mentions 2+ systems, "audit", or "parallel" → ask: "Th
 - Task is immediate execution-only with no reprompting step
 - Scope does not involve prompt design, structure, or orchestration
 
-> Clarification: RePrompter **does** support code-related tasks (feature, bugfix, API, refactor) by generating better prompts. It does **not** directly apply code changes in Single mode. Direct code execution belongs to coding-agent unless Repromptception execution mode is explicitly requested.
+> Clarification: RePrompter **does** support code-related tasks (feature, bugfix, API, refactor) by generating better prompts. It does **not** directly apply code changes in Single mode. Direct code execution should use Claude Code's standard coding workflow unless Repromptception execution mode is explicitly requested.
 
 ---
 
@@ -40,7 +40,8 @@ Auto-detection: if task mentions 2+ systems, "audit", or "parallel" → ask: "Th
 ### Process
 
 1. **Receive raw input**
-2. **Input guard** — if input is empty, a single word with no verb, or clearly not a task → ask the user to describe what they want to accomplish
+2. **Input guard** — if input is empty, has no clear verb, or is clearly not a task → ask the user to describe what they want to accomplish
+2.5 **Mode auto-detection** — if complexity signals imply multi-agent work (2+ systems, "audit", "parallel"), ask whether to switch to Repromptception mode
 3. **Quick Mode gate** — under 20 words, single action, no complexity indicators → generate immediately
 4. **Smart Interview** — use `AskUserQuestion` with clickable options (2-5 questions max)
 5. **Generate + Score** — apply template, show before/after quality metrics
@@ -51,7 +52,12 @@ After interview completes, IMMEDIATELY:
 1. Select template based on task type
 2. Generate the full polished prompt
 3. Show quality score (before/after table)
-4. Ask if user wants to execute or copy
+4. Ask action:
+   - **Execute** (Single mode): run the generated prompt immediately in the current session
+   - **Copy**: return the prompt in a fenced code block so the user can copy it manually
+5. If user selected **Multi-Agent** task type or **Team (Parallel/Sequential)** execution mode:
+   - Confirm transition: "Switching to Repromptception mode for team orchestration."
+   - Hand off to **Mode 2 → Entry Point**, then continue with Phase 1
 
 ```
 ❌ WRONG: Ask interview questions → stop
@@ -60,7 +66,7 @@ After interview completes, IMMEDIATELY:
 
 ### Interview Questions
 
-Ask via `AskUserQuestion` (fall back to numbered text on platforms without it). **Max 5 questions total.**
+Ask via `AskUserQuestion` (if unavailable, fall back to numbered text). **Max 5 questions total.**
 
 **Standard questions** (priority order — drop lower ones if task-specific questions are needed):
 1. Task type: Build Feature / Fix Bug / Refactor / Write Tests / API Work / UI / Security / Docs / Content / Research / Multi-Agent
@@ -72,6 +78,9 @@ Ask via `AskUserQuestion` (fall back to numbered text on platforms without it). 
 - Extract keywords from prompt → generate relevant follow-up options
 - Example: prompt mentions "telegram" → ask about alert type, interactivity, delivery
 - **Vague prompt fallback:** if input has no extractable keywords (e.g., "make it better"), ask open-ended: "What are you working on?" and "What's the goal?" before proceeding
+- **Conflicting choices fallback:** if answers conflict (e.g., "Fix Bug" + "Team Parallel"), ask one clarification question before generation
+- **Long input fallback (>500 words):** summarize key points and ask for confirmation before continuing
+- **Language handling:** generate in the same language as the user's input unless they request a different output language
 
 ### Auto-Detect Complexity
 
@@ -85,13 +94,13 @@ Ask via `AskUserQuestion` (fall back to numbered text on platforms without it). 
 ### Quick Mode
 
 Enable when ALL true:
-- < 20 words (excluding code blocks)
-- Exactly 1 action verb from: add, fix, remove, rename, move, delete, update, create
+- < 20 words where word count excludes fenced code blocks (```...```) and 4-space-indented code blocks; inline backtick code counts as 1 word
+- Exactly 1 action verb (stem matching allowed: "fixing"→"fix", "updated"→"update") from: add, fix, remove, rename, move, delete, update, create, change, set, install, run, build, test, write, enable, disable, configure
 - Single target (one file, component, or identifier)
 - No conjunctions (and, or, plus, also)
-- No vague modifiers (better, improved, some, maybe, kind of)
+- No vague modifiers (better, improved, some, maybe, kind of, slightly, a bit, more, less, cleaner, simpler, nicer, properly, correctly)
 
-**Force interview if ANY present:** compound tasks ("and", "plus"), state management ("track", "sync"), vague modifiers ("better", "improved"), integration work ("connect", "combine", "sync"), broad scope nouns after any action verb, ambiguous pronouns ("it", "this", "that" without clear referent).
+**Force interview if ANY present:** compound tasks ("and", "plus"), state management ("track", "sync"), vague modifiers ("better", "improved", "slightly"), integration work ("connect", "combine", "sync"), broad scope nouns after any action verb (e.g., app, system, codebase, architecture, infrastructure, platform, project), ambiguous pronouns ("it", "this", "that" without clear referent).
 
 ### Task Types & Templates
 
@@ -112,7 +121,7 @@ Detect task type from input. Each type has a dedicated template in `docs/example
 | Multi-Agent | `swarm-template.md` | Multi-agent coordination |
 | Team Brief | `team-brief-template.md` | Team orchestration brief |
 
-**Priority** (most specific wins): api > security > ui > testing > bugfix > refactor > content > docs > research > feature. For multi-agent tasks, use `swarm-template` for the team brief and the type-specific template for each agent's sub-prompt.
+**Priority** (most specific wins): api > security > ui > testing > bugfix > refactor > content > docs > research > feature. Routing rules: use `swarm-template.md` for a single multi-agent coordination prompt artifact (Single mode), use `team-brief-template.md` for Repromptception Phase 1 orchestration brief (internal Markdown brief), and use type-specific XML templates for each agent's sub-prompt in Phase 2.
 
 **How it works:** Read the matching template from `docs/examples/{type}-template.md`, then fill it with task-specific context. Templates are NOT loaded into context by default — only read on demand when generating a prompt. If the template file is not found, fall back to the Base XML Structure below.
 
@@ -120,7 +129,7 @@ Detect task type from input. Each type has a dedicated template in `docs/example
 
 ### Base XML Structure
 
-All templates follow this core structure (8 required tags). Use as fallback if no specific template matches:
+All templates follow this core structure (8 required tags). Use as fallback if no specific template matches. **Exception:** `team-brief-template.md` is intentionally Markdown (not XML) because it is an orchestration brief consumed by the coordinator, not an individual agent prompt.
 
 ```xml
 <role>{Expert role matching task type and domain}</role>
@@ -157,6 +166,8 @@ All templates follow this core structure (8 required tags). Use as fallback if n
 Auto-detect tech stack from current working directory ONLY:
 - Scan `package.json`, `tsconfig.json`, `prisma/schema.prisma`, etc.
 - Session-scoped — different directory = fresh context
+- If detected, disclose source: `Auto-detected from: {pwd}`
+- If nothing detected, state: `No project context detected` and use generic context
 - Opt out with "no context", "generic", or "manual context"
 - Never scan parent directories or carry context between sessions
 
@@ -175,14 +186,21 @@ Phase 3: Launch tmux Agent Teams (AUTOMATED)
 Phase 4: Read results, score, retry if needed (YOU do this)
 ```
 
-**Key insight:** The reprompt phase costs ZERO extra tokens — YOU write the prompts, not another AI.
+**Key insight:** The reprompt phase adds ZERO extra model calls during drafting — YOU write the prompts, then execution consumes tokens as usual.
+
+### Entry Point (before Phase 1)
+
+1. **Receive raw input** (or handoff from Mode 1 after team selection)
+2. **Input guard** — same rules as Single mode
+3. **If vague:** ask 1-2 clarifying questions max, then continue
+4. **Confirm Repromptception mode** (parallel or sequential intent)
 
 ### Phase 1: Team Plan (~30 seconds)
 
-1. **Score raw prompt** (1-10): Clarity, Specificity, Structure, Constraints, Decomposition
+1. **Score raw prompt** (0-10): Clarity, Specificity, Structure, Constraints, Verifiability, Decomposition
 2. **Pick mode:** parallel (independent agents) or sequential (pipeline with dependencies)
 3. **Define team:** 2-5 agents max, each owns ONE domain, no overlap
-4. **Write team brief** to `/tmp/rpt-brief-{taskname}.md` (use unique tasknames to avoid collisions between concurrent runs)
+4. **Write team brief** to `/tmp/rpt-brief-{taskname}-{timestamp}.md` (standardized naming; prevents collisions in concurrent runs)
 
 ### Phase 2: Repromptception (~2 minutes)
 
@@ -197,7 +215,7 @@ For EACH agent:
 - `<output_format>`: Exact path `/tmp/rpt-{taskname}-{agent-domain}.md`, required sections
 - `<success_criteria>`: Minimum N findings, file:line references, no hallucinated paths
 
-**Score each prompt — target 8+/10.** If under 8, add more context/constraints.
+**Prompt quality target (per-agent): 8.0+/10.** If under 8.0, add more context/constraints.
 
 Write all to `/tmp/rpt-agent-prompts-{taskname}.md`
 
@@ -235,16 +253,26 @@ tmux kill-session -t {session}
 | sleep 8 after session start | Claude Code init time |
 | `--model opus` in CLI AND prompt | Default teammate = HAIKU |
 | Each agent writes own file | Prevents file conflicts |
+| Lead agent synthesizes to `-final.md` | Prevents missing/duplicate synthesis |
 | Unique taskname per run | Prevents collisions between concurrent sessions |
+
+### Phase 3 Failure Recovery
+
+- **Preflight checks:** run `command -v tmux` and `command -v claude` before launch
+- **Session start failure:** if tmux session fails, retry once with a new session name; if still failing, fall back to sequential execution
+- **Startup timeout:** if Claude does not initialize within 12s, capture pane output, wait up to 20s once, then restart session
+- **No-progress timeout:** monitor max **20 minutes** (2-3 agents) or **30 minutes** (4-5 agents); then stop session and retry/fallback
+- **Missing or empty outputs:** retry only failed agent task once with explicit missing sections; keep successful agent outputs
+- **Fallback order:** tmux Agent Teams → `sessions_spawn` (OpenClaw) → sequential same-session execution
 
 ### Phase 4: Evaluate + Retry
 
 1. Read each agent's report
-2. Score against success criteria from Phase 2:
-   - ≥ 7/10 → ACCEPT
-   - 4-6/10 → RETRY with delta prompt (tell them what's missing)
-   - < 4/10 → RETRY with full rewrite
-   
+2. Score **agent output quality** using the same weighted 6-dimension method from **Quality Scoring** (0-10 weighted average): Clarity 20%, Specificity 20%, Structure 15%, Constraints 15%, Verifiability 15%, Decomposition 15%
+   - **≥ 7.0/10 → ACCEPT**
+   - **4.0-6.9/10 → RETRY with delta prompt** (target only missing gaps)
+   - **< 4.0/10 → RETRY with full rewrite**
+
    **Accept checklist** (use alongside score — all must pass):
    - [ ] All required output sections present
    - [ ] Requirements from Phase 2 independently verifiable
@@ -272,6 +300,8 @@ This retry: Focus on gaps. Verify all line numbers.
 Estimates cover Phase 3 (execution) only. Add ~3 minutes for Phases 1-2 and ~5-8 minutes per retry. Each agent uses ~25-70% of their 200K token context window.
 
 ### Fallback: sessions_spawn (OpenClaw only)
+
+OpenClaw is a Claude Code hosting/runtime layer with built-in session tools.
 
 When tmux/Claude Code is unavailable but running inside OpenClaw:
 ```
@@ -319,11 +349,14 @@ For both modes, RePrompter supports post-execution evaluation:
 1. **IMPROVE** — Score raw → generate structured prompt
 2. **EXECUTE** — Route to agent(s), collect output
 3. **EVALUATE** — Score output against success criteria (0-10)
-4. **RETRY** — If < 7, send delta prompt with specific gaps. Max 2 retries.
+4. **RETRY** — If output quality < 7.0, send delta prompt with specific gaps. Max 2 retries.
 
 ---
 
 ## Advanced Features
+
+### Think Tool-Aware (Claude 4.x)
+When the runtime supports dedicated thinking tools, prefer those tool pathways over forcing long reasoning into prompt text. Keep prompts outcome-focused and let tools handle deep analysis.
 
 ### Extended Thinking (Claude 4.x)
 With extended thinking enabled, prompts should be less prescriptive about HOW. Focus on WHAT — clear task, requirements, constraints, success criteria. Let the model's own reasoning handle execution strategy.
@@ -343,13 +376,16 @@ Generated prompts should COMPLEMENT runtime context (CLAUDE.md, skills, MCP tool
 3. Add ONLY what's missing — avoid restating what the model already knows
 
 ### Token Budget
-Keep generated prompts under ~2K tokens for single mode, ~1K per agent for Repromptception. Longer prompts waste context window without improving quality. If a prompt exceeds budget, split into phases or move detail into constraints.
+Keep generated prompts under ~2K tokens for single mode, ~1-2K per agent for Repromptception (domain dependent). Longer prompts waste context window without improving quality. If a prompt exceeds budget, split into phases or move detail into constraints.
 
 ### Uncertainty Handling
 Always include explicit permission for the model to express uncertainty rather than fabricate:
 - Add to constraints: "If unsure about any requirement, ask for clarification rather than assuming"
 - For research tasks: "Clearly label confidence levels (high/medium/low) for each finding"
 - For code tasks: "Flag any assumptions about the codebase with TODO comments"
+
+### Motivation Capture
+Always preserve "why this matters" in `<motivation>` so priority, urgency, and business/user impact survive execution and retries.
 
 ---
 
@@ -426,7 +462,7 @@ See [TESTING.md](TESTING.md) for 13 verification scenarios + anti-pattern exampl
 
 ## Appendix: Extended XML Tags
 
-Templates may add domain-specific tags beyond the 8 required base tags. Always include all base tags first.
+Templates may add domain-specific tags beyond the 8 required base tags. Always include all base tags first (except `team-brief-template.md`, which is intentionally Markdown for orchestration briefs).
 
 | Extended Tag | Used In | Purpose |
 |-------------|---------|---------|
@@ -439,10 +475,10 @@ Templates may add domain-specific tags beyond the 8 required base tags. Always i
 | `<coordination>` | swarm | Inter-agent handoff rules |
 | `<research_questions>` | research | Specific questions to answer |
 | `<methodology>` | research | Research approach and methods |
-| `<thinking>` | research | Chain-of-thought reasoning space |
+| `<thinking>` | research | Reasoning checklist and evidence-planning notes |
 | `<current_state>` | refactor | Before state of the code |
 | `<target_state>` | refactor | Desired after state |
 | `<coverage_requirements>` | testing | What needs test coverage |
 | `<threat_model>` | security | Threat landscape and vectors |
 | `<structure>` | docs | Document organization |
-| `<reference>` | docs | Source material to reference |
+| `<reference>` | docs, research | Source material to reference |

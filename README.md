@@ -14,13 +14,15 @@
 [![Issues](https://img.shields.io/github/issues/aytuncyildizli/reprompter?color=da3633)](https://github.com/aytuncyildizli/reprompter/issues)
 ![Claude Code](https://img.shields.io/badge/Claude%20Code-primary-111111)
 ![OpenClaw](https://img.shields.io/badge/OpenClaw-supported-7c3aed)
-![LLM](https://img.shields.io/badge/Any%20Structured%20LLM-compatible-0ea5e9)
+![LLM](https://img.shields.io/badge/Prompt%20Mode-Any%20Structured%20LLM-0ea5e9)
 
 ---
 
 RePrompter interviews you, figures out what you actually want, and writes the prompt you were too lazy to write yourself. **v7 merges single-prompt and team orchestration into one skill** — it detects complexity, picks execution mode, and scores everything.
 
-Works with **Claude Code**, **OpenClaw**, or **any LLM**.
+Compatibility:
+- **Single prompt-improvement mode:** Claude Code, OpenClaw, or any structured-prompt LLM
+- **Repromptception team orchestration mode:** Claude Code / OpenClaw (tmux Agent Teams + orchestration flow)
 
 <br/>
 
@@ -417,6 +419,8 @@ cp -R reprompter /path/to/workspace/skills/reprompter
 
 Use `SKILL.md` as the behavior spec. Templates are in `docs/examples/`.
 
+> Note: Non-Claude runtimes are supported for **prompt-improvement mode**. Repromptception orchestration features (tmux Agent Teams/session tools) are Claude Code/OpenClaw specific.
+
 ---
 
 ## Quick Start
@@ -432,7 +436,7 @@ reprompter teams - audit the auth module for security and test coverage
 ```
 
 **Single mode** triggers: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt"
-**Team mode** triggers: "reprompter teams", "repromptception", "run with quality", "smart run"
+**Team mode** triggers: "reprompter teams", "repromptception", "run with quality", "smart run", "smart agents"
 
 RePrompter will interview you (2-5 questions), generate a structured XML prompt, and show a before/after quality score.
 
@@ -689,7 +693,7 @@ and stale content. Quantify token savings from cleanup.</task>
 
 **4-phase loop:** Team Plan → Repromptception → Execute → Evaluate+Retry
 
-Trigger words: `"reprompter teams"`, `"repromptception"`, `"run with quality"`, `"smart run"`
+Trigger words: `"reprompter teams"`, `"repromptception"`, `"run with quality"`, `"smart run"`, `"smart agents"`
 
 Normal single-prompt usage is unchanged — Repromptception only activates for team/multi-agent tasks.
 
@@ -714,6 +718,7 @@ Normal single-prompt usage is unchanged — Repromptception only activates for t
 | CRITICAL findings | 7 | 14 | **+100%** |
 | Total findings | ~40 | 104 | **+160%** |
 | Cost savings found | $377/mo | $490/mo | **+30%** |
+| Token bloat found | 45K | 113K | **+151%** |
 | Cross-validated findings | 0 | 5 | — |
 
 The pipeline runs via **Claude Code Agent Teams** with `teammateMode: "tmux"` for real-time split-pane monitoring. All orchestration docs are now in SKILL.md (TEAMS.md removed in v7).
@@ -722,10 +727,11 @@ The pipeline runs via **Claude Code Agent Teams** with `teammateMode: "tmux"` fo
 
 ## Other Features
 
-- **Think tool-aware** — Claude 4.x dedicated think tool workflows
-- **Context engineering** — Prompts complement runtime context, don't duplicate it
+- **Think tool-aware** — Prefer dedicated thinking tools when available, keep prompts outcome-focused
 - **Extended thinking** — Favors outcome clarity over rigid step scripting
 - **Response prefilling** — Suggests `{` prefills for JSON-first API workflows
+- **Context engineering** — Prompts complement runtime context, don't duplicate it
+- **Token budget** — Keeps prompts compact (~2K single mode, ~1-2K per agent)
 - **Uncertainty handling** — Explicit permission to ask, not fabricate
 - **Motivation capture** — Maps "why this matters" into `<motivation>` so priority survives execution
 - **Closed-loop quality** — Execute → Evaluate → Retry (max 2 retries, delta prompts)
