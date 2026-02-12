@@ -22,6 +22,16 @@ Use this template for research tasks, complex analysis, or tasks requiring chain
 3. {Tertiary question}
 </research_questions>
 
+<motivation>
+{Decision this informs, deadline, cost of wrong choice}
+</motivation>
+
+<requirements>
+1. **Minimum sources**: {Minimum N credible sources consulted}
+2. **Comparison criteria**: {Defined evaluation criteria before research begins}
+3. **Recommendation**: {Actionable recommendation with confidence level}
+</requirements>
+
 <thinking>
 Before researching, consider:
 1. What do I already know about this topic?
@@ -101,6 +111,16 @@ Technical research specialist with expertise in Node.js ORMs, database patterns,
 4. What is the learning curve and developer experience for each?
 5. How do they compare for our specific use case (Next.js App Router + PostgreSQL)?
 </research_questions>
+
+<motivation>
+ORM choice will affect the entire data layer for the next 2+ years. Wrong choice means costly migration later. Team needs to commit before sprint 3 starts next week.
+</motivation>
+
+<requirements>
+1. **Minimum sources**: At least 5 credible sources (official docs, benchmarks, production case studies)
+2. **Comparison criteria**: Define evaluation criteria before research (type safety, performance, DX, ecosystem)
+3. **Recommendation**: Clear recommendation with high/medium/low confidence level
+</requirements>
 
 <thinking>
 Before researching, consider:

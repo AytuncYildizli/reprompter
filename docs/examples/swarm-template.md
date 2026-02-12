@@ -16,6 +16,20 @@ Use this template for tasks requiring multiple coordinated agents.
 - Memory system: {shared memory, message passing, etc.}
 </context>
 
+<task>
+{High-level goal that requires multiple agents}
+</task>
+
+<motivation>
+{Why multi-agent coordination is needed, complexity justification}
+</motivation>
+
+<requirements>
+1. **Per-agent deliverables**: {Each agent has clearly defined output}
+2. **Handoff protocol**: {How work passes between agents}
+3. **Conflict resolution**: {How disagreements or conflicts are resolved}
+</requirements>
+
 <objective>
 {High-level goal that requires multiple agents}
 </objective>
@@ -46,6 +60,10 @@ Use this template for tasks requiring multiple coordinated agents.
 - {Agent boundaries - what each agent should NOT do}
 - {Coordination overhead limits}
 </constraints>
+
+<output_format>
+{Per-agent output paths, synthesis format, coordination log}
+</output_format>
 
 <success_criteria>
 - All subtasks completed successfully
@@ -79,6 +97,20 @@ Swarm coordinator specializing in full-stack refactoring, GraphQL migration, and
 - Target state: GraphQL API with equivalent functionality
 - Memory system: Claude Flow memory with HNSW indexing
 </context>
+
+<task>
+Migrate the existing REST API to GraphQL while maintaining all functionality, updating the frontend to use GraphQL queries, and ensuring comprehensive test coverage.
+</task>
+
+<motivation>
+Full-stack migration spanning 3 domains (backend, frontend, tests) — too complex for a single agent. Parallel execution cuts estimated time from 3 days to 1 day. Interdependencies require formal coordination.
+</motivation>
+
+<requirements>
+1. **Per-agent deliverables**: Each agent produces reviewed, tested code in their domain
+2. **Handoff protocol**: Schema stored in shared memory before implementation begins
+3. **Conflict resolution**: Architect has final say on schema; reviewer decides implementation disputes
+</requirements>
 
 <objective>
 Migrate the existing REST API to GraphQL while maintaining all functionality, updating the frontend to use GraphQL queries, and ensuring comprehensive test coverage.
@@ -131,6 +163,12 @@ Migrate the existing REST API to GraphQL while maintaining all functionality, up
 - Each agent focuses on their domain only
 - Maximum 3 sync points to minimize overhead
 </constraints>
+
+<output_format>
+1. Per-agent output in separate directories (backend/, frontend/, tests/)
+2. Synthesis document: migration-summary.md with all changes
+3. Coordination log: swarm-coordination.log with handoffs and decisions
+</output_format>
 
 <success_criteria>
 - GraphQL API serves all 15 original REST endpoints

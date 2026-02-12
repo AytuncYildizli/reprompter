@@ -32,6 +32,16 @@ Use this template for code refactoring and improvement.
 Refactor {target} to {achieve goals} while maintaining {preserved behavior}.
 </task>
 
+<motivation>
+{Technical debt impact, maintenance burden, risk if not done}
+</motivation>
+
+<requirements>
+1. **No behavior change**: {External behavior must remain identical}
+2. **All tests pass**: {Existing test suite passes without modification}
+3. **Measurable improvement**: {Quantifiable metric that improves — complexity, line count, performance}
+</requirements>
+
 <constraints>
 - Maintain all existing functionality
 - Keep public API/interfaces unchanged
@@ -97,6 +107,16 @@ Clean, maintainable component architecture:
 <task>
 Refactor DashboardPage.tsx into a clean component architecture with separated concerns while maintaining all current functionality.
 </task>
+
+<motivation>
+450-line monolithic component is the #1 source of merge conflicts. Adding new dashboard widgets takes 3x longer than it should. Technical debt is blocking the Q2 feature roadmap.
+</motivation>
+
+<requirements>
+1. **No behavior change**: Dashboard renders identically before and after
+2. **All tests pass**: Existing test suite passes without modification
+3. **Measurable improvement**: Each file under 100 lines, single responsibility per file
+</requirements>
 
 <constraints>
 - Maintain all existing functionality exactly

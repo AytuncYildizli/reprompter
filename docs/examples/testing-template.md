@@ -20,6 +20,16 @@ Use this template for writing tests (unit, integration, E2E).
 Write {test type} tests for {target} covering {scope}.
 </task>
 
+<motivation>
+{Coverage gaps, regression risk, compliance requirements}
+</motivation>
+
+<requirements>
+1. **Coverage target**: {Minimum coverage percentage or metric}
+2. **Edge cases**: {Boundary conditions, error states, empty/null inputs}
+3. **Test isolation**: {Tests must be independent, no shared mutable state}
+</requirements>
+
 <coverage_requirements>
 1. **Happy path**: {main successful flow}
 2. **Error states**: {validation errors, API failures, edge cases}
@@ -75,6 +85,16 @@ QA engineer specializing in E2E testing with Playwright and React component test
 <task>
 Write comprehensive E2E tests for the checkout flow covering the complete purchase journey.
 </task>
+
+<motivation>
+Checkout flow is completely untested — any regression directly impacts revenue. Two checkout bugs shipped in the last month. PCI compliance requires test coverage for payment flows.
+</motivation>
+
+<requirements>
+1. **Coverage target**: 80%+ coverage on checkout flow
+2. **Edge cases**: Empty cart, max quantity, expired coupon, out-of-stock, session timeout
+3. **Test isolation**: Each test uses fresh cart state, no shared database records
+</requirements>
 
 <coverage_requirements>
 1. **Happy path**:

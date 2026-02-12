@@ -1,5 +1,9 @@
 # Team Brief Template
 
+<!-- NOTE: This template is intentionally Markdown format (not XML) for orchestration briefs.
+     Team briefs coordinate multiple agents and are consumed by the orchestrator, not individual agents.
+     The Markdown structure maps to XML concepts: sections ≈ XML elements, bullets ≈ content. -->
+
 Use this template when execution mode is Team (Parallel) or Team (Sequential).
 
 ## Template
@@ -10,6 +14,9 @@ Use this template when execution mode is Team (Parallel) or Team (Sequential).
 - Generated: {timestamp}
 - Execution Mode: {Team (Parallel)|Team (Sequential)}
 - Overall Task: {high-level objective}
+
+## Motivation
+{Project urgency, resource justification, expected ROI}
 
 ## Agent Roles (2-5)
 1. **Frontend Agent** - {scope}
@@ -65,6 +72,9 @@ Use this template when execution mode is Team (Parallel) or Team (Sequential).
 - Generated: 2026-02-12T00:30:00Z
 - Execution Mode: Team (Parallel)
 - Overall Task: Build a REST API with authentication and a React dashboard
+
+## Motivation
+MVP deadline in 2 weeks. Three distinct skill domains (backend, frontend, testing) benefit from parallel execution. Expected 3x speedup vs sequential single-agent approach.
 
 ## Agent Roles (3)
 1. **Backend Agent** - REST API with Express, JWT auth, PostgreSQL

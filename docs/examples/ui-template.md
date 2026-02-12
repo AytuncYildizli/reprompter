@@ -27,6 +27,10 @@ Use this template for frontend component development.
 Create {ComponentName} component that {does what}.
 </task>
 
+<motivation>
+{User experience impact, design system alignment, accessibility}
+</motivation>
+
 <requirements>
 1. **Functionality**: {core behavior}
 2. **Styling**: {visual requirements}
@@ -94,6 +98,10 @@ Frontend developer specializing in React, Tailwind CSS, accessible UI patterns, 
 <task>
 Create a Toast notification system with provider, hook, and toast component that supports multiple simultaneous toasts with animations.
 </task>
+
+<motivation>
+App currently has no notification system — errors and confirmations go unnoticed. Aligns with the design system's feedback component roadmap. Accessibility audit flagged missing status announcements.
+</motivation>
 
 <requirements>
 1. **Functionality**:

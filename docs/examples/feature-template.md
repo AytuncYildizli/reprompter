@@ -20,6 +20,10 @@ Use this template for building new features or functionality.
 {Single clear sentence describing the feature to build}
 </task>
 
+<motivation>
+{Why this feature matters — user impact, business value, priority}
+</motivation>
+
 <requirements>
 1. {Primary requirement - the core functionality}
 2. {Secondary requirement - supporting functionality}
@@ -31,13 +35,10 @@ Use this template for building new features or functionality.
 - Use existing {patterns/libraries/styles}
 - Keep changes isolated to {scope}
 - Maintain backward compatibility with {existing features}
-</constraints>
-
-<avoid>
 - Do not add unrelated refactoring or "improvements" outside the feature scope
 - Do not introduce new dependencies when existing libraries suffice
 - Do not skip edge case handling for the sake of quick delivery
-</avoid>
+</constraints>
 
 <output_format>
 1. Implementation files (components, services, etc.)
@@ -80,6 +81,10 @@ Senior frontend developer with expertise in React, search UX, and performance op
 Add a search functionality to the products page that filters products by name and description in real-time.
 </task>
 
+<motivation>
+Users frequently request search on the products page. Current browsing-only experience leads to high bounce rates. Search is the #2 most requested feature in user feedback.
+</motivation>
+
 <requirements>
 1. Search input field at top of products page
 2. Real-time filtering as user types (debounced)
@@ -92,13 +97,10 @@ Add a search functionality to the products page that filters products by name an
 - Keep filtering client-side for small datasets
 - Do not modify ProductCard component
 - Preserve existing URL structure
-</constraints>
-
-<avoid>
 - Do not add unrelated refactoring or "improvements" outside the feature scope
 - Do not introduce new dependencies when existing libraries suffice
 - Do not skip edge case handling for the sake of quick delivery
-</avoid>
+</constraints>
 
 <output_format>
 1. SearchInput component

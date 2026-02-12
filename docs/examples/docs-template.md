@@ -20,6 +20,10 @@ Use this template for writing documentation.
 Write {documentation type} for {subject} targeting {audience}.
 </task>
 
+<motivation>
+{Knowledge gaps, onboarding friction, support ticket reduction}
+</motivation>
+
 <structure>
 1. {Section 1}: {purpose}
 2. {Section 2}: {purpose}
@@ -82,6 +86,10 @@ Technical writer specializing in API documentation, developer experience, and pa
 <task>
 Write comprehensive API documentation for the payment endpoints targeting developers who need to integrate payment processing.
 </task>
+
+<motivation>
+No API docs exist — developers spend 2+ hours reverse-engineering endpoints. Support tickets about payment integration are the #1 category. New integrator onboarding blocked without docs.
+</motivation>
 
 <structure>
 1. **Overview**: Payment flow explanation, prerequisites

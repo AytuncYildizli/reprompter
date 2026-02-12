@@ -26,6 +26,16 @@ Use this template for debugging and fixing issues.
 Investigate and fix: {brief description of the bug}
 </task>
 
+<motivation>
+{Severity, user impact, how long the bug has existed}
+</motivation>
+
+<requirements>
+1. **Fix verification**: {Steps to verify the fix resolves the issue}
+2. **Regression test**: {Test to prevent this bug from recurring}
+3. **Root cause documented**: {Root cause analysis included in PR/commit}
+</requirements>
+
 <investigation_steps>
 1. Reproduce the issue
 2. Identify root cause
@@ -38,13 +48,14 @@ Investigate and fix: {brief description of the bug}
 - Preserve existing test coverage
 - Keep fix minimal and focused
 - Document the root cause
-</constraints>
-
-<avoid>
 - Do not suppress or silence the error without fixing the root cause
 - Do not apply a workaround that masks the underlying issue
 - Do not make unrelated changes while fixing the bug
-</avoid>
+</constraints>
+
+<output_format>
+{Fix description, root cause, regression test, before/after}
+</output_format>
 
 <success_criteria>
 - Bug no longer reproduces
@@ -89,6 +100,16 @@ Debugging specialist with expertise in React, authentication flows, and intermit
 Investigate and fix the intermittent login button failure.
 </task>
 
+<motivation>
+High severity — users unable to log in intermittently. Reported by multiple production users since Privy SDK update last week. Directly impacts conversion and user retention.
+</motivation>
+
+<requirements>
+1. **Fix verification**: Login button works reliably on throttled network (Slow 3G)
+2. **Regression test**: Automated test covering Privy SDK initialization timing
+3. **Root cause documented**: Root cause analysis in PR description
+</requirements>
+
 <investigation_steps>
 1. Reproduce issue locally (throttle network)
 2. Check Privy SDK initialization timing
@@ -102,13 +123,17 @@ Investigate and fix the intermittent login button failure.
 - Keep existing button styling
 - Ensure fix works on slow connections
 - Add loading state to prevent double-clicks
-</constraints>
-
-<avoid>
 - Do not suppress or silence the error without fixing the root cause
 - Do not apply a workaround that masks the underlying issue
 - Do not make unrelated changes while fixing the bug
-</avoid>
+</constraints>
+
+<output_format>
+1. Fix description with code changes
+2. Root cause analysis
+3. Regression test file
+4. Before/after behavior comparison
+</output_format>
 
 <success_criteria>
 - Login modal opens reliably on every click
