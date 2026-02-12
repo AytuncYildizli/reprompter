@@ -86,17 +86,33 @@ Enable when ALL true: < 20 words, single action verb, single target, no ambiguit
 
 **Force interview if ANY present:** compound tasks ("and", "plus"), state management ("track", "sync"), vague modifiers ("better", "improved"), integration work ("connect", "combine"), broad scope nouns after build/create.
 
-### Task Types
+### Task Types & Templates
 
-Detect task type from input and adapt the XML template accordingly:
+Detect task type from input. Each type has a dedicated template in `docs/examples/`:
 
-Feature / Bugfix / Refactor / Testing / API / UI / Security / Docs / Research / Content / Multi-Agent
+| Type | Template | Use when |
+|------|----------|----------|
+| Feature | `feature-template.md` | New functionality (default fallback) |
+| Bugfix | `bugfix-template.md` | Debug + fix |
+| Refactor | `refactor-template.md` | Structural cleanup |
+| Testing | `testing-template.md` | Test writing |
+| API | `api-template.md` | Endpoint/API work |
+| UI | `ui-template.md` | UI components |
+| Security | `security-template.md` | Security audit/hardening |
+| Docs | `docs-template.md` | Documentation |
+| Research | `research-template.md` | Analysis/exploration |
+| Multi-Agent | `swarm-template.md` | Multi-agent coordination |
+| Team Brief | `team-brief-template.md` | Team orchestration brief |
 
-**Priority** (most specific wins): api > security > ui > testing > bugfix > refactor > docs > content > research > feature.
+**Priority** (most specific wins): api > security > ui > testing > bugfix > refactor > docs > research > swarm > feature.
 
-> **No separate template files.** Use the single XML template below. Adapt `<role>`, `<context>`, and `<requirements>` based on detected task type. For example: a security task gets a security-focused role and security-specific constraints; a bugfix gets reproduction steps in requirements.
+**How it works:** Read the matching template from `docs/examples/{type}-template.md`, then fill it with task-specific context. Templates are NOT loaded into context by default — only read on demand when generating a prompt.
 
-### XML Template
+> To add a new task type: create `docs/examples/{type}-template.md` following the XML structure below. No SKILL.md changes needed.
+
+### Base XML Structure
+
+All templates follow this structure. Use as fallback if no specific template matches:
 
 ```xml
 <role>{Expert role matching task type and domain}</role>
@@ -104,7 +120,6 @@ Feature / Bugfix / Refactor / Testing / API / UI / Security / Docs / Research / 
 <context>
 - Working environment, frameworks, tools
 - Available resources, current state
-- {Task-type-specific context: e.g., bug reproduction for bugfix, threat model for security}
 </context>
 
 <task>{Clear, unambiguous single-sentence task}</task>
@@ -113,13 +128,12 @@ Feature / Bugfix / Refactor / Testing / API / UI / Security / Docs / Research / 
 
 <requirements>
 - {Specific, measurable requirement 1}
-- {At least 3-5 requirements, adapted to task type}
+- {At least 3-5 requirements}
 </requirements>
 
 <constraints>
 - {What NOT to do}
 - {Boundaries and limits}
-- {Task-type-specific: e.g., "no breaking changes" for refactor, "OWASP top 10" for security}
 </constraints>
 
 <output_format>{Expected format, structure, length}</output_format>
@@ -164,7 +178,9 @@ Phase 4: Read results, score, retry if needed (YOU do this)
 
 ### Phase 2: Repromptception (~2 minutes)
 
-For EACH agent, use the XML template from above with these **per-agent adaptations**:
+For EACH agent:
+1. Pick the best-matching template from `docs/examples/` (or use base XML structure)
+2. Read it, then apply these **per-agent adaptations**:
 
 - `<role>`: Specific expert title for THIS agent's domain
 - `<context>`: Add exact file paths (verified with `ls`), what OTHER agents handle (boundary awareness)
