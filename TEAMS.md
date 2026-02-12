@@ -1,165 +1,179 @@
-# RePrompter Team Execution (Reality-Based)
+# RePrompter Team Execution
 
-This document explains what actually works for RePrompter team execution today, what is fragile, and which strategy should be used by default.
+How to run RePrompter's multi-agent execution using Claude Code Agent Teams.
 
 **TL;DR:**
-- Default to **sessions_spawn (solo agents)** for production reliability.
-- Use **Claude Code PTY Agent Teams (tmux)** only when you explicitly need teammate-to-teammate coordination.
-- Use **`claude --print --model opus` (single agent)** when you want fastest simple execution and can avoid true team orchestration.
+- **Primary:** Claude Code Agent Teams via PTY (tmux) — tested and proven
+- **Fallback:** `sessions_spawn` solo agents when tmux/Claude Code unavailable
+- **Single-agent:** `claude --print --model opus` for quick tasks
+
+> ⚠️ **CRITICAL:** Always include "CRITICAL: Use model opus for ALL tasks" in the team prompt. Default teammate model is **Haiku** — without explicit instruction, teammates degrade to Haiku quality.
 
 ---
 
-## Current Reality (What Works vs What Breaks)
+## Primary: Agent Teams via tmux (PROVEN PATTERN)
 
-### Works reliably
-- Running multiple **independent solo agents in parallel** and merging results in the lead session.
-- Single-agent execution with `claude --print --model opus`.
-- Interactive Claude Code team sessions in PTY/tmux can start and run.
-
-### Fragile / frequently failing
-- Claude Code Agent Teams in `--print` mode (**not supported**).
-- PTY/tmux Agent Teams end-to-end reliability (teammates sometimes skip file writes, lead synthesis may be incomplete).
-- Teamwide model control (teammates may default to Sonnet even when lead is Opus).
-- Enterprise/OAuth billing auth continuity (token expiration can break long runs).
-
----
-
-## Execution Strategies (Ordered by Reliability)
-
-### 1) sessions_spawn (solo agents) — **DEFAULT / MOST RELIABLE**
-
-Run N independent agents in parallel (OpenClaw `sessions_spawn` pattern), each with a clear scoped task and explicit output file. The lead session waits, reads outputs, and synthesizes the final answer.
-
-### Reliability note
-**High** (best current option for reproducible execution).
-
-### When to use
-- You need dependable completion over “autonomous collaboration”.
-- Tasks can be split into independent workstreams (audit slices, module-level tasks, research tracks).
-- You need deterministic artifacts on disk before synthesis.
-- You want easier retries per failed slice.
-
-### When NOT to use
-- You truly need live teammate-to-teammate negotiation/coordination during execution.
-- The task depends on shared evolving state that must be jointly planned in real time.
-
-### Cost estimate
-- **Low to Medium** (scales mostly linearly with number of agents).
-- Usually cheaper than PTY Agent Teams because each worker prompt is narrow and bounded.
-
-### Practical pattern
-1. Lead creates a shared brief file + per-agent task files.
-2. Spawn parallel solo sessions (`sessions_spawn`) with strict scope.
-3. Each agent writes to a required output path (e.g. `/tmp/run/agent-1.md`).
-4. Lead verifies file existence/content.
-5. Lead synthesizes final output.
-
-### Why default
-- Fewer hidden runtime dependencies.
-- Better observability (file-per-agent artifacts).
-- Better recovery (rerun only failed slices).
-
----
-
-### 2) Claude Code PTY Agent Teams (tmux) — **MEDIUM RELIABILITY**
-
-Run interactive Claude Code with PTY (`tmux` or equivalent), enable agent teams, and ask lead to orchestrate teammates.
-
-### Reliability note
-**Medium** (works, but brittle in real workloads).
-
-### When to use
-- You explicitly need native teammate communication.
-- You are experimenting and can supervise execution.
-- You can tolerate occasional incomplete writes/synthesis.
-
-### When NOT to use
-- Production-critical flows where missing output is unacceptable.
-- Unattended automation expecting deterministic file artifacts.
-- Tight budget/time windows where reruns are expensive.
-
-### Cost estimate
-- **Medium to High** (often higher than sessions_spawn due to orchestration overhead and retries).
-
-### Observed failure modes
-- Teammates may report done but not write expected files.
-- Lead may fail to synthesize all teammate results.
-- Some runs silently degrade quality without hard errors.
-
-### Mitigations (if you must use it)
-- Force explicit output contracts (`must write /tmp/...`).
-- Add verification step after run (check expected files).
-- Add a lead “final synthesis checklist”.
-- Keep team size small (2–3) and scope strict.
-
----
-
-### 3) Claude Code `--print` (single agent) — **FASTEST SINGLE-AGENT FALLBACK**
-
-Use one strong prompt and run:
+### The Pattern (Copy-Paste Ready)
 
 ```bash
-claude --print --model opus
+# Step 1: Start Claude Code with Agent Teams enabled
+tmux new-session -d -s rpt-exec "cd <WORKDIR> && CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 claude --model opus --dangerously-skip-permissions"
+
+# Step 2: Wait for startup
+sleep 8
+
+# Step 3: Send prompt — MUST use -l (literal) flag, then SEPARATE Enter
+tmux send-keys -t rpt-exec -l '<TEAM_PROMPT>'
+sleep 0.5
+tmux send-keys -t rpt-exec Enter
+
+# Step 4: Monitor progress (poll every 15-30s)
+tmux capture-pane -t rpt-exec -p -S -100
+
+# Step 5: Verify output files exist
+ls -la /tmp/rpt-*.md
+
+# Step 6: Cleanup
+tmux kill-session -t rpt-exec
 ```
 
-This is not a true team run. It is a single-agent shortcut that can still solve many “team-like” briefs in one pass.
+### ⚠️ CRITICAL: send-keys Pattern
 
-### Reliability note
-**High for single-agent tasks**, but **no real team orchestration**.
+**This is the #1 cause of failures.** The text and Enter MUST be separate commands:
 
-### When to use
-- You want fastest turnaround.
-- Task can be solved by one strong agent pass.
-- You want predictable CLI behavior without PTY orchestration complexity.
+```bash
+# ✅ CORRECT — literal flag + separate Enter
+tmux send-keys -t SESSION -l 'your prompt text here'
+sleep 0.5
+tmux send-keys -t SESSION Enter
 
-### When NOT to use
-- You need actual teammate spawning/coordination.
-- You need independent parallel outputs from multiple workers.
+# ❌ WRONG — Enter in same command breaks multiline
+tmux send-keys -t SESSION "your prompt text" Enter
 
-### Cost estimate
-- **Low to Medium** (usually cheapest for small/medium tasks).
+# ❌ WRONG — without -l flag, special chars break
+tmux send-keys -t SESSION 'your prompt text'
+```
+
+### Team Prompt Template
+
+When generating the team prompt from RePrompter's brief, format it as a SINGLE LINE (no newlines) for tmux reliability:
+
+```
+Create an agent team with N teammates. CRITICAL: Use model opus for ALL tasks. Teammate 1 (ROLE): TASK. Write output to /tmp/rpt-ROLE.md. Teammate 2 (ROLE): TASK. Write output to /tmp/rpt-ROLE.md. After all teammates complete, read all output files and write a combined synthesis to /tmp/rpt-synthesis.md
+```
+
+Key rules:
+1. **Single line** — no newlines in the prompt
+2. **Explicit output paths** — each teammate MUST write to a specific file
+3. **"CRITICAL: Use model opus for ALL tasks"** — always include this
+4. **Synthesis step** — lead reads all outputs and combines
+5. **Max 3-4 teammates** — more causes diminishing returns and context bloat
+
+### Monitoring & Verification
+
+```bash
+# Check progress (look for cost increase = working)
+tmux capture-pane -t rpt-exec -p | grep -E '💰|📊|⏱|TeamCreate|Task|Teammate'
+
+# Check if output files were written
+for f in /tmp/rpt-*.md; do echo "=== $f ===" && head -5 "$f"; done
+
+# Timeout: if no progress after 3 minutes, kill and retry
+```
+
+### Proven Test Results (2026-02-12)
+- 2 teammates (Analyzer + Scorer) ran in parallel
+- Fan-out/fan-in: tasks #1, #2 parallel → #3 blocked by both
+- All 3 output files written successfully
+- Lead did real synthesis (not just concatenation)
+- Teammates shut down gracefully
+- **Cost:** $0.70 | **Time:** 1:28 | **Context used:** 28% of 200K
 
 ---
 
-## Execution Strategy Selection (Reliability-First)
+## Fallback: sessions_spawn (Solo Agents)
 
-1. **sessions_spawn (solo agents)** → default for RePrompter team execution.
-2. **PTY Agent Teams (tmux)** → advanced/experimental for collaborative behavior.
-3. **`--print` single agent** → fast fallback when true team execution is unnecessary.
+Use when Claude Code / tmux is unavailable (e.g., sandbox, remote).
 
----
+```
+1. Write team brief to /tmp/reprompter-brief-{timestamp}.md
+2. For each agent role:
+   sessions_spawn(
+     task: "<per-agent sub-prompt from brief>",
+     model: "opus",  # or "codex" for coding tasks
+     label: "rpt-{role}"
+   )
+3. Wait for all to complete
+4. Read outputs and synthesize
+```
 
-## Known Issues (Must Be Documented)
-
-1. **Teammate model default may be Sonnet**
-   - Even if lead session is Opus, teammate model overrides may not propagate from `settings.json` as expected.
-
-2. **`--print` mode does not support Agent Teams**
-   - Agent Teams require interactive PTY; non-interactive print mode cannot run team toolchain.
-
-3. **File-writing reliability is inconsistent in Agent Teams**
-   - Teammates may skip expected writes; lead may not fully synthesize.
-
-4. **Billing/Auth fragility**
-   - Enterprise OAuth/token expiration can interrupt long or complex runs.
-
----
-
-## Operational Guardrails
-
-- Always define **required output files** per worker.
-- Always run a **post-run verification** step before final synthesis.
-- Prefer **narrow scoped prompts** over broad autonomous instructions.
-- Add **retry-at-slice-level** for failed agents (not full rerun when possible).
+### When to use sessions_spawn over Agent Teams
+- No tmux available
+- No Claude Code CLI available  
+- Need deterministic, observable file-per-agent artifacts
+- Simple independent tasks that don't need teammate coordination
 
 ---
 
-## Integration Guidance for RePrompter
+## Quick Single-Agent (No Team Needed)
 
-When user selects Team mode:
-- RePrompter should generate team brief + per-agent prompts as usual.
-- Execution default should route to **sessions_spawn**.
-- PTY Agent Teams should be labeled **advanced/experimental**.
-- If user asks for fastest path or “single pass”, offer `claude --print --model opus` fallback.
+For tasks that don't need parallel execution:
 
-This keeps behavior realistic, debuggable, and usable by non-expert users.
+```bash
+echo "PROMPT" | claude --print --model opus --dangerously-skip-permissions
+```
+
+Or via sessions_spawn:
+```
+sessions_spawn(task: "...", model: "opus")
+```
+
+---
+
+## Integration with RePrompter Execution Flow
+
+### Full Repromptception Pipeline
+
+```
+1. IMPROVE: Raw prompt → interview → structured prompt + team brief
+2. EXECUTE: 
+   a. Write brief to /tmp/reprompter-brief-{timestamp}.md
+   b. Generate single-line team prompt from brief
+   c. Start tmux Agent Teams session
+   d. Send team prompt (literal + separate Enter)
+   e. Monitor progress (poll every 15-30s)
+   f. Verify output files
+3. EVALUATE:
+   a. Read all output files
+   b. Score against success criteria (0-10)
+   c. Score ≥ 7 → ACCEPT
+   d. Score 4-6 → RETRY with delta prompt
+   e. Score < 4 → RETRY with full rewrite
+   f. Max 2 retries
+4. DELIVER: Combined synthesis + individual outputs
+```
+
+### Generating the Team Prompt from Brief
+
+Transform the team brief into a tmux-safe single-line prompt:
+
+```
+Input (brief):
+  Agent 1: Security Auditor - scan for vulnerabilities
+  Agent 2: Performance Reviewer - find slow paths
+  Agent 3: Test Coverage - identify untested functions
+
+Output (tmux prompt):
+  "Create an agent team with 3 teammates. CRITICAL: Use model opus for ALL tasks. Teammate 1 (Security Auditor): Scan for vulnerabilities and injection risks. Write findings to /tmp/rpt-security.md. Teammate 2 (Performance Reviewer): Find N+1 queries, memory leaks, and slow paths. Write findings to /tmp/rpt-performance.md. Teammate 3 (Test Coverage): Identify untested functions and edge cases. Write findings to /tmp/rpt-tests.md. After all teammates complete, read all output files and write a prioritized action list to /tmp/rpt-synthesis.md"
+```
+
+---
+
+## Known Constraints
+
+1. **Each teammate has 200K token context window** — not a time limit, token budget
+2. **Teammate default model is Haiku** — always specify opus explicitly
+3. **`--print` mode cannot do Agent Teams** — interactive PTY required
+4. **File-writing can be inconsistent** — always verify output files exist
+5. **Long runs risk auth/billing token expiration** — keep tasks focused
+6. **Max practical team size: 3-4** — beyond that, coordination overhead dominates
