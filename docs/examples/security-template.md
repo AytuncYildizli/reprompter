@@ -28,6 +28,10 @@ Consider these threat vectors:
 {Audit/implement/fix} security for {scope} focusing on {specific concerns}.
 </task>
 
+<motivation>
+{Threat severity, compliance requirements, exposure window}
+</motivation>
+
 <requirements>
 1. **Input validation**: {sanitization requirements}
 2. **Authentication**: {auth requirements}
@@ -94,6 +98,10 @@ Consider these threat vectors:
 <task>
 Conduct security audit of all API endpoints and implement necessary fixes for identified vulnerabilities.
 </task>
+
+<motivation>
+API handles user PII and payment references under GDPR. No security audit has been done since launch. Exposure window is growing — any breach risks regulatory fines and user trust.
+</motivation>
 
 <requirements>
 1. **Input validation**:

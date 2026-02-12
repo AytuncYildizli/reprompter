@@ -20,6 +20,10 @@ Use this template for API endpoint work (REST, GraphQL, etc.).
 {Create/modify} API endpoint(s) for {functionality}.
 </task>
 
+<motivation>
+{API consumer needs, integration requirements, deadline}
+</motivation>
+
 <endpoints>
 | Method | Path | Description |
 |--------|------|-------------|
@@ -38,13 +42,10 @@ Use this template for API endpoint work (REST, GraphQL, etc.).
 - Use consistent error response format
 - Implement proper authentication checks
 - Add rate limiting if public endpoint
-</constraints>
-
-<avoid>
 - Do not expose internal error details or stack traces in API responses
 - Do not skip input validation for "trusted" internal endpoints
 - Do not create inconsistent response formats across endpoints
-</avoid>
+</constraints>
 
 <output_format>
 1. API route file(s)
@@ -89,6 +90,10 @@ Backend developer specializing in Next.js API routes, Prisma ORM, and RESTful AP
 Create CRUD API endpoints for user profile management.
 </task>
 
+<motivation>
+User profile management is a core feature needed by the frontend team for the v2 launch. API consumers include the dashboard, mobile app, and third-party integrators with a Q2 deadline.
+</motivation>
+
 <endpoints>
 | Method | Path | Description |
 |--------|------|-------------|
@@ -122,13 +127,10 @@ Create CRUD API endpoints for user profile management.
 - Follow existing /api/v1/* pattern
 - Use Zod schemas for validation
 - Log all profile deletions
-</constraints>
-
-<avoid>
 - Do not expose internal error details or stack traces in API responses
 - Do not skip input validation for "trusted" internal endpoints
 - Do not create inconsistent response formats across endpoints
-</avoid>
+</constraints>
 
 <output_format>
 1. src/app/api/v1/profile/route.ts (GET, PUT, DELETE own profile)
