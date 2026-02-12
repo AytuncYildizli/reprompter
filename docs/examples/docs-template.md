@@ -42,6 +42,9 @@ Write {documentation type} for {subject} targeting {audience}.
 - Include working code examples
 - Keep sections focused and scannable
 - Follow existing documentation style
+- Do not assume reader's expertise level without stating target audience
+- Do not include outdated API signatures or deprecated methods
+- Do not skip error handling in code examples
 </constraints>
 
 <output_format>

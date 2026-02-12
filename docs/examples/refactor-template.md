@@ -47,6 +47,9 @@ Refactor {target} to {achieve goals} while maintaining {preserved behavior}.
 - Keep public API/interfaces unchanged
 - Preserve test coverage (update tests as needed)
 - Make changes incrementally (reviewable commits)
+- Do not combine refactoring with feature additions or bug fixes
+- Do not change behavior — only structure and readability
+- Do not refactor code that lacks test coverage without adding tests first
 </constraints>
 
 <output_format>

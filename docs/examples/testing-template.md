@@ -42,6 +42,9 @@ Write {test type} tests for {target} covering {scope}.
 - Tests must be independent (no shared state)
 - Mock external dependencies appropriately
 - Keep test execution time reasonable
+- Do not test implementation details — test behavior and contracts
+- Do not use flaky assertions (timing-dependent, order-dependent)
+- Do not leave disabled/skipped tests without a TODO and reason
 </constraints>
 
 <output_format>

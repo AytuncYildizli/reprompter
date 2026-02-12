@@ -43,6 +43,9 @@ Create {ComponentName} component that {does what}.
 - Use design system tokens/variables
 - Ensure keyboard navigation
 - Support screen readers
+- Do not use inline styles — use design tokens or CSS modules
+- Do not break existing component API without migration path
+- Do not add animations without respecting prefers-reduced-motion
 </constraints>
 
 <output_format>
