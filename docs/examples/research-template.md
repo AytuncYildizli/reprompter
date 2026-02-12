@@ -34,7 +34,7 @@ Use this template for research tasks, complex analysis, or tasks requiring struc
 3. **Recommendation**: {Actionable recommendation with confidence level}
 </requirements>
 
-<thinking>
+<reasoning>
 Before researching, consider:
 1. What do I already know about this topic?
 2. What are the most reliable sources for this information?
@@ -42,7 +42,7 @@ Before researching, consider:
 4. What would constitute strong vs weak evidence?
 
 Use this as a systematic checklist before forming conclusions; summarize rationale concisely in the final output.
-</thinking>
+</reasoning>
 
 <methodology>
 1. {Step 1}: {approach}
@@ -129,7 +129,7 @@ ORM choice will affect the entire data layer for the next 2+ years. Wrong choice
 3. **Recommendation**: Clear recommendation with high/medium/low confidence level
 </requirements>
 
-<thinking>
+<reasoning>
 Before researching, consider:
 1. What do I already know?
    - Prisma: Mature, schema-first, generates client
@@ -150,7 +150,7 @@ Before researching, consider:
    - Benchmark data with methodology
    - Production case studies
    - Specific feature comparisons with code examples
-</thinking>
+</reasoning>
 
 <methodology>
 1. Feature Comparison: Document capabilities side-by-side
@@ -198,7 +198,7 @@ Relevant sources to consult:
 
 ## Reasoning & Evidence Planning
 
-The `<thinking>` section is crucial for research tasks. It:
+The `<reasoning>` section is crucial for research tasks. It:
 1. Surfaces hidden assumptions
 2. Identifies reliable sources
 3. Acknowledges biases
@@ -207,7 +207,7 @@ The `<thinking>` section is crucial for research tasks. It:
 For complex analysis, expand the planning checklist:
 
 ```xml
-<thinking>
+<reasoning>
 ## Pre-Analysis
 - What do I know? {existing knowledge}
 - What don't I know? {gaps to fill}
@@ -224,5 +224,5 @@ For complex analysis, expand the planning checklist:
 - Final decision based on: {decision framework}
 
 Think through each step, then provide concise rationale summaries with citations (do not expose hidden internal reasoning).
-</thinking>
+</reasoning>
 ```

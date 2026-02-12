@@ -188,7 +188,7 @@ with unit tests for both API and UI, without breaking existing API contracts.
 | Clarity | 3/10 | 9/10 | +200% |
 | Specificity | 2/10 | 9/10 | +350% |
 | Structure | 1/10 | 10/10 | +900% |
-| Constraints | 0/10 | 8/10 | +∞ |
+| Constraints | 0/10 | 8/10 | new |
 | Verifiability | 1/10 | 9/10 | +800% |
 | Decomposition | 2/10 | 9/10 | +350% |
 | **Overall** | **1.6/10** | **9.0/10** | **+462%** |
@@ -720,6 +720,8 @@ Normal single-prompt usage is unchanged — Repromptception only activates for t
 | Cost savings found | $377/mo | $490/mo | **+30%** |
 | Token bloat found | 45K | 113K | **+151%** |
 | Cross-validated findings | 0 | 5 | — |
+
+Methodology: scores from parallel audit runs with identical task prompts
 
 The pipeline runs via **Claude Code Agent Teams** with `teammateMode: "tmux"` for real-time split-pane monitoring. All orchestration docs are now in SKILL.md (TEAMS.md removed in v7).
 
