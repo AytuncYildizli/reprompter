@@ -1,105 +1,91 @@
-# Reprompter Changelog
+# RePrompter Changelog
+
+## v7.0.0 (2026-02-12)
+
+### Breaking
+- **Merged `reprompter` + `reprompter-teams` into single skill** — one SKILL.md, two modes
+- **Removed `TEAMS.md` as separate file** — all team execution docs now in SKILL.md
+- **Removed `research-reprompter`** — was broken, unused
+
+### Added
+- **Two-mode architecture:** Single prompt mode + Repromptception mode in one skill
+- **Repromptception vs Raw comparison data** — 4-agent audit: +100% CRITICALs, +160% findings, +30% cost savings
+- **Auto-detection:** suggests Repromptception when task mentions 2+ systems or "audit"
+
+### Changed
+- SKILL.md trimmed from 1130 lines to ~350 lines (69% reduction)
+- All team execution patterns consolidated (tmux send-keys -l, separate Enter, Opus default)
+- Quality scoring section streamlined
+- Templates section condensed to reference table
+- README updated for v7.0 with dual-mode docs
+
+### Removed
+- Redundant Quick Mode pseudocode (~450 tokens saved)
+- Verbose interview JSON examples (kept one compact reference)
+- Duplicate context detection test scenarios
+- Separate TEAMS.md file (content merged into SKILL.md)
 
 ## v6.1.3 (2026-02-12)
 
 ### Added
-- **Repromptception end-to-end test results** — 3-agent sequential pipeline proven: 2.15/10 → 9.15/10 (+326%), audit PASS 99.1%, 24/24 weaknesses addressed
-- **Skill description routing logic** — "Use when / Don't use when" block following OpenAI's skill routing best practices
-- **TEAMS.md** — Full Agent Teams execution guide with `teammateMode: "tmux"` split pane monitoring
-- **`send-keys -l` pattern** — Critical fix for tmux multiline prompt delivery (literal flag mandatory)
+- Repromptception E2E test results in README (2.15→9.15, +326%)
+- Routing-logic skill descriptions (OpenAI best practices)
+- `teammateMode: "tmux"` documentation for split-pane agent monitoring
 
 ### Changed
-- Skill description rewritten as routing logic (triggers, anti-triggers, outputs, success criteria) instead of marketing copy
-- README updated with proven test results table and v6.1.2 badge
+- TEAMS.md rewritten with proven `send-keys -l` pattern
+- SKILL.md execution strategy updated for Agent Teams primary
 
 ## v6.1.2 (2026-02-12)
 
 ### Fixed
-- **B1**: Version mismatch — SKILL.md now matches CHANGELOG (was v6.1.0, should have been v6.1.1+)
-- **B2**: Overly broad complexity keywords — "create"/"build" now only trigger interview when followed by broad-scope nouns (dashboard, app, system, etc.). "with" only triggers when connecting multiple items. Removed "the current" (too many false positives). Simple prompts like "create a button" now correctly use Quick Mode.
-- **B3**: MCP tool name in swarm-template — `memory_store` → `memory_usage` with `action: "store"` to match actual API
-- **B4**: Added `count_distinct_systems()` definition to Quick Mode pseudocode (was referenced but undefined)
+- Version mismatch — SKILL.md now matches CHANGELOG
+- Overly broad complexity keywords — "create"/"build" only trigger interview with broad-scope nouns
+- MCP tool name in swarm-template — `memory_store` → `memory_usage`
+- Added `count_distinct_systems()` definition to Quick Mode pseudocode
 
 ### Added
-- Template priority rules — explicit tiebreaking when multiple templates match (most specific wins)
-- Quick Mode examples for "create"/"build" edge cases
-- Per-Agent Sub-Task sections for Tests Agent and Research Agent in team-brief-template
-- Example section in team-brief-template (was the only template without one)
-- `<avoid>` sections in feature-template, bugfix-template, and api-template (template + example) — explicit anti-patterns per task type
-
-### Changed
-- Complexity keywords refined: "build", "create", "with" moved to pattern-based detection instead of simple keyword match
+- Template priority rules — explicit tiebreaking
+- `<avoid>` sections in feature, bugfix, and api templates
+- Per-Agent Sub-Task sections for Tests and Research agents in team-brief-template
 
 ## v6.1.1 (2026-02-11)
 
 ### Fixed
-- Removed duplicated Execution Mode question (was defined twice in SKILL.md)
-- Removed duplicated Motivation question (was defined twice in SKILL.md)
-- Removed stray `</output>` tags from template files
-- Fixed version header mismatch (was v6.0, now v6.1.0 matching frontmatter)
-- Removed dead reference to non-existent `reprompter-teams` skill
+- Removed duplicated interview questions
+- Removed stray `</output>` tags from templates
+- Fixed version header mismatch
 
 ### Added
-- Edge case handling section (empty input, non-English, code blocks, long prompts, conflicting choices)
-- Complexity keywords: build, create, dashboard, app, system, platform, service, pipeline
-- Cost documentation section (API calls per mode)
-- AskUserQuestion fallback note for non-Claude-Code platforms
-- `team-brief-template.md` extracted to resources/templates/
-- `TESTING.md` with 9 test scenarios and anti-pattern examples
-- Self-assessment bias acknowledgment in scoring section
-- Security notes: XML injection warning, --dangerously-skip-permissions warning
-- Cost/token budget section in TEAMS.md
-- /tmp cleanup note for brief files
+- CONTRIBUTING.md, TESTING.md
+- GitHub issue templates (bug report, feature request)
+- README overhaul with logo, demo GIF, badges
 
-### Changed
-- Renamed `ui-component-template.md` -> `ui-template.md` (matches SKILL.md table)
-- Renamed `documentation-template.md` -> `docs-template.md` (matches SKILL.md table)
+## v6.0.0 (2026-02-10)
 
-### Removed
-- `SKILL.md.bak.v4.1` backup file (outdated v4.1 backup)
-
-## v6.0.0
-
-- Closed-loop quality: Execute -> Evaluate -> Retry
+### Added
+- Closed-loop quality: Execute → Evaluate → Retry
+- Team execution via Claude Code Agent Teams
 - Delta prompt pattern for targeted retries
-- Success criteria generation (machine-checkable)
-- Max 2 retries (3 total attempts)
+- Success criteria generation
+- 11 templates (added team-brief, swarm, research)
 
-## v5.1.0
+## v5.1.0 (2026-02-09)
 
-- Team mode: Parallel and Sequential execution
-- Team brief generation
-- Per-agent sub-prompt generation
-- Motivation capture in interview
-- Execution mode question
-- Auto-detect complexity rules
+### Added
+- Think tool awareness (Claude 4.x)
+- Context engineering guidance
+- Extended thinking support
+- Response prefilling suggestions
+- Uncertainty handling section
+- Motivation capture
 
-## v4.1.0
+## v5.0.0 (2026-02-08)
 
-- Fixed Quick Mode false positives for compound tasks
-- Task-specific follow-up questions
-- Whole-word regex matching for complexity keywords
-
-## v4.0.0
-
-- Project-scoped context detection (pwd isolation)
-- Smart boundaries and session isolation
-- Context scope rules (no parent scanning, no cross-project)
-
-## v3.0.0
-
-- Chain-of-thought (`<thinking>`) section
-- RAG reference section
-- Swarm and research templates
-
-## v2.0.0
-
-- AskUserQuestion integration
+### Added
+- Smart interview with AskUserQuestion
+- Quick Mode auto-detection
+- Project-scoped context detection
 - Quality scoring (6 dimensions)
-- Quick Mode detection
-- 8 output templates
-
-## v1.0.0
-
-- Basic prompt transformation
-- XML template format
+- Task-specific follow-up questions
+- 8 XML templates
