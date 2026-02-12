@@ -445,9 +445,9 @@ Every transformation is scored on six weighted dimensions:
 | `refactor-template` | Structural cleanup |
 | `testing-template` | Unit/integration test tasks |
 | `api-template` | Endpoint/API work |
-| `ui-component-template` | UI component implementation |
+| `ui-template` | UI component implementation |
 | `security-template` | Security hardening/audit tasks |
-| `documentation-template` | Technical docs |
+| `docs-template` | Technical docs |
 | `research-template` | Analysis / option exploration |
 | `swarm-template` | Multi-agent coordination |
 | `team-brief-template` | Team orchestration brief |

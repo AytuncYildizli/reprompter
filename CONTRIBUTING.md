@@ -16,8 +16,8 @@ Thanks for your interest in contributing! RePrompter is a prompt engineering ski
 ### 📝 Template Contributions
 Templates live in `docs/examples/`. To add one:
 1. Fork the repo
-2. Create your template in `docs/examples/your-template.md`
-3. No SKILL.md changes needed — it auto-discovers templates by task type
+2. Create your template in `docs/examples/{type}-template.md` following the Base XML Structure in SKILL.md
+3. Add the new type to the Task Types table in SKILL.md (with name, filename, and "Use when")
 4. Open a PR with a before/after example
 
 ### 📖 Documentation

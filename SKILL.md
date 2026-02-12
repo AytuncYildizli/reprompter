@@ -3,7 +3,7 @@ name: reprompter
 description: |
   Transform messy prompts into well-structured, effective prompts — single or multi-agent.
   Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", rough text needing XML tags and best practices, "reprompter teams", "repromptception", "run with quality", "smart run", "smart agents", multi-agent tasks, audits, parallel work, anything going to agent teams.
-  Don't use when: simple one-line Q&A, pure chat/conversation, or tasks that do not need prompt improvement or multi-agent orchestration. RePrompter can improve prompts for feature/bugfix/API/code tasks, but it does not execute code edits directly unless Repromptception execution mode is explicitly requested. For direct execution-only coding tasks, use coding-agent; for research-only execution, use x-research.
+  Don't use when: simple Q&A, pure chat, immediate execution-only tasks. See "Don't Use When" section for details.
   Outputs: Structured XML/Markdown prompt, quality score (before/after), optional team brief + per-agent sub-prompts, agent team output files.
   Success criteria: Quality score ≥ 7/10, all required sections present, actionable and specific.
 version: 7.0.0
@@ -59,15 +59,15 @@ After interview completes, IMMEDIATELY:
 
 ### Interview Questions
 
-Ask via `AskUserQuestion` (fall back to numbered text on platforms without it):
+Ask via `AskUserQuestion` (fall back to numbered text on platforms without it). **Max 5 questions total.**
 
-**Standard questions** (ask relevant ones):
-- Task type: Build Feature / Fix Bug / Refactor / Write Tests / API Work / UI / Security / Docs / Research / Multi-Agent
-- Execution mode: Single Agent / Team (Parallel) / Team (Sequential) / Let RePrompter decide
-- Motivation: User-facing / Internal tooling / Bug fix / Exploration / Skip
-- Output format: XML Tags / Markdown / Plain Text / JSON
+**Standard questions** (priority order — drop lower ones if task-specific questions are needed):
+1. Task type: Build Feature / Fix Bug / Refactor / Write Tests / API Work / UI / Security / Docs / Research / Multi-Agent
+2. Execution mode: Single Agent / Team (Parallel) / Team (Sequential) / Let RePrompter decide
+3. Motivation: User-facing / Internal tooling / Bug fix / Exploration / Skip *(drop first if space needed)*
+4. Output format: XML Tags / Markdown / Plain Text / JSON *(drop first if space needed)*
 
-**Task-specific questions** (MANDATORY for compound prompts):
+**Task-specific questions** (MANDATORY for compound prompts — replace lower-priority standard questions):
 - Extract keywords from prompt → generate relevant follow-up options
 - Example: prompt mentions "telegram" → ask about alert type, interactivity, delivery
 
@@ -82,9 +82,14 @@ Ask via `AskUserQuestion` (fall back to numbered text on platforms without it):
 
 ### Quick Mode
 
-Enable when ALL true: < 20 words, single action verb, single target, no ambiguity.
+Enable when ALL true:
+- < 20 words (excluding code blocks)
+- Exactly 1 action verb from: add, fix, remove, rename, move, delete, update, create
+- Single target (one file, component, or identifier)
+- No conjunctions (and, or, plus, also)
+- No vague modifiers (better, improved, some, maybe, kind of)
 
-**Force interview if ANY present:** compound tasks ("and", "plus"), state management ("track", "sync"), vague modifiers ("better", "improved"), integration work ("connect", "combine"), broad scope nouns after build/create.
+**Force interview if ANY present:** compound tasks ("and", "plus"), state management ("track", "sync"), vague modifiers ("better", "improved"), integration work ("connect", "combine", "sync"), broad scope nouns after any action verb, ambiguous pronouns ("it", "this", "that" without clear referent).
 
 ### Task Types & Templates
 
@@ -104,11 +109,11 @@ Detect task type from input. Each type has a dedicated template in `docs/example
 | Multi-Agent | `swarm-template.md` | Multi-agent coordination |
 | Team Brief | `team-brief-template.md` | Team orchestration brief |
 
-**Priority** (most specific wins): api > security > ui > testing > bugfix > refactor > docs > research > swarm > feature.
+**Priority** (most specific wins): api > security > ui > testing > bugfix > refactor > docs > research > feature. For multi-agent tasks, use `swarm-template` for the team brief and the type-specific template for each agent's sub-prompt.
 
-**How it works:** Read the matching template from `docs/examples/{type}-template.md`, then fill it with task-specific context. Templates are NOT loaded into context by default — only read on demand when generating a prompt.
+**How it works:** Read the matching template from `docs/examples/{type}-template.md`, then fill it with task-specific context. Templates are NOT loaded into context by default — only read on demand when generating a prompt. If the template file is not found, fall back to the Base XML Structure below.
 
-> To add a new task type: create `docs/examples/{type}-template.md` following the XML structure below. No SKILL.md changes needed.
+> To add a new task type: create `docs/examples/{type}-template.md` following the XML structure below, then add it to the table above.
 
 ### Base XML Structure
 
@@ -174,7 +179,7 @@ Phase 4: Read results, score, retry if needed (YOU do this)
 1. **Score raw prompt** (1-10): Clarity, Specificity, Structure, Constraints, Decomposition
 2. **Pick mode:** parallel (independent agents) or sequential (pipeline with dependencies)
 3. **Define team:** 2-5 agents max, each owns ONE domain, no overlap
-4. **Write team brief** to `/tmp/rpt-brief-{taskname}.md`
+4. **Write team brief** to `/tmp/rpt-brief-{taskname}.md` (use unique tasknames to avoid collisions between concurrent runs)
 
 ### Phase 2: Repromptception (~2 minutes)
 
@@ -196,11 +201,8 @@ Write all to `/tmp/rpt-agent-prompts-{taskname}.md`
 ### Phase 3: Execute (tmux Agent Teams)
 
 ```bash
-# 1. Start Claude Code with Agent Teams (SAFE default)
+# 1. Start Claude Code with Agent Teams
 tmux new-session -d -s {session} "cd /path/to/workdir && CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 claude --model opus"
-
-# Optional: trusted/sandboxed environments only (disables permission prompts)
-# tmux new-session -d -s {session} "cd /path/to/workdir && CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 claude --model opus --dangerously-skip-permissions"
 
 # 2. Wait for startup (MUST wait 8+ seconds)
 sleep 8
@@ -238,6 +240,12 @@ tmux kill-session -t {session}
    - ≥ 7/10 → ACCEPT
    - 4-6/10 → RETRY with delta prompt (tell them what's missing)
    - < 4/10 → RETRY with full rewrite
+   
+   **Accept checklist** (use alongside score — all must pass):
+   - [ ] All required output sections present
+   - [ ] Requirements from Phase 2 independently verifiable
+   - [ ] No hallucinated file paths or line numbers
+   - [ ] Scope boundaries respected (no overlap with other agents)
 3. Max 2 retries (3 total attempts)
 4. Deliver final report to user
 
@@ -257,14 +265,15 @@ This retry: Focus on gaps. Verify all line numbers.
 | 3 agents | ~8-12 min | ~$2-3 |
 | 4 agents | ~10-15 min | ~$2-4 |
 
-Each agent uses ~25-70% of their 200K token context window.
+Estimates cover Phase 3 (execution) only. Add ~3 minutes for Phases 1-2 and ~5-8 minutes per retry. Each agent uses ~25-70% of their 200K token context window.
 
-### Fallback: sessions_spawn
+### Fallback: sessions_spawn (OpenClaw only)
 
-When tmux/Claude Code unavailable:
+When tmux/Claude Code is unavailable but running inside OpenClaw:
 ```
 sessions_spawn(task: "<per-agent prompt>", model: "opus", label: "rpt-{role}")
 ```
+Note: `sessions_spawn` is an OpenClaw-specific tool. Not available in standalone Claude Code.
 
 ---
 
@@ -279,7 +288,7 @@ sessions_spawn(task: "<per-agent prompt>", model: "opus", label: "rpt-{role}")
 | Structure | 15% | Proper sections, logical flow? |
 | Constraints | 15% | Boundaries defined? |
 | Verifiability | 15% | Success measurable? |
-| Decomposition | 15% | Work split cleanly? |
+| Decomposition | 15% | Work split cleanly? (Score 10 if task is correctly atomic) |
 
 ```markdown
 | Dimension | Before | After | Change |
