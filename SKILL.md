@@ -40,9 +40,10 @@ Auto-detection: if task mentions 2+ systems, "audit", or "parallel" → suggest 
 ### Process
 
 1. **Receive raw input**
-2. **Quick Mode gate** — under 20 words, single action, no complexity indicators → generate immediately
-3. **Smart Interview** — use `AskUserQuestion` with clickable options (2-5 questions max)
-4. **Generate + Score** — apply template, show before/after quality metrics
+2. **Input guard** — if input is empty, a single word with no verb, or clearly not a task → ask the user to describe what they want to accomplish
+3. **Quick Mode gate** — under 20 words, single action, no complexity indicators → generate immediately
+4. **Smart Interview** — use `AskUserQuestion` with clickable options (2-5 questions max)
+5. **Generate + Score** — apply template, show before/after quality metrics
 
 ### ⚠️ MUST GENERATE AFTER INTERVIEW
 
@@ -62,7 +63,7 @@ After interview completes, IMMEDIATELY:
 Ask via `AskUserQuestion` (fall back to numbered text on platforms without it). **Max 5 questions total.**
 
 **Standard questions** (priority order — drop lower ones if task-specific questions are needed):
-1. Task type: Build Feature / Fix Bug / Refactor / Write Tests / API Work / UI / Security / Docs / Research / Multi-Agent
+1. Task type: Build Feature / Fix Bug / Refactor / Write Tests / API Work / UI / Security / Docs / Content / Research / Multi-Agent
 2. Execution mode: Single Agent / Team (Parallel) / Team (Sequential) / Let RePrompter decide
 3. Motivation: User-facing / Internal tooling / Bug fix / Exploration / Skip *(drop first if space needed)*
 4. Output format: XML Tags / Markdown / Plain Text / JSON *(drop first if space needed)*
@@ -70,6 +71,7 @@ Ask via `AskUserQuestion` (fall back to numbered text on platforms without it). 
 **Task-specific questions** (MANDATORY for compound prompts — replace lower-priority standard questions):
 - Extract keywords from prompt → generate relevant follow-up options
 - Example: prompt mentions "telegram" → ask about alert type, interactivity, delivery
+- **Vague prompt fallback:** if input has no extractable keywords (e.g., "make it better"), ask open-ended: "What are you working on?" and "What's the goal?" before proceeding
 
 ### Auto-Detect Complexity
 
@@ -105,11 +107,12 @@ Detect task type from input. Each type has a dedicated template in `docs/example
 | UI | `ui-template.md` | UI components |
 | Security | `security-template.md` | Security audit/hardening |
 | Docs | `docs-template.md` | Documentation |
+| Content | `content-template.md` | Blog posts, articles, marketing copy |
 | Research | `research-template.md` | Analysis/exploration |
 | Multi-Agent | `swarm-template.md` | Multi-agent coordination |
 | Team Brief | `team-brief-template.md` | Team orchestration brief |
 
-**Priority** (most specific wins): api > security > ui > testing > bugfix > refactor > docs > research > feature. For multi-agent tasks, use `swarm-template` for the team brief and the type-specific template for each agent's sub-prompt.
+**Priority** (most specific wins): api > security > ui > testing > bugfix > refactor > content > docs > research > feature. For multi-agent tasks, use `swarm-template` for the team brief and the type-specific template for each agent's sub-prompt.
 
 **How it works:** Read the matching template from `docs/examples/{type}-template.md`, then fill it with task-specific context. Templates are NOT loaded into context by default — only read on demand when generating a prompt. If the template file is not found, fall back to the Base XML Structure below.
 
