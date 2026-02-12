@@ -1,8 +1,15 @@
 # Team Brief Template
 
-<!-- NOTE: This template is intentionally Markdown format (not XML) for orchestration briefs.
-     Team briefs coordinate multiple agents and are consumed by the orchestrator, not individual agents.
-     The Markdown structure maps to XML concepts: sections ≈ XML elements, bullets ≈ content. -->
+<!-- Formal exception: team briefs are orchestration artifacts consumed by the lead/orchestrator.
+     Canonical format is Markdown for readability and coordination.
+     The XML-equivalent 8 core tags are still REQUIRED conceptually and must be explicitly mapped.
+     Markdown sections below are the normative representation of those tags. -->
+
+## Format Contract (Markdown Exception)
+
+- This template is the **only formal exception** to strict XML file format.
+- It MUST still define all 8 core fields conceptually: `role`, `context`, `task`, `motivation`, `requirements`, `constraints`, `output_format`, `success_criteria`.
+- Negative constraints are mandatory in `constraints` (at least 3 explicit "Do NOT ..." rules).
 
 ## When to Use
 
@@ -18,10 +25,44 @@
 
 - Generated: {timestamp}
 - Execution Mode: {Team (Parallel)|Team (Sequential)}
-- Overall Task: {high-level objective}
+
+## Role
+Lead orchestrator coordinating specialized agents to deliver the overall task safely and without overlap.
+
+## Context
+- Project/repo: {path or identifier}
+- Relevant systems: {frontend/backend/db/etc}
+- Known constraints/dependencies: {brief bullets}
+
+## Task
+{high-level objective}
 
 ## Motivation
 {Project urgency, resource justification, expected ROI}
+
+## Requirements
+- Define 2-5 agent roles with clear ownership boundaries
+- Define per-agent deliverables with measurable expectations
+- Define dependency order and integration checkpoint
+- Define exact output file path per agent
+- Define review criteria for final synthesis
+
+## Constraints
+- Do NOT assign overlapping ownership across agents
+- Do NOT modify files outside declared scope boundaries
+- Do NOT leave output destinations unspecified
+- Do NOT merge outputs before dependency prerequisites are complete
+
+## Output Format
+- Team brief path: `/tmp/rpt-brief-{taskname}-{timestamp}.md`
+- Per-agent outputs: `/tmp/rpt-{taskname}-{agent-domain}.md`
+- Final synthesis: `/tmp/rpt-{taskname}-final.md`
+
+## Success Criteria
+- Every agent has non-overlapping scope and explicit deliverables
+- All output paths are defined and unique
+- Dependency order is explicit and actionable
+- Final synthesis criteria are measurable and reviewable
 
 ## Agent Roles (2-5)
 1. **Frontend Agent** - {scope}
@@ -60,13 +101,6 @@
 - Shared files/modules: {list}
 - Ordering dependencies: {A before B, parallel-safe items}
 - Integration checkpoint: {when/how outputs are merged}
-
-## Success Criteria
-- Frontend Agent: {measurable outcomes}
-- Backend Agent: {measurable outcomes}
-- Tests Agent: {measurable outcomes}
-- Research Agent: {measurable outcomes}
-- Integration/Ops Agent (optional): {measurable outcomes}
 ```
 
 ## Example
@@ -76,10 +110,45 @@
 
 - Generated: 2026-02-12T00:30:00Z
 - Execution Mode: Team (Parallel)
-- Overall Task: Build a REST API with authentication and a React dashboard
+
+## Role
+Lead orchestrator coordinating three agents for backend, frontend, and testing workstreams.
+
+## Context
+- Project/repo: /tmp/reprompter-check
+- Relevant systems: React frontend, Express API, PostgreSQL
+- Known constraints/dependencies: Frontend depends on stable API contract
+
+## Task
+Build a REST API with authentication and a React dashboard.
 
 ## Motivation
 MVP deadline in 2 weeks. Three distinct skill domains (backend, frontend, testing) benefit from parallel execution. Expected 3x speedup vs sequential single-agent approach.
+
+## Requirements
+- Define backend, frontend, and test ownership with no overlap
+- Publish API contract for frontend/test consumers
+- Ensure each agent writes to unique output file
+- Include dependency order and merge checkpoint
+- Provide measurable acceptance conditions for each role
+
+## Constraints
+- Do NOT let frontend implement backend auth logic
+- Do NOT let tests mutate production source files
+- Do NOT skip API contract publication before integration
+
+## Output Format
+- Team brief: /tmp/rpt-brief-chat-api-20260212T003000Z.md
+- Backend output: /tmp/rpt-chat-api-backend.md
+- Frontend output: /tmp/rpt-chat-api-frontend.md
+- Tests output: /tmp/rpt-chat-api-tests.md
+- Final synthesis: /tmp/rpt-chat-api-final.md
+
+## Success Criteria
+- Backend, frontend, tests scopes are disjoint and complete
+- Output files exist at exact declared paths
+- API contract used consistently across agents
+- Final synthesis confirms integration pass
 
 ## Agent Roles (3)
 1. **Backend Agent** - REST API with Express, JWT auth, PostgreSQL
@@ -106,11 +175,6 @@ MVP deadline in 2 weeks. Three distinct skill domains (backend, frontend, testin
 - Shared files/modules: `types/api.ts` (shared types), `lib/auth.ts` (auth helpers)
 - Ordering dependencies: Backend first → Frontend parallel with Tests setup → Tests run last
 - Integration checkpoint: After all agents complete, run full test suite
-
-## Success Criteria
-- Backend Agent: All CRUD + auth endpoints return correct status codes
-- Frontend Agent: Login flow works, dashboard renders data from API
-- Tests Agent: 80%+ coverage, all E2E tests pass
 ```
 
 ## Notes

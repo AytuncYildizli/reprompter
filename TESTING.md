@@ -12,8 +12,8 @@ Verification scenarios for the RePrompter skill. Run these manually to validate 
 
 ## Scenario 2: Quick Mode - Complex Rejection
 
-**Input:** "update our dashboard with fresh tracking data"
-**Expected:** Quick Mode is REJECTED (keywords: "our", "with", "fresh", "tracking", "dashboard").
+**Input:** "update dashboard tracking and configure alerts"
+**Expected:** Quick Mode is REJECTED (compound task + integration/state signals: "and", "tracking", "configure", "alerts").
 **Verify:** Full interview runs. AskUserQuestion is called with at least task type + execution mode.
 
 ## Scenario 3: Full Interview Flow
@@ -74,7 +74,7 @@ Verification scenarios for the RePrompter skill. Run these manually to validate 
 - Prompt is generated and scored
 - Execution happens (single agent or team)
 - Output is evaluated against success criteria
-- If score < 7, retry with delta prompt
+- If Repromptception score < 8, retry with delta prompt (Single mode threshold remains < 7 for prompt quality)
 - Max 2 retries observed
 
 ## Scenario 9: Edge Cases
