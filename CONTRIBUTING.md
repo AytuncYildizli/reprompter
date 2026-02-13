@@ -36,6 +36,19 @@ cd reprompter
 cp -R . /path/to/your-project/skills/reprompter/
 ```
 
+## Packaging for Upload (Claude.ai)
+
+Per [Anthropic's Skills Guide](https://claude.com/blog/complete-guide-to-building-skills-for-claude), the uploaded skill zip should NOT include repo-level files. Use the packaging script:
+
+```bash
+# Creates reprompter-skill.zip with only skill files
+bash scripts/package-skill.sh
+```
+
+Excluded from package: `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `TESTING.md`, `LICENSE`, `.github/`, `.git/`, `assets/demo.*`, `assets/social-preview.*`, `scripts/create-past-releases.sh`
+
+> **Why no README.md?** Anthropic's guide explicitly states: "Don't include README.md inside your skill folder." The README is for GitHub visitors. SKILL.md is for Claude.
+
 ## Pull Request Process
 
 1. Fork the repository
