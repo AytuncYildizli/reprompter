@@ -105,7 +105,7 @@ Enable when ALL true:
 
 ### Task Types & Templates
 
-Detect task type from input. Each type has a dedicated template in `docs/examples/`:
+Detect task type from input. Each type has a dedicated template in `docs/references/`:
 
 | Type | Template | Use when |
 |------|----------|----------|
@@ -124,9 +124,9 @@ Detect task type from input. Each type has a dedicated template in `docs/example
 
 **Priority** (most specific wins): api > security > ui > testing > bugfix > refactor > content > docs > research > feature. For multi-agent tasks, use `swarm-template` for the team brief and the type-specific template for each agent's sub-prompt.
 
-**How it works:** Read the matching template from `docs/examples/{type}-template.md`, then fill it with task-specific context. Templates are NOT loaded into context by default — only read on demand when generating a prompt. If the template file is not found, fall back to the Base XML Structure below.
+**How it works:** Read the matching template from `docs/references/{type}-template.md`, then fill it with task-specific context. Templates are NOT loaded into context by default — only read on demand when generating a prompt. If the template file is not found, fall back to the Base XML Structure below.
 
-> To add a new task type: create `docs/examples/{type}-template.md` following the XML structure below, then add it to the table above.
+> To add a new task type: create `docs/references/{type}-template.md` following the XML structure below, then add it to the table above.
 
 ### Base XML Structure
 
@@ -200,7 +200,7 @@ Phase 4: Read results, score, retry if needed (YOU do this)
 ### Phase 2: Repromptception (~2 minutes)
 
 For EACH agent:
-1. Pick the best-matching template from `docs/examples/` (or use base XML structure)
+1. Pick the best-matching template from `docs/references/` (or use base XML structure)
 2. Read it, then apply these **per-agent adaptations**:
 
 - `<role>`: Specific expert title for THIS agent's domain

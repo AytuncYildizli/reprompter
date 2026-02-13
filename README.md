@@ -417,7 +417,7 @@ cp -R reprompter /path/to/workspace/skills/reprompter
 
 ### Any Structured-Prompt LLM
 
-Use `SKILL.md` as the behavior spec. Templates are in `docs/examples/`.
+Use `SKILL.md` as the behavior spec. Templates are in `docs/references/`.
 
 > Note: Non-Claude runtimes are supported for **prompt-improvement mode**. Repromptception orchestration features (tmux Agent Teams/session tools) are Claude Code/OpenClaw specific.
 
@@ -476,7 +476,7 @@ Every transformation is scored on six weighted dimensions:
 | `swarm-template` | Multi-agent coordination |
 | `team-brief-template` | Team orchestration brief |
 
-> Templates live in `docs/examples/` and are read on demand (not loaded into context). Team brief is generated during Repromptception Phase 1.
+> Templates live in `docs/references/` and are read on demand (not loaded into context). Team brief is generated during Repromptception Phase 1.
 
 ---
 
