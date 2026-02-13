@@ -6,7 +6,12 @@ description: |
   Don't use when: simple Q&A, pure chat, immediate execution-only tasks. See "Don't Use When" section for details.
   Outputs: Structured XML/Markdown prompt, quality score (before/after), optional team brief + per-agent sub-prompts, agent team output files.
   Success criteria: Single mode quality score ≥ 7/10; Repromptception per-agent prompt quality score 8+/10; all required sections present, actionable and specific.
-version: 7.0.0
+compatibility: |
+  Single mode works on all Claude surfaces (Claude.ai, Claude Code, API).
+  Repromptception mode requires Claude Code with tmux and CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1.
+metadata:
+  author: AytuncYildizli
+  version: 7.0.0
 ---
 
 # RePrompter v7.0
