@@ -23,12 +23,12 @@ jobs:
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
           awk -v ver="$VERSION" '
-            $0 ~ "^## v" ver { found=1; next }
+            $0 ~ "^## " ver { found=1; next }
             /^## v[0-9]/ { if(found) exit }
             found { print }
           ' CHANGELOG.md > /tmp/release_notes.md
           if [ ! -s /tmp/release_notes.md ]; then
-            echo "Release v${VERSION}" > /tmp/release_notes.md
+            echo "Release ${VERSION}" > /tmp/release_notes.md
           fi
 
       - name: Create GitHub Release
