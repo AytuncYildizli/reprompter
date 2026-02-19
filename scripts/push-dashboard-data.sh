@@ -183,7 +183,7 @@ fi
 
 # Contradictions data from Mahmory
 CONTRADICTIONS_JSON="{}"
-CONTRADICTIONS_API="$(curl -sf --connect-timeout 3 "http://localhost:8787/v1/contradictions" -H "X-API-Key: ***REMOVED***" 2>/dev/null)" || CONTRADICTIONS_API=""
+CONTRADICTIONS_API="$(curl -sf --connect-timeout 3 "http://localhost:8787/v1/contradictions" -H "X-API-Key: ${MAHMORY_API_KEY}" 2>/dev/null)" || CONTRADICTIONS_API=""
 if [[ -n "$CONTRADICTIONS_API" ]]; then
   CONTRADICTIONS_JSON="$(echo "$CONTRADICTIONS_API" | python3 -c "
 import json, sys
@@ -208,7 +208,7 @@ fi
 
 # Feedback / adaptive weights from Mahmory
 FEEDBACK_JSON="{}"
-FEEDBACK_API="$(curl -sf --connect-timeout 3 "http://localhost:8787/v1/feedback/stats" -H "X-API-Key: ***REMOVED***" 2>/dev/null)" || FEEDBACK_API=""
+FEEDBACK_API="$(curl -sf --connect-timeout 3 "http://localhost:8787/v1/feedback/stats" -H "X-API-Key: ${MAHMORY_API_KEY}" 2>/dev/null)" || FEEDBACK_API=""
 if [[ -n "$FEEDBACK_API" ]]; then
   FEEDBACK_JSON="$(echo "$FEEDBACK_API" | python3 -c "
 import json, sys
