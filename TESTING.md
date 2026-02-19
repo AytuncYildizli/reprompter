@@ -125,7 +125,7 @@ Verification scenarios for the RePrompter skill. Run these manually to validate 
 ## Scenario 12: Template Loading
 
 **Input:** "reprompt - fix the login timeout bug" (should load bugfix-template)
-**Expected:** bugfix-template.md read from `docs/references/`, not base XML.
+**Expected:** bugfix-template.md read from `references/`, not base XML.
 **Verify:**
 - Template file actually read (not just base structure used)
 - Bug-specific sections present (symptoms, investigation steps)

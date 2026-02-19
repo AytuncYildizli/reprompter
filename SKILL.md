@@ -20,7 +20,7 @@ metadata:
 
 ---
 
-## Two Modes
+## Two modes
 
 | Mode | Trigger | What happens |
 |------|---------|-------------|
@@ -31,7 +31,7 @@ Auto-detection: if task mentions 2+ systems, "audit", or "parallel" → ask: "Th
 
 Definition — **2+ systems** means at least two distinct technical domains that can be worked independently. Examples: frontend + backend, API + database, mobile app + backend, infrastructure + application code, security audit + cost audit.
 
-## Don't Use When
+## Don't use when
 
 - User wants a simple direct answer (no prompt generation needed)
 - User wants casual chat/conversation
@@ -42,7 +42,7 @@ Definition — **2+ systems** means at least two distinct technical domains that
 
 ---
 
-## Mode 1: Single Prompt
+## Mode 1: Single prompt
 
 ### Process
 
@@ -54,7 +54,7 @@ Definition — **2+ systems** means at least two distinct technical domains that
 4. **Smart Interview** — use `AskUserQuestion` with clickable options (2-5 questions max)
 5. **Generate + Score** — apply template, show before/after quality metrics
 
-### ⚠️ MUST GENERATE AFTER INTERVIEW
+### Must generate after interview
 
 After interview completes, IMMEDIATELY:
 1. Select template based on task type
@@ -67,7 +67,7 @@ After interview completes, IMMEDIATELY:
 ✅ RIGHT: Ask interview questions → generate prompt → show score → offer to execute
 ```
 
-### Interview Questions
+### Interview questions
 
 Ask via `AskUserQuestion`. **Max 5 questions total.**
 
@@ -83,7 +83,7 @@ Ask via `AskUserQuestion`. **Max 5 questions total.**
 - Example: prompt mentions "telegram" → ask about alert type, interactivity, delivery
 - **Vague prompt fallback:** if input has no extractable keywords (e.g., "make it better"), ask open-ended: "What are you working on?" and "What's the goal?" before proceeding
 
-### Auto-Detect Complexity
+### Auto-detect complexity
 
 | Signal | Suggested mode |
 |--------|---------------|
@@ -92,7 +92,7 @@ Ask via `AskUserQuestion`. **Max 5 questions total.**
 | Single file/component | Single Agent |
 | "audit", "review", "analyze" across areas | Team (Parallel) |
 
-### Quick Mode
+### Quick mode
 
 Enable when ALL true:
 - < 20 words (excluding code blocks)
@@ -103,9 +103,9 @@ Enable when ALL true:
 
 **Force interview if ANY present:** compound tasks ("and", "plus"), state management ("track", "sync"), vague modifiers ("better", "improved"), integration work ("connect", "combine", "sync"), broad scope nouns after any action verb, ambiguous pronouns ("it", "this", "that" without clear referent).
 
-### Task Types & Templates
+### Task types & templates
 
-Detect task type from input. Each type has a dedicated template in `docs/references/`:
+Detect task type from input. Each type has a dedicated template in `references/`:
 
 | Type | Template | Use when |
 |------|----------|----------|
@@ -124,11 +124,11 @@ Detect task type from input. Each type has a dedicated template in `docs/referen
 
 **Priority** (most specific wins): api > security > ui > testing > bugfix > refactor > content > docs > research > feature. For multi-agent tasks, use `swarm-template` for the team brief and the type-specific template for each agent's sub-prompt.
 
-**How it works:** Read the matching template from `docs/references/{type}-template.md`, then fill it with task-specific context. Templates are NOT loaded into context by default — only read on demand when generating a prompt. If the template file is not found, fall back to the Base XML Structure below.
+**How it works:** Read the matching template from `references/{type}-template.md`, then fill it with task-specific context. Templates are NOT loaded into context by default — only read on demand when generating a prompt. If the template file is not found, fall back to the Base XML Structure below.
 
-> To add a new task type: create `docs/references/{type}-template.md` following the XML structure below, then add it to the table above.
+> To add a new task type: create `references/{type}-template.md` following the XML structure below, then add it to the table above.
 
-### Base XML Structure
+### Base XML structure
 
 All templates follow this core structure (8 required tags). Use as fallback if no specific template matches:
 
@@ -164,7 +164,7 @@ Exception: `team-brief-template.md` uses Markdown format for orchestration brief
 </success_criteria>
 ```
 
-### Project Context Detection
+### Project context detection
 
 Auto-detect tech stack from current working directory ONLY:
 - Scan `package.json`, `tsconfig.json`, `prisma/schema.prisma`, etc.
@@ -174,7 +174,7 @@ Auto-detect tech stack from current working directory ONLY:
 
 ---
 
-## Mode 2: Repromptception (Agent Teams)
+## Mode 2: Repromptception (agent teams)
 
 ### TL;DR
 
@@ -189,7 +189,7 @@ Phase 4: Read results, score, retry if needed (YOU do this)
 
 **Key insight:** The reprompt phase costs ZERO extra tokens — YOU write the prompts, not another AI.
 
-### Phase 1: Team Plan (~30 seconds)
+### Phase 1: Team plan (~30 seconds)
 
 1. **Score raw prompt** (1-10): Clarity, Specificity, Structure, Constraints, Decomposition
    - Phase 1 uses 5 quick-assessment dimensions. The full 6-dimension scoring (adding Verifiability) is used in Phase 4 evaluation.
@@ -200,7 +200,7 @@ Phase 4: Read results, score, retry if needed (YOU do this)
 ### Phase 2: Repromptception (~2 minutes)
 
 For EACH agent:
-1. Pick the best-matching template from `docs/references/` (or use base XML structure)
+1. Pick the best-matching template from `references/` (or use base XML structure)
 2. Read it, then apply these **per-agent adaptations**:
 
 - `<role>`: Specific expert title for THIS agent's domain
@@ -214,7 +214,7 @@ For EACH agent:
 
 Write all to `/tmp/rpt-agent-prompts-{taskname}.md`
 
-### Phase 3: Execute (tmux Agent Teams)
+### Phase 3: Execute (tmux agent teams)
 
 ```bash
 # 1. Start Claude Code with Agent Teams
@@ -251,7 +251,7 @@ ls -la /tmp/rpt-{taskname}-*.md
 tmux kill-session -t {session}
 ```
 
-#### Critical tmux Rules
+#### Critical tmux rules
 
 ⚠️ **WARNING: Default teammate model is HAIKU unless explicitly overridden. Always set `--model opus` in both CLI launch command and team prompt.**
 
@@ -265,7 +265,7 @@ tmux kill-session -t {session}
 | Each agent writes own file | Prevents file conflicts |
 | Unique taskname per run | Prevents collisions between concurrent sessions |
 
-### Phase 4: Evaluate + Retry
+### Phase 4: Evaluate + retry
 
 1. Read each agent's report
 2. Score against success criteria from Phase 2:
@@ -289,7 +289,7 @@ Previous attempt scored 5/10.
 This retry: Focus on gaps. Verify all line numbers.
 ```
 
-### Expected Cost & Time
+### Expected cost & time
 
 | Team size | Time | Cost |
 |-----------|------|------|
@@ -311,7 +311,7 @@ Note: `sessions_spawn` is an OpenClaw-specific tool. Not available in standalone
 
 ---
 
-## Quality Scoring
+## Quality scoring
 
 **Always show before/after metrics:**
 
@@ -340,7 +340,7 @@ Note: `sessions_spawn` is an OpenClaw-specific tool. Not available in standalone
 
 ---
 
-## Closed-Loop Quality (v6.0+)
+## Closed-loop quality (v6.0+)
 
 For both modes, RePrompter supports post-execution evaluation:
 
@@ -351,29 +351,29 @@ For both modes, RePrompter supports post-execution evaluation:
 
 ---
 
-## Advanced Features
+## Advanced features
 
-### Reasoning-Friendly Prompting (Claude 4.x)
+### Reasoning-friendly prompting (Claude 4.x)
 Prompts should be less prescriptive about HOW. Focus on WHAT — clear task, requirements, constraints, success criteria. Let the model's own reasoning handle execution strategy.
 
 **Example:** Instead of "Step 1: read the file, Step 2: extract the function" → "Extract the authentication logic from auth.ts into a reusable middleware. Requirements: ..."
 
-### Response Prefilling (API only)
+### Response prefilling (API only)
 Prefill assistant response start to enforce format:
 - `{` → forces JSON output
 - `## Analysis` → skips preamble, starts with content
 - `| Column |` → forces table format
 
-### Context Engineering
+### Context engineering
 Generated prompts should COMPLEMENT runtime context (CLAUDE.md, skills, MCP tools), not duplicate it. Before generating:
 1. Check what context is already loaded (project files, skills, MCP servers)
 2. Reference existing context: "Using the project structure from CLAUDE.md..."
 3. Add ONLY what's missing — avoid restating what the model already knows
 
-### Token Budget
+### Token budget
 Keep generated prompts under ~2K tokens for single mode, ~1K per agent for Repromptception. Longer prompts waste context window without improving quality. If a prompt exceeds budget, split into phases or move detail into constraints.
 
-### Uncertainty Handling
+### Uncertainty handling
 Always include explicit permission for the model to express uncertainty rather than fabricate:
 - Add to constraints: "If unsure about any requirement, ask for clarification rather than assuming"
 - For research tasks: "Clearly label confidence levels (high/medium/low) for each finding"
@@ -406,9 +406,9 @@ In `~/.claude/settings.json`:
 
 ---
 
-## Proven Results
+## Proven results
 
-### Single Prompt (v6.0)
+### Single prompt (v6.0)
 Rough crypto dashboard prompt: **1.6/10 → 9.0/10** (+462%)
 
 ### Repromptception E2E (v6.1)
@@ -423,7 +423,7 @@ Rough crypto dashboard prompt: **1.6/10 → 9.0/10** (+462%)
 | Cost | $1.39 |
 | Time | ~8 minutes |
 
-### Repromptception vs Raw Agent Teams (v7.0)
+### Repromptception vs raw agent teams (v7.0)
 Same audit task, 4 Opus agents:
 
 | Metric | Raw | Repromptception | Delta |
@@ -446,13 +446,13 @@ Same audit task, 4 Opus agents:
 
 ---
 
-## Test Scenarios
+## Test scenarios
 
 See [TESTING.md](TESTING.md) for 13 verification scenarios + anti-pattern examples.
 
 ---
 
-## Appendix: Extended XML Tags
+## Appendix: Extended XML tags
 
 Templates may add domain-specific tags beyond the 8 required base tags. Always include all base tags first.
 
