@@ -12,7 +12,7 @@ REQUIRED_TAGS=(
   success_criteria
 )
 
-TEMPLATE_DIR="docs/references"
+TEMPLATE_DIR="references"
 EXCEPTION_TEMPLATE="team-brief-template.md"
 
 if [[ ! -d "$TEMPLATE_DIR" ]]; then
