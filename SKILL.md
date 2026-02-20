@@ -94,14 +94,33 @@ Ask via `AskUserQuestion`. **Max 5 questions total.**
 
 ### Quick Mode
 
+#### ⚠️ Force Interview — Check FIRST Before Evaluating Quick Mode Criteria
+
+**If ANY of the following signals are present, SKIP Quick Mode and go directly to interview — no exceptions:**
+
+| Signal Category | Keywords / Patterns |
+|----------------|---------------------|
+| **Scope keywords** | system, platform, service, pipeline, dashboard, module, suite, management |
+| **Ownership / existing state** | our, existing, the current, fresh, updated |
+| **Integration verbs** | integrate, merge, connect, combine, sync |
+| **Compound tasks** | "and", "plus", "also", "as well as" |
+| **State management** | track, sync, manage |
+| **Vague modifiers** | better, improved, some, maybe, kind of |
+| **Ambiguous pronouns** | "it", "this", "that" without a clear referent in the same sentence |
+| **Comprehensiveness** | comprehensive, complete, full, end-to-end, overall |
+
+**Clause detection:** Treat any prompt with two or more independent clauses (comma-separated actions, semicolon-joined tasks, or consecutive imperative verbs) as a compound task → force interview.
+
+**Broad-scope noun enforcement (`count_distinct_systems()`):** Count the number of distinct systems/modules implied by broad-scope nouns (system, module, suite, platform, pipeline, dashboard, management). If count ≥ 1 AND the prompt does not name a single, specific identifier → force interview.
+
+#### Enable Quick Mode (only when NO force-interview signals are present)
+
 Enable when ALL true:
 - < 20 words (excluding code blocks)
-- Exactly 1 action verb from: add, fix, remove, rename, move, delete, update, create, implement, write, change, configure, test, run
-- Single target (one file, component, or identifier)
+- Exactly 1 action verb from: add, fix, remove, rename, move, delete, update, create
+- Single target (one specific, named file, component, or identifier — NOT a broad-scope noun such as system, module, suite, or management)
 - No conjunctions (and, or, plus, also)
 - No vague modifiers (better, improved, some, maybe, kind of)
-
-**Force interview if ANY present:** compound tasks ("and", "plus"), state management ("track", "sync"), vague modifiers ("better", "improved"), integration work ("connect", "combine", "sync"), broad scope nouns after any action verb, ambiguous pronouns ("it", "this", "that" without clear referent).
 
 ### Task Types & Templates
 
