@@ -8,13 +8,13 @@ description: |
   Success criteria: Single mode quality score ≥ 7/10; Repromptception per-agent prompt quality score 8+/10; all required sections present, actionable and specific.
 compatibility: |
   Single mode works on all Claude surfaces (Claude.ai, Claude Code, API).
-  Repromptception mode requires Claude Code with tmux and CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1.
+  Repromptception mode requires Claude Code with tmux or TeamCreate, and CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1.
 metadata:
   author: AytuncYildizli
-  version: 7.0.0
+  version: 7.1.0
 ---
 
-# RePrompter v7.0
+# RePrompter v7.1
 
 > **Your prompt sucks. Let's fix that.** Single prompts or full agent teams — one skill, two modes.
 
@@ -183,7 +183,7 @@ Raw task in → quality output out. Every agent gets a reprompted prompt.
 
 Phase 1: Score raw prompt, plan team, define roles (YOU do this, ~30s)
 Phase 2: Write XML-structured prompt per agent (YOU do this, ~2min)
-Phase 3: Launch tmux Agent Teams (AUTOMATED)
+Phase 3: Launch agents (tmux, TeamCreate, or sequential) (AUTOMATED)
 Phase 4: Read results, score, retry if needed (YOU do this)
 ```
 
@@ -299,7 +299,38 @@ This retry: Focus on gaps. Verify all line numbers.
 
 Estimates cover Phase 3 (execution) only. Add ~3 minutes for Phases 1-2 and ~5-8 minutes per retry. Each agent uses ~25-70% of their 200K token context window.
 
-### Fallback: sessions_spawn (OpenClaw only)
+### Option B: Native Claude Code Agent Teams (TeamCreate)
+
+When using Claude Code with TeamCreate/SendMessage tools (native agent teams without tmux):
+
+```text
+# 1. Create team
+TeamCreate(team_name="rpt-{taskname}", description="Repromptception: {task summary}")
+
+# 2. Create tasks (one per agent)
+TaskCreate(subject="Agent 1 task", description="Full reprompted prompt from Phase 2")
+TaskCreate(subject="Agent 2 task", description="Full reprompted prompt from Phase 2")
+
+# 3. Spawn teammates (MUST specify model=opus)
+Task(subagent_type="general-purpose", team_name="rpt-{taskname}", name="agent-1", model="opus",
+     prompt="You are {role} on the rpt-{taskname} team. Your task is Task #1. [full prompt]",
+     run_in_background=true)
+Task(subagent_type="general-purpose", team_name="rpt-{taskname}", name="agent-2", model="opus",
+     prompt="You are {role} on the rpt-{taskname} team. Your task is Task #2. [full prompt]",
+     run_in_background=true)
+
+# 4. Wait for teammates to complete (messages arrive automatically)
+# 5. Compile synthesis from teammate reports
+# 6. Shutdown teammates and delete team
+SendMessage(type="shutdown_request", recipient="agent-1")
+TeamDelete()
+```
+
+**Advantages over tmux:** Teammates can message each other (cross-agent flags), shared TaskList for progress tracking, no tmux/terminal dependency, built-in idle/shutdown protocol.
+
+**When to use TeamCreate vs tmux:** Use TeamCreate when agents need to communicate (review teams, audit teams). Use tmux when agents are fully independent and you want visible terminal panes.
+
+### Option C: sessions_spawn (OpenClaw only)
 
 When tmux/Claude Code is unavailable but running inside OpenClaw:
 ```
@@ -307,7 +338,7 @@ sessions_spawn(task: "<per-agent prompt>", model: "opus", label: "rpt-{role}")
 ```
 Note: `sessions_spawn` is an OpenClaw-specific tool. Not available in standalone Claude Code.
 
-**No tmux or OpenClaw?** Run agents sequentially: execute each agent's prompt one at a time in the same Claude Code session. Slower but works everywhere.
+**No tmux, TeamCreate, or OpenClaw?** Run agents sequentially: execute each agent's prompt one at a time in the same Claude Code session. Slower but works everywhere.
 
 ---
 
