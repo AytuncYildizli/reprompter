@@ -25,7 +25,7 @@ metadata:
 | Mode | Trigger | What happens |
 |------|---------|-------------|
 | **Single** | "reprompt this", "clean up this prompt" | Interview → structured prompt → score |
-| **Repromptception** | "reprompter teams", "repromptception", "run with quality", "smart run", "smart agents" | Plan team → reprompt each agent → tmux Agent Teams → evaluate → retry |
+| **Repromptception** | "reprompter teams", "repromptception", "run with quality", "smart run", "smart agents" | Plan team → reprompt each agent → execute (tmux/TeamCreate/sequential) → evaluate → retry |
 
 Auto-detection: if task mentions 2+ systems, "audit", or "parallel" → ask: "This looks like a multi-agent task. Want to use Repromptception mode?"
 
@@ -214,7 +214,11 @@ For EACH agent:
 
 Write all to `/tmp/rpt-agent-prompts-{taskname}.md`
 
-### Phase 3: Execute (tmux Agent Teams)
+### Phase 3: Execute
+
+Phase 3 has platform-specific execution methods. Pick the one that matches your environment. The reprompted prompts from Phase 2 work with any method.
+
+#### Option A: tmux (Claude Code)
 
 ```bash
 # 1. Start Claude Code with Agent Teams
@@ -299,9 +303,9 @@ This retry: Focus on gaps. Verify all line numbers.
 
 Estimates cover Phase 3 (execution) only. Add ~3 minutes for Phases 1-2 and ~5-8 minutes per retry. Each agent uses ~25-70% of their 200K token context window.
 
-### Option B: Native Claude Code Agent Teams (TeamCreate)
+#### Option B: TeamCreate (Claude Code native)
 
-When using Claude Code with TeamCreate/SendMessage tools (native agent teams without tmux):
+When using Claude Code with TeamCreate/SendMessage tools (native agent teams, no tmux needed):
 
 ```text
 # 1. Create team
@@ -330,7 +334,7 @@ TeamDelete()
 
 **When to use TeamCreate vs tmux:** Use TeamCreate when agents need to communicate (review teams, audit teams). Use tmux when agents are fully independent and you want visible terminal panes.
 
-### Option C: sessions_spawn (OpenClaw only)
+#### Option C: sessions_spawn (OpenClaw only)
 
 When tmux/Claude Code is unavailable but running inside OpenClaw:
 ```
@@ -338,7 +342,11 @@ sessions_spawn(task: "<per-agent prompt>", model: "opus", label: "rpt-{role}")
 ```
 Note: `sessions_spawn` is an OpenClaw-specific tool. Not available in standalone Claude Code.
 
-**No tmux, TeamCreate, or OpenClaw?** Run agents sequentially: execute each agent's prompt one at a time in the same Claude Code session. Slower but works everywhere.
+#### Option D: Sequential (any LLM)
+
+No parallel execution tools available? Run each agent's reprompted prompt one at a time in the same session. Works with any LLM (Claude, GPT, Gemini, Codex, etc.). Slower but fully platform-agnostic.
+
+The reprompted prompts from Phase 2 are pure text. They work regardless of execution method.
 
 ---
 
