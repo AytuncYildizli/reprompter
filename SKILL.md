@@ -95,7 +95,7 @@ Ask via `AskUserQuestion`. **Max 5 questions total.**
 
 ### Quick mode
 
-#### Force interview signals (check first)
+#### ⚠️ Force interview signals (check first)
 
 **If ANY of the following signals are present, SKIP Quick Mode and go directly to interview — no exceptions:**
 
