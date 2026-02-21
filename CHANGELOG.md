@@ -12,7 +12,7 @@
 - **Repromptception vs Raw comparison data** — 4-agent audit: +100% CRITICALs, +160% findings, +30% cost savings
 - **Auto-detection:** suggests Repromptception when task mentions 2+ systems or "audit"
 - **content-template:** added for blog posts, articles, and marketing copy (12 templates total)
-- content-template is now included in docs/references and template tables across SKILL.md/README
+- content-template is now included in references and template tables across SKILL.md/README
 
 ### Changed
 - SKILL.md trimmed from 1130 lines to ~470 lines (at v7.0.0 release) (59% reduction)
