@@ -1,5 +1,27 @@
 # RePrompter Changelog
 
+## v7.1.0 (2026-02-22)
+
+### Added
+- **Platform-aware Phase 3 execution** — TeamCreate (Claude Code native), Sequential (any LLM) promoted to first-class options alongside tmux (#12)
+- **GitHub Releases automation** — `release.yml` workflow creates releases from tags + CHANGELOG (#3)
+- **Input guard + content template + vague prompt fallback** (#4)
+- **Template reference system** — templates read on demand from `references/`, not bundled in SKILL.md
+
+### Fixed
+- **Interview mode restored** — 4 bugs in Quick Mode gate: complexity keyword table, simple verb whitelist, broad-scope noun detection, force-interview signal ordering (#13)
+- **Release workflow** — awk double-v prefix bug (#8)
+- **Anthropic Skills Guide compliance** — directory structure + sentence case headings (#6, #10)
+- **Audit findings** — 20+ fixes across 3 audit sprints (CRITICAL/HIGH/MED), template structural alignment, extended XML tags, negative constraints in all Example sections
+- Bold formatting and `count_distinct_systems()` restored after merge conflicts
+
+### Changed
+- `docs/examples/` renamed to `docs/references/` (#7)
+- Template files consolidated into single adaptive XML template
+- README examples upgraded to v7 Repromptception quality
+- Extended tags, Advanced Features, teammateMode documented
+- Compatibility frontmatter updated for multi-platform support
+
 ## v7.0.0 (2026-02-12)
 
 ### Breaking
