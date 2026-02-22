@@ -1,39 +1,32 @@
-name: Create Release
+name: Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
 
 permissions:
   contents: write
+  issues: write
+  pull-requests: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Extract version from tag
-        id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-
-      - name: Extract changelog for this version
-        env:
-          VERSION: ${{ steps.version.outputs.VERSION }}
-        run: |
-          awk -v ver="$VERSION" '
-            $0 ~ "^## " ver { found=1; next }
-            /^## v[0-9]/ { if(found) exit }
-            found { print }
-          ' CHANGELOG.md > /tmp/release_notes.md
-          if [ ! -s /tmp/release_notes.md ]; then
-            echo "Release ${VERSION}" > /tmp/release_notes.md
-          fi
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
         with:
-          name: "${{ steps.version.outputs.VERSION }}"
-          body_path: /tmp/release_notes.md
-          generate_release_notes: false
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install semantic-release
+        run: npm install -g semantic-release @semantic-release/changelog @semantic-release/git
+
+      - name: Run semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
