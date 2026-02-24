@@ -30,4 +30,5 @@ zip -r "$OUT" . \
 
 echo "✅ Packaged to: $OUT"
 echo "Contents:"
-unzip -l "$OUT" | tail -n +4 | head -n -2
+# BSD head (macOS) does not support negative counts, use sed for portability.
+unzip -l "$OUT" | sed '1,3d;$d;$d'

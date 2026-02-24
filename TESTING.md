@@ -74,7 +74,7 @@ Verification scenarios for the RePrompter skill. Run these manually to validate 
 - Prompt is generated and scored
 - Execution happens (single agent or team)
 - Output is evaluated against success criteria
-- If Repromptception score < 8, retry with delta prompt (Single mode threshold remains < 7 for prompt quality)
+- If Repromptverse score < 8, retry with delta prompt (Single mode threshold remains < 7 for prompt quality)
 - Max 2 retries observed
 
 ## Scenario 9: Edge Cases
@@ -101,10 +101,10 @@ Verification scenarios for the RePrompter skill. Run these manually to validate 
 
 ---
 
-## Scenario 10: Repromptception E2E
+## Scenario 10: Repromptverse E2E
 
 **Input:** "reprompter teams - audit the auth module for security issues and test coverage gaps"
-**Expected:** Full Repromptception pipeline (Phase 1-4).
+**Expected:** Full multi-agent pipeline (Phase 1-4).
 **Verify:**
 - Phase 1: Team brief written to `/tmp/rpt-brief-*.md` with 2-3 agents
 - Phase 2: Per-agent XML prompts written to `/tmp/rpt-agent-prompts-*.md`, each scored 8+/10
@@ -133,12 +133,51 @@ Verification scenarios for the RePrompter skill. Run these manually to validate 
 
 ## Scenario 13: Concurrent Sessions
 
-**Setup:** Start two Repromptception runs simultaneously with different tasknames.
+**Setup:** Start two Repromptverse runs simultaneously with different tasknames.
 **Expected:** No file collisions between runs.
 **Verify:**
 - Each run uses unique taskname in file paths
 - Output files don't overwrite each other
 - Both sessions complete independently
+
+## Scenario 14: Codex Skill Install + Trigger
+
+**Setup:** Install repo under `~/.codex/skills/reprompter`.
+**Input:** "reprompt this: harden auth middleware and add tests"
+**Expected:** Skill triggers in Codex and runs Single mode interview/generation flow.
+**Verify:**
+- Trigger phrase activates RePrompter behavior
+- Generated prompt includes required XML sections
+- Before/after quality score table is shown
+
+## Scenario 15: Repromptverse Contract Coverage
+
+**Input:** "repromptverse - run 4 agents for security/cost/config/memory audit"
+**Expected:** Generated multi-agent prompt pack includes explicit routing, termination, artifact, and evaluation policies.
+**Verify:**
+- Prompt pack references `repromptverse-template` sections
+- Includes max-turn/max-time/no-progress stop rules
+- Includes one-writer-per-artifact ownership
+- Includes retry threshold + max retry count
+
+## Scenario 16: Marketing Swarm Auto-Load
+
+**Input:** "repromptverse - launch plan for AI agent community growth with SEO + X posts + weekly analytics"
+**Expected:** Marketing swarm profile is selected by default.
+**Verify:**
+- `marketing-swarm-template` sections appear in generated prompt pack
+- Role pack includes strategist/researcher/copywriter/distributor/analyst
+- KPI tree + calendar + reporting cadence are explicitly defined
+
+## Scenario 17: Single Mode Pattern Pack Coverage
+
+**Input:** "reprompt this: make onboarding better"
+**Expected:** Single mode runs intent routing + constraint normalization + evaluator loop.
+**Verify:**
+- Template selection rationale is explicit (intent router)
+- Vague goal is converted into measurable requirements/constraints
+- Quality rubric is shown across six dimensions
+- If score < 7, one delta rewrite is produced before final output
 
 ---
 

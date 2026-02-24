@@ -1,5 +1,22 @@
 # RePrompter Changelog
 
+## v8.0.0 (2026-02-24)
+
+### Added
+- **Repromptverse template** — `references/repromptverse-template.md` adds explicit `routing_policy`, `termination_policy`, `artifact_contract`, and `evaluation_loop`
+- **Marketing swarm template** — `references/marketing-swarm-template.md` for campaign/growth/SEO/content multi-agent runs
+- **Codex installation path** documented in README (`~/.codex/skills/reprompter`)
+- **Codex compatibility** in SKILL frontmatter and execution options
+- **Microsoft-inspired orchestration notes** in README for selector-style routing + evaluator loops
+
+### Breaking
+- **Repromptverse is now the only multi-agent mode name** — Repromptception naming removed from docs/triggers
+
+### Changed
+- **Marketing-first routing:** Repromptverse auto-loads marketing swarm profile for campaign/growth/SEO/content intents
+- Multi-agent mode docs now describe runtime-specific execution options: tmux, TeamCreate, sessions_spawn, Codex parallel sessions, and sequential fallback
+- Template priority updated to prefer `marketing-swarm-template`/`repromptverse-template` for multi-agent tasks
+
 ## v7.1.0 (2026-02-22)
 
 ### Added
@@ -18,7 +35,7 @@
 ### Changed
 - `docs/examples/` renamed to `docs/references/` (#7)
 - Template files consolidated into single adaptive XML template
-- README examples upgraded to v7 Repromptception quality
+- README examples upgraded to v7 Repromptverse quality
 - Extended tags, Advanced Features, teammateMode documented
 - Compatibility frontmatter updated for multi-platform support
 
@@ -30,9 +47,9 @@
 - **Removed `research-reprompter`** — was broken, unused
 
 ### Added
-- **Two-mode architecture:** Single prompt mode + Repromptception mode in one skill
-- **Repromptception vs Raw comparison data** — 4-agent audit: +100% CRITICALs, +160% findings, +30% cost savings
-- **Auto-detection:** suggests Repromptception when task mentions 2+ systems or "audit"
+- **Two-mode architecture:** Single prompt mode + Repromptverse mode in one skill
+- **Repromptverse vs Raw comparison data** — 4-agent audit: +100% CRITICALs, +160% findings, +30% cost savings
+- **Auto-detection:** suggests Repromptverse when task mentions 2+ systems or "audit"
 - **content-template:** added for blog posts, articles, and marketing copy (12 templates total)
 - content-template is now included in references and template tables across SKILL.md/README
 
@@ -52,7 +69,7 @@
 ## v6.1.3 (2026-02-12)
 
 ### Added
-- Repromptception E2E test results in README (2.15→9.15, +326%)
+- Repromptverse E2E test results in README (2.15→9.15, +326%)
 - Routing-logic skill descriptions (OpenAI best practices)
 - `teammateMode: "tmux"` documentation for split-pane agent monitoring
 

@@ -8,21 +8,33 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-7.0.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-8.0.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 [![Issues](https://img.shields.io/github/issues/aytuncyildizli/reprompter?color=da3633)](https://github.com/aytuncyildizli/reprompter/issues)
 ![Claude Code](https://img.shields.io/badge/Claude%20Code-primary-111111)
 ![OpenClaw](https://img.shields.io/badge/OpenClaw-supported-7c3aed)
+![Codex](https://img.shields.io/badge/Codex-supported-10a37f)
 ![LLM](https://img.shields.io/badge/Prompt%20Mode-Any%20Structured%20LLM-0ea5e9)
 
 ---
 
-RePrompter interviews you, figures out what you actually want, and writes the prompt you were too lazy to write yourself. **v7 merges single-prompt and team orchestration into one skill** — it detects complexity, picks execution mode, and scores everything.
+RePrompter interviews you, figures out what you actually want, and writes the prompt you were too lazy to write yourself. **v8 standardizes on Repromptverse** and adds stricter orchestration controls — routing, termination, artifact contracts, and evaluator-driven retries.
 
 Compatibility:
-- **Single prompt-improvement mode:** Claude Code, OpenClaw, or any structured-prompt LLM
-- **Repromptception team orchestration mode:** Claude Code / OpenClaw (tmux Agent Teams + orchestration flow)
+- **Single prompt-improvement mode:** Claude Code, OpenClaw, Codex, or any structured-prompt LLM
+- **Repromptverse team orchestration mode:** Claude Code / OpenClaw / Codex (parallel when available, sequential fallback)
+
+Compatibility matrix:
+
+| Capability | Claude Code | Codex | OpenClaw |
+|---|---|---|---|
+| Single-mode interview + scoring | ✅ | ✅ | ✅ |
+| Single-mode self-eval + delta rewrite | ✅ | ✅ | ✅ |
+| Multi-agent orchestration | ✅ | ✅* | ✅ |
+| Parallel team execution | ✅ | ✅* | ✅ |
+
+\* depends on runtime session/subagent availability; otherwise sequential fallback is used.
 
 <br/>
 
@@ -228,7 +240,7 @@ When auto-detection finds multiple systems (UI + API + tests), it generates:
 </details>
 
 <details>
-<summary><strong>🎨 Frontend Agent — full Repromptception prompt</strong></summary>
+<summary><strong>🎨 Frontend Agent — full Repromptverse prompt</strong></summary>
 
 ```xml
 <role>
@@ -283,7 +295,7 @@ Write complete implementation to /tmp/rpt-frontend.md including:
 </details>
 
 <details>
-<summary><strong>⚙️ Backend Agent — full Repromptception prompt</strong></summary>
+<summary><strong>⚙️ Backend Agent — full Repromptverse prompt</strong></summary>
 
 ```xml
 <role>
@@ -339,7 +351,7 @@ Write complete implementation to /tmp/rpt-backend.md including:
 </details>
 
 <details>
-<summary><strong>🧪 Tests Agent — full Repromptception prompt</strong></summary>
+<summary><strong>🧪 Tests Agent — full Repromptverse prompt</strong></summary>
 
 ```xml
 <role>
@@ -415,11 +427,21 @@ Claude Code auto-discovers `skills/reprompter/SKILL.md`.
 cp -R reprompter /path/to/workspace/skills/reprompter
 ```
 
+### Codex
+
+```bash
+mkdir -p ~/.codex/skills/reprompter
+curl -sL https://github.com/aytuncyildizli/reprompter/archive/main.tar.gz | \
+  tar xz --strip-components=1 -C ~/.codex/skills/reprompter
+```
+
+Codex auto-discovers `~/.codex/skills/reprompter/SKILL.md`.
+
 ### Any Structured-Prompt LLM
 
 Use `SKILL.md` as the behavior spec. Templates are in `references/`.
 
-> Note: Non-Claude runtimes are supported for **prompt-improvement mode**. Repromptception orchestration features (tmux Agent Teams/session tools) are Claude Code/OpenClaw specific.
+> Note: Non-Claude runtimes are supported for **prompt-improvement mode**. Repromptverse orchestration can run in any runtime with sequential fallback; parallel launch methods remain runtime-specific.
 
 ---
 
@@ -436,7 +458,7 @@ reprompter teams - audit the auth module for security and test coverage
 ```
 
 **Single mode** triggers: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt"
-**Team mode** triggers: "reprompter teams", "repromptception", "run with quality", "smart run", "smart agents"
+**Team mode** triggers: "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "campaign swarm"
 
 RePrompter will interview you (2-5 questions), generate a structured XML prompt, and show a before/after quality score.
 
@@ -473,14 +495,34 @@ Every transformation is scored on six weighted dimensions:
 | `docs-template` | Technical docs |
 | `content-template` | Blog posts, articles, marketing copy |
 | `research-template` | Analysis / option exploration |
+| `marketing-swarm-template` | Marketing-first multi-agent orchestration |
+| `repromptverse-template` | Multi-agent routing, termination, artifact/eval contract |
 | `swarm-template` | Multi-agent coordination |
 | `team-brief-template` | Team orchestration brief |
 
-> Templates live in `references/` and are read on demand (not loaded into context). Team brief is generated during Repromptception Phase 1.
+> Templates live in `references/` and are read on demand (not loaded into context). Team brief is generated during Repromptverse Phase 1.
 
 ---
 
-## v7.0 — Unified Skill + Repromptception 🧠
+## v8.0 — Repromptverse + Codex Skill
+
+Repromptverse is now the single multi-agent mode. v8 adds a stricter control plane for reliability:
+
+- **Routing policy**: explicit next-speaker logic (selector-style where needed)
+- **Termination policy**: max turns/time + no-progress stop condition
+- **Artifact contract**: one writer per output path, fixed handoff schema
+- **Evaluator loop**: score each artifact, retry with delta prompts only
+- **Marketing swarm profile**: if intent is campaign/growth/SEO/content, load marketing role pack by default
+- **Single-mode pattern pack**: intent router + spec contract + self-eval + one-step delta rewrite
+
+Design input borrowed from Microsoft patterns:
+
+- AutoGen team orchestration / selector routing / termination contracts
+- PromptWizard-style evaluator and iterative optimization loops
+
+---
+
+## v7.0 — Unified Skill + Repromptverse 🧠
 
 **v7.0 merges `reprompter` + `reprompter-teams` into a single skill with two modes.** No more separate skills — one SKILL.md handles both single prompts and full agent team orchestration.
 
@@ -491,7 +533,7 @@ Raw task
     ↓
 Layer 1: Team Plan — roles, coordination, brief
     ↓
-Layer 2: Repromptception — each agent's sub-task gets its own
+Layer 2: Repromptverse — each agent's sub-task gets its own
          full RePrompter pass (score, improve, add constraints,
          success criteria, output format)
     ↓
@@ -502,12 +544,12 @@ Evaluate — score output against success criteria
 Retry (if needed) — delta prompts targeting specific gaps
 ```
 
-**Before Repromptception:** Raw task given to 4 agents:
+**Before Repromptverse:** Raw task given to 4 agents:
 > "audit my system for security, cost waste, config issues, and memory bloat"
 >
 > That's a **2.5/10** prompt. Each agent gets a vague one-liner and has to guess scope, output format, and success criteria.
 
-**After Repromptception:** Each agent gets a structured XML prompt (all 4 shown below).
+**After Repromptverse:** Each agent gets a structured XML prompt (all 4 shown below).
 
 The team lead sends all 4 agents in parallel. Each writes to their own `/tmp/` file. No scope overlap.
 
@@ -691,11 +733,11 @@ and stale content. Quantify token savings from cleanup.</task>
 
 </details>
 
-**4-phase loop:** Team Plan → Repromptception → Execute → Evaluate+Retry
+**4-phase loop:** Team Plan → Repromptverse → Execute → Evaluate+Retry
 
-Trigger words: `"reprompter teams"`, `"repromptception"`, `"run with quality"`, `"smart run"`, `"smart agents"`
+Trigger words: `"reprompter teams"`, `"repromptverse"`, `"run with quality"`, `"smart run"`, `"smart agents"`, `"campaign swarm"`
 
-Normal single-prompt usage is unchanged — Repromptception only activates for team/multi-agent tasks.
+Normal single-prompt usage is unchanged — Repromptverse only activates for team/multi-agent tasks.
 
 ### Proven Results
 
@@ -704,16 +746,16 @@ Normal single-prompt usage is unchanged — Repromptception only activates for t
 | Metric | Value |
 |--------|-------|
 | Original prompt score | 2.15 / 10 |
-| After Repromptception | **9.15 / 10** |
+| After Repromptverse | **9.15 / 10** |
 | Delta | **+7.00 points (+326%)** |
 | Quality audit | **PASS (99.1%)** |
 | Weaknesses found → fixed | 24 → 24 (100%) |
 | Cost | $1.39 |
 | Time | ~8 minutes |
 
-**Repromptception vs Raw Agent Teams** — same audit, 4 Opus agents:
+**Repromptverse vs Raw Agent Teams** — same audit, 4 Opus agents:
 
-| Metric | Raw | Repromptception | Delta |
+| Metric | Raw | Repromptverse | Delta |
 |--------|-----|----------------|-------|
 | CRITICAL findings | 7 | 14 | **+100%** |
 | Total findings | ~40 | 104 | **+160%** |
@@ -735,7 +777,7 @@ The pipeline runs via **Claude Code Agent Teams** with `teammateMode: "tmux"` fo
 - **Token budget** — Keeps prompts compact (~2K single mode, ~1-2K per agent)
 - **Uncertainty handling** — Explicit permission to ask, not fabricate
 - **Motivation capture** — Maps "why this matters" into `<motivation>` so priority survives execution
-- **Closed-loop quality** — Execute → Evaluate → Retry (Repromptception mode only — Single mode generates prompts, does not execute; max 2 retries, delta prompts)
+- **Closed-loop quality** — Execute → Evaluate → Retry (Repromptverse mode only — Single mode generates prompts, does not execute; max 2 retries, delta prompts)
 
 ---
 

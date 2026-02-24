@@ -2,20 +2,20 @@
 name: reprompter
 description: |
   Transform messy prompts into well-structured, effective prompts — single or multi-agent.
-  Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", rough text needing XML tags and best practices, "reprompter teams", "repromptception", "run with quality", "smart run", "smart agents", multi-agent tasks, audits, parallel work, anything going to agent teams.
+  Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", rough text needing XML tags and best practices, "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "multi-agent marketing", "campaign swarm", multi-agent tasks, audits, parallel work, anything going to agent teams.
   Don't use when: simple Q&A, pure chat, immediate execution-only tasks. See "Don't Use When" section for details.
   Outputs: Structured XML/Markdown prompt, quality score (before/after), optional team brief + per-agent sub-prompts, agent team output files.
-  Success criteria: Single mode quality score ≥ 7/10; Repromptception per-agent prompt quality score 8+/10; all required sections present, actionable and specific.
+  Success criteria: Single mode quality score ≥ 7/10; Repromptverse per-agent prompt quality score 8+/10; all required sections present, actionable and specific.
 compatibility: |
-  Single mode works on all Claude surfaces (Claude.ai, Claude Code, API).
-  Repromptception mode requires Claude Code with tmux or TeamCreate, and CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1.
-  Sequential fallback works with any LLM.
+  Single mode works on Claude surfaces, OpenClaw, and Codex.
+  Repromptverse mode supports Claude Code (tmux/TeamCreate), OpenClaw (sessions_spawn), and Codex (parallel sessions if available, sequential fallback otherwise).
+  Sequential fallback works with any LLM runtime.
 metadata:
   author: AytuncYildizli
-  version: 7.1.0
+  version: 8.0.0
 ---
 
-# RePrompter v7.1
+# RePrompter v8.0
 
 > **Your prompt sucks. Let's fix that.** Single prompts or full agent teams — one skill, two modes.
 
@@ -26,9 +26,9 @@ metadata:
 | Mode | Trigger | What happens |
 |------|---------|-------------|
 | **Single** | "reprompt this", "clean up this prompt" | Interview → structured prompt → score |
-| **Repromptception** | "reprompter teams", "repromptception", "run with quality", "smart run", "smart agents" | Plan team → reprompt each agent → execute (tmux/TeamCreate/sequential) → evaluate → retry |
+| **Repromptverse** | "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "campaign swarm" | Plan team → reprompt each agent → execute (tmux/TeamCreate/sessions_spawn/Codex/sequential) → evaluate → retry |
 
-Auto-detection: if task mentions 2+ systems, "audit", or "parallel" → ask: "This looks like a multi-agent task. Want to use Repromptception mode?"
+Auto-detection: if task mentions 2+ systems, "audit", or "parallel" → ask: "This looks like a multi-agent task. Want to use Repromptverse mode?"
 
 Definition — **2+ systems** means at least two distinct technical domains that can be worked independently. Examples: frontend + backend, API + database, mobile app + backend, infrastructure + application code, security audit + cost audit.
 
@@ -39,7 +39,7 @@ Definition — **2+ systems** means at least two distinct technical domains that
 - Task is immediate execution-only with no reprompting step
 - Scope does not involve prompt design, structure, or orchestration
 
-> Clarification: RePrompter **does** support code-related tasks (feature, bugfix, API, refactor) by generating better prompts. It does **not** directly apply code changes in Single mode. Direct code execution belongs to coding-agent unless Repromptception execution mode is explicitly requested.
+> Clarification: RePrompter **does** support code-related tasks (feature, bugfix, API, refactor) by generating better prompts. It does **not** directly apply code changes in Single mode. Direct code execution belongs to coding-agent unless Repromptverse execution mode is explicitly requested.
 
 ---
 
@@ -54,6 +54,7 @@ Definition — **2+ systems** means at least two distinct technical domains that
 3. **Quick Mode gate** — under 20 words, single action, no complexity indicators → generate immediately
 4. **Smart Interview** — use `AskUserQuestion` with clickable options (2-5 questions max)
 5. **Generate + Score** — apply template, show before/after quality metrics
+6. **Single-pass evaluator** — run self-eval rubric and do one delta rewrite if score < 7
 
 ### ⚠️ MUST GENERATE AFTER INTERVIEW
 
@@ -74,7 +75,7 @@ Ask via `AskUserQuestion`. **Max 5 questions total.**
 
 **Standard questions** (priority order — drop lower ones if task-specific questions are needed):
 1. Task type: Build Feature / Fix Bug / Refactor / Write Tests / API Work / UI / Security / Docs / Content / Research / Multi-Agent
-   - If user selects **Multi-Agent** while currently in **Single mode**, immediately transition to **Repromptception Phase 1 (Team Plan)** and confirm team execution mode (Parallel vs Sequential).
+   - If user selects **Multi-Agent** while currently in **Single mode**, immediately transition to **Repromptverse Phase 1 (Team Plan)** and confirm team execution mode (Parallel vs Sequential).
 2. Execution mode: Single Agent / Team (Parallel) / Team (Sequential) / Let RePrompter decide
 3. Motivation: User-facing / Internal tooling / Bug fix / Exploration / Skip *(drop first if space needed)*
 4. Output format: XML Tags / Markdown / Plain Text / JSON *(drop first if space needed)*
@@ -84,6 +85,17 @@ Ask via `AskUserQuestion`. **Max 5 questions total.**
 - Example: prompt mentions "telegram" → ask about alert type, interactivity, delivery
 - **Vague prompt fallback:** if input has no extractable keywords (e.g., "make it better"), ask open-ended: "What are you working on?" and "What's the goal?" before proceeding
 
+### Single mode pattern pack (Microsoft-inspired)
+
+Apply these patterns even without multi-agent execution:
+
+1. **Intent router** — map task to template with explicit priority rules
+2. **Constraint normalizer** — convert vague goals into measurable requirements/limits
+3. **Spec contract** — enforce role/context/task/requirements/constraints/output/success structure
+4. **Evaluator loop** — score clarity/specificity/structure/constraints/verifiability/decomposition; if score < 7, produce one delta rewrite
+
+This keeps Single mode deterministic and compatible across Claude, OpenClaw, and Codex runtimes.
+
 ### Auto-detect complexity
 
 | Signal | Suggested mode |
@@ -92,6 +104,7 @@ Ask via `AskUserQuestion`. **Max 5 questions total.**
 | Pipeline (fetch → transform → deploy) | Team (Sequential) |
 | Single file/component | Single Agent |
 | "audit", "review", "analyze" across areas | Team (Parallel) |
+| "campaign", "launch", "growth", "SEO", "content calendar", "funnel" | Team (Parallel, Marketing Swarm) |
 
 ### Quick mode
 
@@ -139,10 +152,12 @@ Detect task type from input. Each type has a dedicated template in `references/`
 | Docs | `docs-template.md` | Documentation |
 | Content | `content-template.md` | Blog posts, articles, marketing copy |
 | Research | `research-template.md` | Analysis/exploration |
-| Multi-Agent | `swarm-template.md` | Multi-agent coordination |
+| Marketing Swarm | `marketing-swarm-template.md` | Marketing-first multi-agent orchestration |
+| Repromptverse | `repromptverse-template.md` | Multi-agent routing + termination + evaluator loop |
+| Multi-Agent | `swarm-template.md` | Basic multi-agent coordination |
 | Team Brief | `team-brief-template.md` | Team orchestration brief |
 
-**Priority** (most specific wins): api > security > ui > testing > bugfix > refactor > content > docs > research > feature. For multi-agent tasks, use `swarm-template` for the team brief and the type-specific template for each agent's sub-prompt.
+**Priority** (most specific wins): marketing-swarm > repromptverse > api > security > ui > testing > bugfix > refactor > content > docs > research > feature. For multi-agent tasks, use `repromptverse-template` + `team-brief-template`, then type-specific templates for each agent sub-prompt.
 
 **How it works:** Read the matching template from `references/{type}-template.md`, then fill it with task-specific context. Templates are NOT loaded into context by default — only read on demand when generating a prompt. If the template file is not found, fall back to the Base XML Structure below.
 
@@ -194,7 +209,7 @@ Auto-detect tech stack from current working directory ONLY:
 
 ---
 
-## Mode 2: Repromptception (Agent Teams)
+## Mode 2: Repromptverse (Agent Teams)
 
 ### TL;DR
 
@@ -203,11 +218,24 @@ Raw task in → quality output out. Every agent gets a reprompted prompt.
 
 Phase 1: Score raw prompt, plan team, define roles (YOU do this, ~30s)
 Phase 2: Write XML-structured prompt per agent (YOU do this, ~2min)
-Phase 3: Launch agents (tmux, TeamCreate, or sequential) (AUTOMATED)
+Phase 3: Launch agents (tmux, TeamCreate, sessions_spawn, Codex, or sequential) (AUTOMATED)
 Phase 4: Read results, score, retry if needed (YOU do this)
 ```
 
 **Key insight:** The reprompt phase costs ZERO extra tokens — YOU write the prompts, not another AI.
+
+### Repromptverse control plane (Microsoft-inspired)
+
+Every multi-agent run must include:
+
+1. **Routing policy** — who speaks next and why (selector-style routing for non-trivial teams)
+2. **Termination policy** — max turns, max wall time, and no-progress stop condition
+3. **Artifact contract** — one writer per output file, fixed schema for handoffs
+4. **Evaluator loop** — score each artifact, retry only with delta prompts (max 2 retries)
+
+Use `references/repromptverse-template.md` to enforce this contract.
+
+When marketing intent is explicit (`campaign`, `launch`, `growth`, `seo`, `content calendar`, `funnel`), load `references/marketing-swarm-template.md` first, then merge any task-specific requirements from other templates.
 
 ### Phase 1: Team plan (~30 seconds)
 
@@ -217,7 +245,7 @@ Phase 4: Read results, score, retry if needed (YOU do this)
 3. **Define team:** 2-5 agents max, each owns ONE domain, no overlap
 4. **Write team brief** to `/tmp/rpt-brief-{taskname}.md` (use unique tasknames to avoid collisions between concurrent runs)
 
-### Phase 2: Repromptception (~2 minutes)
+### Phase 2: Repromptverse prompt pack (~2 minutes)
 
 For EACH agent:
 1. Pick the best-matching template from `references/` (or use base XML structure)
@@ -329,7 +357,7 @@ When using Claude Code with TeamCreate/SendMessage tools (native agent teams, no
 
 ```text
 # 1. Create team
-TeamCreate(team_name="rpt-{taskname}", description="Repromptception: {task summary}")
+TeamCreate(team_name="rpt-{taskname}", description="Repromptverse: {task summary}")
 
 # 2. Create tasks (one per agent)
 TaskCreate(subject="Agent 1 task", description="Full reprompted prompt from Phase 2")
@@ -362,7 +390,18 @@ sessions_spawn(task: "<per-agent prompt>", model: "opus", label: "rpt-{role}")
 ```
 Note: `sessions_spawn` is an OpenClaw-specific tool. Not available in standalone Claude Code.
 
-#### Option D: Sequential (any LLM)
+#### Option D: Codex parallel sessions (Codex runtime)
+
+When running in Codex:
+1. Create one session per agent role (or use native subagents if available).
+2. Send each session the corresponding prompt from `/tmp/rpt-agent-prompts-{taskname}.md`.
+3. Require each session to write exactly one artifact to `/tmp/rpt-{taskname}-{agent-domain}.md`.
+4. Poll for artifact completion every 15-30s with a hard cap (max 40 polls total).
+5. Run Phase 4 evaluator loop and merge to `/tmp/rpt-{taskname}-final.md`.
+
+If Codex parallel sessions are not available, immediately fall back to Option E.
+
+#### Option E: Sequential (any LLM)
 
 No parallel execution tools available? Run each agent's reprompted prompt one at a time in the same session. Works with any LLM (Claude, GPT, Gemini, Codex, etc.). Slower but fully platform-agnostic.
 
@@ -404,9 +443,9 @@ The reprompted prompts from Phase 2 are pure text. They work regardless of execu
 For both modes, RePrompter supports post-execution evaluation:
 
 1. **IMPROVE** — Score raw → generate structured prompt
-2. **EXECUTE** — **Repromptception mode only**: route to agent(s), collect output. **Single mode does not execute code/commands; it only generates prompts.**
+2. **EXECUTE** — **Repromptverse mode only**: route to agent(s), collect output. **Single mode does not execute code/commands; it only generates prompts.**
 3. **EVALUATE** — Score output/prompt against success criteria (0-10)
-4. **RETRY** — Thresholds: Single mode retry if score < 7; Repromptception retry if score < 8. Max 2 retries.
+4. **RETRY** — Thresholds: Single mode retry if score < 7; Repromptverse retry if score < 8. Max 2 retries.
 
 ---
 
@@ -430,7 +469,7 @@ Generated prompts should COMPLEMENT runtime context (CLAUDE.md, skills, MCP tool
 3. Add ONLY what's missing — avoid restating what the model already knows
 
 ### Token budget
-Keep generated prompts under ~2K tokens for single mode, ~1K per agent for Repromptception. Longer prompts waste context window without improving quality. If a prompt exceeds budget, split into phases or move detail into constraints.
+Keep generated prompts under ~2K tokens for single mode, ~1K per agent for Repromptverse. Longer prompts waste context window without improving quality. If a prompt exceeds budget, split into phases or move detail into constraints.
 
 ### Uncertainty handling
 Always include explicit permission for the model to express uncertainty rather than fabricate:
@@ -440,7 +479,7 @@ Always include explicit permission for the model to express uncertainty rather t
 
 ---
 
-## Settings (for Repromptception mode)
+## Settings (for Repromptverse mode)
 
 > Note: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is an experimental flag that may change in future Claude Code versions. Check [Claude Code docs](https://docs.anthropic.com/en/docs/claude-code) for current status.
 
@@ -470,22 +509,22 @@ In `~/.claude/settings.json`:
 ### Single prompt (v6.0)
 Rough crypto dashboard prompt: **1.6/10 → 9.0/10** (+462%)
 
-### Repromptception E2E (v6.1)
+### Repromptverse E2E (v6.1)
 3 Opus agents, sequential pipeline (PromptAnalyzer → PromptEngineer → QualityAuditor):
 
 | Metric | Value |
 |--------|-------|
 | Original score | 2.15/10 |
-| After Repromptception | **9.15/10** (+326%) |
+| After Repromptverse | **9.15/10** (+326%) |
 | Quality audit | PASS (99.1%) |
 | Weaknesses found → fixed | 24/24 (100%) |
 | Cost | $1.39 |
 | Time | ~8 minutes |
 
-### Repromptception vs raw Agent Teams (v7.0)
+### Repromptverse vs raw Agent Teams (v7.0)
 Same audit task, 4 Opus agents:
 
-| Metric | Raw | Repromptception | Delta |
+| Metric | Raw | Repromptverse | Delta |
 |--------|-----|----------------|-------|
 | CRITICAL findings | 7 | 14 | +100% |
 | Total findings | ~40 | 104 | +160% |
@@ -507,7 +546,7 @@ Same audit task, 4 Opus agents:
 
 ## Test scenarios
 
-See [TESTING.md](TESTING.md) for 13 verification scenarios + anti-pattern examples.
+See [TESTING.md](TESTING.md) for 16 verification scenarios + anti-pattern examples.
 
 ---
 
@@ -524,6 +563,10 @@ Templates may add domain-specific tags beyond the 8 required base tags. Always i
 | `<agents>` | swarm | Agent role definitions |
 | `<task_decomposition>` | swarm | Work split per agent |
 | `<coordination>` | swarm | Inter-agent handoff rules |
+| `<routing_policy>` | repromptverse | Speaker and router policy |
+| `<termination_policy>` | repromptverse | Max turn/time and stop conditions |
+| `<artifact_contract>` | repromptverse | Output schema and ownership |
+| `<evaluation_loop>` | repromptverse | Score thresholds and retry policy |
 | `<research_questions>` | research | Specific questions to answer |
 | `<methodology>` | research | Research approach and methods |
 | `<reasoning>` | research | Reasoning notes space (non-sensitive, concise) |
