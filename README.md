@@ -38,6 +38,25 @@ Compatibility matrix:
 
 <br/>
 
+## What's New In v8.2
+
+- Repromptverse is now the single multi-agent mode.
+- Domain swarm routing is built-in: marketing, engineering, ops, research.
+- Deterministic intent router + unit tests.
+- Fixture-driven benchmark harness with reproducible reports.
+- Codex + Claude + OpenClaw operational parity.
+
+Microsoft-inspired design patterns adopted in Repromptverse:
+- Selector-style routing policy (explicit next speaker / owner)
+- Termination contracts (max turn/time + no-progress stop)
+- Artifact contracts (one writer per output path + handoff schema)
+- Evaluator loop (score -> delta retry)
+
+Quick links:
+- Release: https://github.com/AytuncYildizli/reprompter/releases/tag/v8.2.0
+- Benchmark report: `benchmarks/v8.2-swarm-benchmark.md`
+- Launch pack: `benchmarks/launch-pack-v8.2.md`
+
 ## The Problem
 
 You type this:
