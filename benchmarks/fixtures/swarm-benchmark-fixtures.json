@@ -1,0 +1,38 @@
+[
+  {
+    "id": "mk-01",
+    "prompt": "repromptverse launch campaign for AI community growth with SEO, content calendar, and conversion funnel",
+    "expectedProfile": "marketing-swarm",
+    "forceMultiAgent": false
+  },
+  {
+    "id": "eng-01",
+    "prompt": "reprompter teams refactor auth module, migrate api contract, and increase integration test coverage",
+    "expectedProfile": "engineering-swarm",
+    "forceMultiAgent": false
+  },
+  {
+    "id": "ops-01",
+    "prompt": "repromptverse gateway timeout incident with cron failures, uptime drops, and latency spikes",
+    "expectedProfile": "ops-swarm",
+    "forceMultiAgent": false
+  },
+  {
+    "id": "res-01",
+    "prompt": "run with quality benchmark memory systems and compare tradeoff matrix with confidence levels",
+    "expectedProfile": "research-swarm",
+    "forceMultiAgent": false
+  },
+  {
+    "id": "generic-01",
+    "prompt": "repromptverse coordinate three agents for an internal quality audit",
+    "expectedProfile": "repromptverse",
+    "forceMultiAgent": false
+  },
+  {
+    "id": "forced-01",
+    "prompt": "launch growth seo content hooks",
+    "expectedProfile": "marketing-swarm",
+    "forceMultiAgent": true
+  }
+]

@@ -8,7 +8,7 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-8.1.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-8.2.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 [![Issues](https://img.shields.io/github/issues/aytuncyildizli/reprompter?color=da3633)](https://github.com/aytuncyildizli/reprompter/issues)
@@ -19,7 +19,7 @@
 
 ---
 
-RePrompter interviews you, figures out what you actually want, and writes the prompt you were too lazy to write yourself. **v8.1 standardizes on Repromptverse** and adds stricter orchestration controls plus domain swarm packs — routing, termination, artifact contracts, evaluator-driven retries, and lazy-loaded profiles for marketing/engineering/ops/research.
+RePrompter interviews you, figures out what you actually want, and writes the prompt you were too lazy to write yourself. **v8.2 standardizes on Repromptverse** and adds stricter orchestration controls plus domain swarm packs — routing, termination, artifact contracts, evaluator-driven retries, and lazy-loaded profiles for marketing/engineering/ops/research.
 
 Compatibility:
 - **Single prompt-improvement mode:** Claude Code, OpenClaw, Codex, or any structured-prompt LLM
@@ -507,7 +507,7 @@ Every transformation is scored on six weighted dimensions:
 
 ---
 
-## v8.1 — Domain Swarm Packs + Codex/Claude Parity
+## v8.2 — Router + Benchmark Hardening
 
 Repromptverse is now the single multi-agent mode. v8.1 adds domain-specific lazy-load profiles:
 
@@ -525,6 +525,31 @@ Design input borrowed from Microsoft patterns:
 
 - AutoGen team orchestration / selector routing / termination contracts
 - PromptWizard-style evaluator and iterative optimization loops
+
+Benchmark + validation commands:
+
+```bash
+npm run validate:templates
+npm run test:intent-router
+npm run benchmark:swarms
+```
+
+Generated benchmark artifacts:
+- `benchmarks/v8.2-swarm-benchmark.md`
+- `benchmarks/v8.2-swarm-benchmark.json`
+
+Current benchmark snapshot (fixture-driven):
+
+| Metric | Value |
+|---|---|
+| Routing accuracy | 100% (6/6) |
+| Domain profiles covered | marketing, engineering, ops, research, generic repromptverse |
+| Template contract coverage | 100% for all swarm templates |
+| Proxy quality | 10/10 (domain swarms), 8/10 (generic repromptverse) |
+
+Codex troubleshooting:
+
+- If you see `Unsupported value: 'xhigh' ... reasoning.effort`, set `model_reasoning_effort = "high"` in `~/.codex/config.toml`.
 
 ---
 

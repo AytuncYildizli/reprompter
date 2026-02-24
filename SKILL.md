@@ -12,10 +12,10 @@ compatibility: |
   Sequential fallback works with any LLM runtime.
 metadata:
   author: AytuncYildizli
-  version: 8.1.0
+  version: 8.2.0
 ---
 
-# RePrompter v8.1
+# RePrompter v8.2
 
 > **Your prompt sucks. Let's fix that.** Single prompts or full agent teams — one skill, two modes.
 
@@ -249,6 +249,9 @@ Domain profile auto-load rules (lazy-load, on demand):
 - Research intent (`benchmark`, `compare`, `tradeoff`, `analysis`, `research`) -> `references/research-swarm-template.md`
 
 Then merge with `references/repromptverse-template.md` for routing/termination/evaluation contract and add task-specific constraints.
+
+Canonical implementation for deterministic routing lives in `scripts/intent-router.js`.
+If docs and code ever diverge, the script is the source of truth for benchmark/testing paths.
 
 ### Phase 1: Team plan (~30 seconds)
 

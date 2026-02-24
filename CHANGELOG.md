@@ -1,5 +1,18 @@
 # RePrompter Changelog
 
+## v8.2.0 (2026-02-24)
+
+### Added
+- **Deterministic intent router** — `scripts/intent-router.js` with explicit profile triggers + weighted keyword routing
+- **Router unit tests** — `scripts/intent-router.test.js` (8 passing tests)
+- **Benchmark harness** — `scripts/run-swarm-benchmark.js` + fixture set under `benchmarks/fixtures/`
+- **Benchmark reports** — generated markdown/json artifacts for pre-release checks
+
+### Changed
+- **Codex/Claude operational parity hardened** with runnable `npm run check` pipeline (templates + router tests + benchmark)
+- **Packaging scope tightened** — benchmark artifacts and router test file excluded from skill zip
+- Version alignment across docs and skill metadata to `v8.2.0`
+
 ## v8.1.0 (2026-02-24)
 
 ### Added
@@ -7,6 +20,8 @@
 - **Ops swarm template** — `references/ops-swarm-template.md` for incident/reliability/infra workflows
 - **Research swarm template** — `references/research-swarm-template.md` for benchmark/analysis/tradeoff workflows
 - **Expanded test coverage** — scenarios for engineering, ops, and research swarm auto-load plus single-mode pattern-pack verification
+- **Deterministic intent router** — `scripts/intent-router.js` + `scripts/intent-router.test.js`
+- **Swarm benchmark harness** — `scripts/run-swarm-benchmark.js` with fixture-driven reports in `benchmarks/`
 
 ### Changed
 - **Repromptverse routing broadening:** lazy-load domain profiles now cover marketing + engineering + ops + research intents

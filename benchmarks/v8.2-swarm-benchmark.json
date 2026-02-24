@@ -1,0 +1,133 @@
+{
+  "generatedAt": "2026-02-24T13:46:13.600Z",
+  "fixtureCount": 6,
+  "passCount": 6,
+  "accuracy": 100,
+  "routing": [
+    {
+      "id": "mk-01",
+      "expectedProfile": "marketing-swarm",
+      "detectedProfile": "marketing-swarm",
+      "mode": "multi-agent",
+      "pass": true,
+      "score": 19,
+      "reason": "rule-match",
+      "hits": [
+        "campaign",
+        "growth",
+        "seo",
+        "content calendar",
+        "funnel",
+        "conversion",
+        "launch"
+      ]
+    },
+    {
+      "id": "eng-01",
+      "expectedProfile": "engineering-swarm",
+      "detectedProfile": "engineering-swarm",
+      "mode": "multi-agent",
+      "pass": true,
+      "score": 10,
+      "reason": "rule-match",
+      "hits": [
+        "test coverage",
+        "api contract",
+        "refactor",
+        "module"
+      ]
+    },
+    {
+      "id": "ops-01",
+      "expectedProfile": "ops-swarm",
+      "detectedProfile": "ops-swarm",
+      "mode": "multi-agent",
+      "pass": true,
+      "score": 7,
+      "reason": "rule-match",
+      "hits": [
+        "gateway timeout",
+        "uptime",
+        "latency",
+        "cron",
+        "timeout"
+      ]
+    },
+    {
+      "id": "res-01",
+      "expectedProfile": "research-swarm",
+      "detectedProfile": "research-swarm",
+      "mode": "multi-agent",
+      "pass": true,
+      "score": 6,
+      "reason": "rule-match",
+      "hits": [
+        "benchmark",
+        "compare",
+        "confidence",
+        "matrix"
+      ]
+    },
+    {
+      "id": "generic-01",
+      "expectedProfile": "repromptverse",
+      "detectedProfile": "repromptverse",
+      "mode": "multi-agent",
+      "pass": true,
+      "score": 0,
+      "reason": "generic-multi-agent-fallback",
+      "hits": []
+    },
+    {
+      "id": "forced-01",
+      "expectedProfile": "marketing-swarm",
+      "detectedProfile": "marketing-swarm",
+      "mode": "multi-agent",
+      "pass": true,
+      "score": 7,
+      "reason": "rule-match",
+      "hits": [
+        "growth",
+        "seo",
+        "launch"
+      ]
+    }
+  ],
+  "templates": [
+    {
+      "profile": "marketing-swarm",
+      "template": "references/marketing-swarm-template.md",
+      "approxTokens": 898,
+      "contractCoverage": 100,
+      "proxyQuality": 10
+    },
+    {
+      "profile": "engineering-swarm",
+      "template": "references/engineering-swarm-template.md",
+      "approxTokens": 964,
+      "contractCoverage": 100,
+      "proxyQuality": 10
+    },
+    {
+      "profile": "ops-swarm",
+      "template": "references/ops-swarm-template.md",
+      "approxTokens": 959,
+      "contractCoverage": 100,
+      "proxyQuality": 10
+    },
+    {
+      "profile": "research-swarm",
+      "template": "references/research-swarm-template.md",
+      "approxTokens": 947,
+      "contractCoverage": 100,
+      "proxyQuality": 10
+    },
+    {
+      "profile": "repromptverse",
+      "template": "references/repromptverse-template.md",
+      "approxTokens": 757,
+      "contractCoverage": 100,
+      "proxyQuality": 8
+    }
+  ]
+}

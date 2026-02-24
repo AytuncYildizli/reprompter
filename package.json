@@ -1,8 +1,14 @@
 {
   "name": "reprompter",
-  "version": "8.1.0",
+  "version": "8.2.0",
   "private": true,
   "description": "Prompt engineering skill for Claude Code, OpenClaw, and Codex",
+  "scripts": {
+    "validate:templates": "bash scripts/validate-templates.sh",
+    "test:intent-router": "node --test scripts/intent-router.test.js",
+    "benchmark:swarms": "node scripts/run-swarm-benchmark.js",
+    "check": "npm run validate:templates && npm run test:intent-router && npm run benchmark:swarms"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/AytuncYildizli/reprompter.git"

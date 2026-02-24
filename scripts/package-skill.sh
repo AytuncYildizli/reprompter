@@ -26,6 +26,8 @@ zip -r "$OUT" . \
   -x "assets/social-preview.*" \
   -x "scripts/create-past-releases.sh" \
   -x "scripts/package-skill.sh" \
+  -x "scripts/intent-router.test.js" \
+  -x "benchmarks/*" \
   -x "reprompter-skill.zip"
 
 echo "✅ Packaged to: $OUT"
