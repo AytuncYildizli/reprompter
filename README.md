@@ -38,7 +38,7 @@ Compatibility matrix:
 
 <br/>
 
-## What's New In v8.2
+## v8.2 Highlights
 
 - Repromptverse is now the single multi-agent mode.
 - Domain swarm routing is built-in: marketing, engineering, ops, research.
@@ -528,7 +528,7 @@ Every transformation is scored on six weighted dimensions:
 
 ## v8.2 — Router + Benchmark Hardening
 
-Repromptverse is now the single multi-agent mode. v8.1 adds domain-specific lazy-load profiles:
+Repromptverse is now the single multi-agent mode. v8.2 adds domain-specific lazy-load profiles:
 
 - **Routing policy**: explicit next-speaker logic (selector-style where needed)
 - **Termination policy**: max turns/time + no-progress stop condition
