@@ -2,7 +2,7 @@
 name: reprompter
 description: |
   Transform messy prompts into well-structured, effective prompts — single or multi-agent.
-  Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", rough text needing XML tags and best practices, "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "multi-agent marketing", "campaign swarm", multi-agent tasks, audits, parallel work, anything going to agent teams.
+  Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", rough text needing XML tags and best practices, "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "multi-agent marketing", "campaign swarm", "engineering swarm", "ops swarm", "research swarm", multi-agent tasks, audits, parallel work, anything going to agent teams.
   Don't use when: simple Q&A, pure chat, immediate execution-only tasks. See "Don't Use When" section for details.
   Outputs: Structured XML/Markdown prompt, quality score (before/after), optional team brief + per-agent sub-prompts, agent team output files.
   Success criteria: Single mode quality score ≥ 7/10; Repromptverse per-agent prompt quality score 8+/10; all required sections present, actionable and specific.
@@ -12,10 +12,10 @@ compatibility: |
   Sequential fallback works with any LLM runtime.
 metadata:
   author: AytuncYildizli
-  version: 8.0.0
+  version: 8.1.0
 ---
 
-# RePrompter v8.0
+# RePrompter v8.1
 
 > **Your prompt sucks. Let's fix that.** Single prompts or full agent teams — one skill, two modes.
 
@@ -26,7 +26,7 @@ metadata:
 | Mode | Trigger | What happens |
 |------|---------|-------------|
 | **Single** | "reprompt this", "clean up this prompt" | Interview → structured prompt → score |
-| **Repromptverse** | "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "campaign swarm" | Plan team → reprompt each agent → execute (tmux/TeamCreate/sessions_spawn/Codex/sequential) → evaluate → retry |
+| **Repromptverse** | "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "campaign swarm", "engineering swarm", "ops swarm", "research swarm" | Plan team → reprompt each agent → execute (tmux/TeamCreate/sessions_spawn/Codex/sequential) → evaluate → retry |
 
 Auto-detection: if task mentions 2+ systems, "audit", or "parallel" → ask: "This looks like a multi-agent task. Want to use Repromptverse mode?"
 
@@ -105,6 +105,9 @@ This keeps Single mode deterministic and compatible across Claude, OpenClaw, and
 | Single file/component | Single Agent |
 | "audit", "review", "analyze" across areas | Team (Parallel) |
 | "campaign", "launch", "growth", "SEO", "content calendar", "funnel" | Team (Parallel, Marketing Swarm) |
+| "architecture", "feature delivery", "refactor", "migration", "test coverage" | Team (Parallel, Engineering Swarm) |
+| "incident", "uptime", "gateway", "latency", "cron", "SLO", "health" | Team (Parallel, Ops Swarm) |
+| "benchmark", "compare", "tradeoff", "options", "analysis", "research" | Team (Parallel, Research Swarm) |
 
 ### Quick mode
 
@@ -153,11 +156,14 @@ Detect task type from input. Each type has a dedicated template in `references/`
 | Content | `content-template.md` | Blog posts, articles, marketing copy |
 | Research | `research-template.md` | Analysis/exploration |
 | Marketing Swarm | `marketing-swarm-template.md` | Marketing-first multi-agent orchestration |
+| Engineering Swarm | `engineering-swarm-template.md` | Engineering-first multi-agent orchestration |
+| Ops Swarm | `ops-swarm-template.md` | Reliability/infra multi-agent orchestration |
+| Research Swarm | `research-swarm-template.md` | Analysis/benchmark multi-agent orchestration |
 | Repromptverse | `repromptverse-template.md` | Multi-agent routing + termination + evaluator loop |
 | Multi-Agent | `swarm-template.md` | Basic multi-agent coordination |
 | Team Brief | `team-brief-template.md` | Team orchestration brief |
 
-**Priority** (most specific wins): marketing-swarm > repromptverse > api > security > ui > testing > bugfix > refactor > content > docs > research > feature. For multi-agent tasks, use `repromptverse-template` + `team-brief-template`, then type-specific templates for each agent sub-prompt.
+**Priority** (most specific wins): marketing-swarm > engineering-swarm > ops-swarm > research-swarm > repromptverse > api > security > ui > testing > bugfix > refactor > content > docs > research > feature. For multi-agent tasks, use the best-fit swarm template + `repromptverse-template` + `team-brief-template`, then type-specific templates for each agent sub-prompt.
 
 **How it works:** Read the matching template from `references/{type}-template.md`, then fill it with task-specific context. Templates are NOT loaded into context by default — only read on demand when generating a prompt. If the template file is not found, fall back to the Base XML Structure below.
 
@@ -235,7 +241,14 @@ Every multi-agent run must include:
 
 Use `references/repromptverse-template.md` to enforce this contract.
 
-When marketing intent is explicit (`campaign`, `launch`, `growth`, `seo`, `content calendar`, `funnel`), load `references/marketing-swarm-template.md` first, then merge any task-specific requirements from other templates.
+Domain profile auto-load rules (lazy-load, on demand):
+
+- Marketing intent (`campaign`, `launch`, `growth`, `seo`, `content calendar`, `funnel`) -> `references/marketing-swarm-template.md`
+- Engineering intent (`architecture`, `feature delivery`, `refactor`, `migration`, `test coverage`) -> `references/engineering-swarm-template.md`
+- Ops intent (`incident`, `uptime`, `gateway`, `latency`, `cron`, `slo`, `health`) -> `references/ops-swarm-template.md`
+- Research intent (`benchmark`, `compare`, `tradeoff`, `analysis`, `research`) -> `references/research-swarm-template.md`
+
+Then merge with `references/repromptverse-template.md` for routing/termination/evaluation contract and add task-specific constraints.
 
 ### Phase 1: Team plan (~30 seconds)
 
@@ -546,7 +559,7 @@ Same audit task, 4 Opus agents:
 
 ## Test scenarios
 
-See [TESTING.md](TESTING.md) for 16 verification scenarios + anti-pattern examples.
+See [TESTING.md](TESTING.md) for 20 verification scenarios + anti-pattern examples.
 
 ---
 

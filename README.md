@@ -8,7 +8,7 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-8.0.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-8.1.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 [![Issues](https://img.shields.io/github/issues/aytuncyildizli/reprompter?color=da3633)](https://github.com/aytuncyildizli/reprompter/issues)
@@ -19,7 +19,7 @@
 
 ---
 
-RePrompter interviews you, figures out what you actually want, and writes the prompt you were too lazy to write yourself. **v8 standardizes on Repromptverse** and adds stricter orchestration controls — routing, termination, artifact contracts, and evaluator-driven retries.
+RePrompter interviews you, figures out what you actually want, and writes the prompt you were too lazy to write yourself. **v8.1 standardizes on Repromptverse** and adds stricter orchestration controls plus domain swarm packs — routing, termination, artifact contracts, evaluator-driven retries, and lazy-loaded profiles for marketing/engineering/ops/research.
 
 Compatibility:
 - **Single prompt-improvement mode:** Claude Code, OpenClaw, Codex, or any structured-prompt LLM
@@ -458,7 +458,7 @@ reprompter teams - audit the auth module for security and test coverage
 ```
 
 **Single mode** triggers: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt"
-**Team mode** triggers: "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "campaign swarm"
+**Team mode** triggers: "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "campaign swarm", "engineering swarm", "ops swarm", "research swarm"
 
 RePrompter will interview you (2-5 questions), generate a structured XML prompt, and show a before/after quality score.
 
@@ -496,6 +496,9 @@ Every transformation is scored on six weighted dimensions:
 | `content-template` | Blog posts, articles, marketing copy |
 | `research-template` | Analysis / option exploration |
 | `marketing-swarm-template` | Marketing-first multi-agent orchestration |
+| `engineering-swarm-template` | Engineering-first multi-agent orchestration |
+| `ops-swarm-template` | Reliability/infra multi-agent orchestration |
+| `research-swarm-template` | Analysis/benchmark multi-agent orchestration |
 | `repromptverse-template` | Multi-agent routing, termination, artifact/eval contract |
 | `swarm-template` | Multi-agent coordination |
 | `team-brief-template` | Team orchestration brief |
@@ -504,16 +507,19 @@ Every transformation is scored on six weighted dimensions:
 
 ---
 
-## v8.0 — Repromptverse + Codex Skill
+## v8.1 — Domain Swarm Packs + Codex/Claude Parity
 
-Repromptverse is now the single multi-agent mode. v8 adds a stricter control plane for reliability:
+Repromptverse is now the single multi-agent mode. v8.1 adds domain-specific lazy-load profiles:
 
 - **Routing policy**: explicit next-speaker logic (selector-style where needed)
 - **Termination policy**: max turns/time + no-progress stop condition
 - **Artifact contract**: one writer per output path, fixed handoff schema
 - **Evaluator loop**: score each artifact, retry with delta prompts only
-- **Marketing swarm profile**: if intent is campaign/growth/SEO/content, load marketing role pack by default
-- **Single-mode pattern pack**: intent router + spec contract + self-eval + one-step delta rewrite
+- **Marketing swarm profile**: campaign/growth/SEO/content
+- **Engineering swarm profile**: architecture/feature/refactor/migration/test coverage
+- **Ops swarm profile**: incident/uptime/gateway/cron/health/SLO
+- **Research swarm profile**: benchmark/compare/tradeoff/analysis
+- **Single-mode pattern pack**: intent router + constraint normalizer + self-eval + one-step delta rewrite
 
 Design input borrowed from Microsoft patterns:
 
@@ -735,7 +741,7 @@ and stale content. Quantify token savings from cleanup.</task>
 
 **4-phase loop:** Team Plan → Repromptverse → Execute → Evaluate+Retry
 
-Trigger words: `"reprompter teams"`, `"repromptverse"`, `"run with quality"`, `"smart run"`, `"smart agents"`, `"campaign swarm"`
+Trigger words: `"reprompter teams"`, `"repromptverse"`, `"run with quality"`, `"smart run"`, `"smart agents"`, `"campaign swarm"`, `"engineering swarm"`, `"ops swarm"`, `"research swarm"`
 
 Normal single-prompt usage is unchanged — Repromptverse only activates for team/multi-agent tasks.
 

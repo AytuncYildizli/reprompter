@@ -1,5 +1,18 @@
 # RePrompter Changelog
 
+## v8.1.0 (2026-02-24)
+
+### Added
+- **Engineering swarm template** — `references/engineering-swarm-template.md` for architecture/feature/refactor/migration/test coverage multi-agent runs
+- **Ops swarm template** — `references/ops-swarm-template.md` for incident/reliability/infra workflows
+- **Research swarm template** — `references/research-swarm-template.md` for benchmark/analysis/tradeoff workflows
+- **Expanded test coverage** — scenarios for engineering, ops, and research swarm auto-load plus single-mode pattern-pack verification
+
+### Changed
+- **Repromptverse routing broadening:** lazy-load domain profiles now cover marketing + engineering + ops + research intents
+- **Docs parity:** README and SKILL updated to reflect Codex/Claude compatibility with all swarm profiles
+- **Template priority:** domain swarms are preferred before generic `repromptverse-template` in multi-agent mode
+
 ## v8.0.0 (2026-02-24)
 
 ### Added

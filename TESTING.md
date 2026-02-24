@@ -169,7 +169,34 @@ Verification scenarios for the RePrompter skill. Run these manually to validate 
 - Role pack includes strategist/researcher/copywriter/distributor/analyst
 - KPI tree + calendar + reporting cadence are explicitly defined
 
-## Scenario 17: Single Mode Pattern Pack Coverage
+## Scenario 17: Engineering Swarm Auto-Load
+
+**Input:** "repromptverse - refactor auth module, migrate API contract, and raise test coverage"
+**Expected:** Engineering swarm profile is selected by default.
+**Verify:**
+- `engineering-swarm-template` sections appear in generated prompt pack
+- Role pack includes architect/implementer/tester/reviewer/integrator
+- Integration checkpoints and test/review gates are explicit
+
+## Scenario 18: Ops Swarm Auto-Load
+
+**Input:** "repromptverse - gateway timeout incident, uptime drops, cron failures, need RCA + fix plan"
+**Expected:** Ops swarm profile is selected by default.
+**Verify:**
+- `ops-swarm-template` sections appear in generated prompt pack
+- Role pack includes triage/diagnostics/remediation/observability/verifier
+- RCA confidence + rollback + post-fix verification are explicit
+
+## Scenario 19: Research Swarm Auto-Load
+
+**Input:** "repromptverse - benchmark memory architectures and compare cost/latency tradeoffs"
+**Expected:** Research swarm profile is selected by default.
+**Verify:**
+- `research-swarm-template` sections appear in generated prompt pack
+- Role pack includes scout/analyst/skeptic/synthesizer
+- Confidence labels and tradeoff matrix are explicit
+
+## Scenario 20: Single Mode Pattern Pack Coverage
 
 **Input:** "reprompt this: make onboarding better"
 **Expected:** Single mode runs intent routing + constraint normalization + evaluator loop.
