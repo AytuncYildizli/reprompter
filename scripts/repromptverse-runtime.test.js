@@ -13,9 +13,11 @@ const {
 } = require("./repromptverse-runtime");
 
 test("buildExecutionPlan composes routing, patterns, policy, and context", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "rpt-runtime-telemetry-"));
   const plan = buildExecutionPlan("repromptverse audit auth and config systems", {
     preferredOutcome: "quality_reliability",
     runtime: "openclaw",
+    telemetry: { rootDir: tmp, enabled: true },
     repoFacts: {
       codeFacts: ["src/auth.ts contains middleware"],
       references: ["references/repromptverse-template.md"],
@@ -29,7 +31,9 @@ test("buildExecutionPlan composes routing, patterns, policy, and context", () =>
 });
 
 test("feature flags can disable policy engine, layered context, and pattern library", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "rpt-runtime-telemetry-"));
   const plan = buildExecutionPlan("repromptverse audit auth and config systems", {
+    telemetry: { rootDir: tmp, enabled: true },
     featureFlags: {
       policyEngine: false,
       layeredContext: false,
@@ -71,6 +75,7 @@ test("executePlan runs through adapter spawn and polling", async () => {
   const plan = buildExecutionPlan("repromptverse analyze backend and frontend", {
     runtime: "openclaw",
     outputPath,
+    telemetry: { rootDir: tmp, enabled: true },
   });
 
   const result = await executePlan(plan, {
@@ -87,8 +92,10 @@ test("executePlan runs through adapter spawn and polling", async () => {
 });
 
 test("executePlan can perform optional artifact evaluation", async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "rpt-runtime-"));
   const plan = buildExecutionPlan("repromptverse research benchmark options", {
     runtime: "sequential",
+    telemetry: { rootDir: tmp, enabled: true },
   });
 
   const result = await executePlan(plan, {
@@ -109,8 +116,10 @@ test("executePlan can perform optional artifact evaluation", async () => {
 });
 
 test("executePlan relaxes evaluator defaults when strictEval flag is disabled", async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "rpt-runtime-"));
   const plan = buildExecutionPlan("repromptverse research benchmark options", {
     runtime: "sequential",
+    telemetry: { rootDir: tmp, enabled: true },
     featureFlags: { strictEval: false },
   });
 
@@ -124,4 +133,38 @@ test("executePlan relaxes evaluator defaults when strictEval flag is disabled", 
   assert.equal(result.featureFlags.strictEval, false);
   assert.ok(result.evaluation);
   assert.equal(result.evaluation.pass, true);
+});
+
+test("runtime telemetry emits stage events with run and task ids", async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "rpt-runtime-"));
+  const outputPath = path.join(tmp, "final.md");
+  fs.writeFileSync(outputPath, "## Findings\n- done", "utf8");
+
+  const plan = buildExecutionPlan("repromptverse audit auth and infra", {
+    runtime: "openclaw",
+    outputPath,
+    telemetry: { rootDir: tmp, enabled: true },
+  });
+
+  await executePlan(plan, {
+    expectedArtifacts: [outputPath],
+    adapterOptions: {
+      spawnFn: async () => ({ runId: "telemetry-run" }),
+      waitFn: async () => {},
+    },
+  });
+
+  const telemetryPath = path.join(tmp, ".reprompter", "telemetry", "events.ndjson");
+  const lines = fs
+    .readFileSync(telemetryPath, "utf8")
+    .split(/\r?\n/)
+    .filter(Boolean);
+  const events = lines.map((line) => JSON.parse(line));
+
+  const stages = new Set(events.map((event) => event.stage));
+  assert.equal(events.length > 0, true);
+  assert.equal(stages.has("route_intent"), true);
+  assert.equal(stages.has("spawn_agent"), true);
+  assert.equal(stages.has("finalize_run"), true);
+  assert.equal(events.every((event) => event.runId === plan.runId), true);
 });

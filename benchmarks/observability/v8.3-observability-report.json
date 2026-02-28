@@ -1,0 +1,59 @@
+{
+  "generatedAt": "2026-02-28T11:57:34.856Z",
+  "totals": {
+    "events": 9,
+    "runs": 1,
+    "finalizedRuns": 1,
+    "successfulRuns": 1,
+    "failedRuns": 0,
+    "retryEvents": 0,
+    "stalledEvents": 0,
+    "timeoutEvents": 0,
+    "stallRatePercent": 0,
+    "timeoutRatePercent": 0
+  },
+  "stageLatency": [
+    {
+      "stage": "route_intent",
+      "samples": 1,
+      "avgLatencyMs": 1
+    },
+    {
+      "stage": "select_patterns",
+      "samples": 1,
+      "avgLatencyMs": 1
+    },
+    {
+      "stage": "resolve_model",
+      "samples": 1,
+      "avgLatencyMs": 0
+    },
+    {
+      "stage": "build_context",
+      "samples": 1,
+      "avgLatencyMs": 0
+    },
+    {
+      "stage": "spawn_agent",
+      "samples": 1,
+      "avgLatencyMs": 0
+    },
+    {
+      "stage": "poll_artifacts",
+      "samples": 1,
+      "avgLatencyMs": 0
+    },
+    {
+      "stage": "evaluate_artifact",
+      "samples": 1,
+      "avgLatencyMs": 0
+    }
+  ],
+  "providers": [
+    {
+      "provider": "anthropic",
+      "count": 2,
+      "sharePercent": 22.22
+    }
+  ]
+}

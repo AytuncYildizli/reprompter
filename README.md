@@ -62,11 +62,13 @@ Quick links:
 - Capability policy engine for provider/model selection with fallback chains.
 - OpenClaw-first runtime adapter with sequential fallback parity.
 - Runtime orchestrator that composes routing, policy, context, and evaluator in one execution contract.
+- Telemetry schema/store/report pipeline for run-level observability.
 - Budgeted layered context builder with token-manifest output.
 - Strict artifact evaluator gates with delta-retry targeting.
 - Pluggable prompt/context pattern library for benchmark-driven upgrades.
 - Provider + evaluator benchmark harness (`benchmarks/v8.3-provider-benchmark.*`).
 - Feature flags: `REPROMPTER_POLICY_ENGINE`, `REPROMPTER_LAYERED_CONTEXT`, `REPROMPTER_STRICT_EVAL`, `REPROMPTER_PATTERN_LIBRARY`.
+- Telemetry toggle: `REPROMPTER_TELEMETRY=0|1`.
 
 ## The Problem
 
@@ -572,8 +574,12 @@ npm run test:artifact-evaluator
 npm run test:pattern-selector
 npm run test:runtime-adapter
 npm run test:repromptverse-runtime
+npm run test:telemetry-schema
+npm run test:telemetry-store
+npm run test:observability-report
 npm run benchmark:swarms
 npm run benchmark:provider
+npm run telemetry:report
 npm run check
 ```
 
@@ -582,6 +588,8 @@ Generated benchmark artifacts:
 - `benchmarks/v8.3-swarm-benchmark.json`
 - `benchmarks/v8.3-provider-benchmark.md`
 - `benchmarks/v8.3-provider-benchmark.json`
+- `benchmarks/observability/v8.3-observability-report.md`
+- `benchmarks/observability/v8.3-observability-report.json`
 
 Current benchmark snapshot (fixture-driven):
 

@@ -251,6 +251,16 @@ Verification scenarios for the RePrompter skill. Run these manually to validate 
 - Build path returns intent profile, selected model, and context manifest
 - Execute path supports OpenClaw and sequential adapters
 
+## Scenario 26: Telemetry Coverage + Observability Report
+
+**Input:** Runtime execution with telemetry enabled and report generation (`npm run telemetry:report`)
+**Expected:** Every run emits stage events and report aggregates run-level metrics.
+**Verify:**
+- `.reprompter/telemetry/events.ndjson` contains stage events with `runId` and `taskId`
+- Includes core stages: route, pattern, model, context, spawn, poll, evaluate, finalize
+- `benchmarks/observability/v8.3-observability-report.md` and `.json` are generated
+- Report includes run count, stall/timeout rates, stage latency summary, provider distribution
+
 ---
 
 ## Anti-Patterns (Should NOT Happen)

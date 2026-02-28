@@ -12,9 +12,13 @@
     "test:pattern-selector": "node --test scripts/pattern-selector.test.js",
     "test:runtime-adapter": "node --test scripts/runtime-adapter.test.js",
     "test:repromptverse-runtime": "node --test scripts/repromptverse-runtime.test.js",
+    "test:telemetry-schema": "node --test scripts/telemetry-schema.test.js",
+    "test:telemetry-store": "node --test scripts/telemetry-store.test.js",
+    "test:observability-report": "node --test scripts/run-observability-report.test.js",
     "benchmark:swarms": "node scripts/run-swarm-benchmark.js",
     "benchmark:provider": "node scripts/run-provider-benchmark.js",
-    "check": "npm run validate:templates && npm run test:intent-router && npm run test:capability-policy && npm run test:context-builder && npm run test:artifact-evaluator && npm run test:pattern-selector && npm run test:runtime-adapter && npm run test:repromptverse-runtime && npm run benchmark:swarms && npm run benchmark:provider"
+    "telemetry:report": "node scripts/run-observability-report.js",
+    "check": "npm run validate:templates && npm run test:intent-router && npm run test:capability-policy && npm run test:context-builder && npm run test:artifact-evaluator && npm run test:pattern-selector && npm run test:runtime-adapter && npm run test:repromptverse-runtime && npm run test:telemetry-schema && npm run test:telemetry-store && npm run test:observability-report && npm run benchmark:swarms && npm run benchmark:provider"
   },
   "repository": {
     "type": "git",

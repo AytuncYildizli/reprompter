@@ -517,6 +517,13 @@ Repromptverse runtime supports deterministic toggles for rollout and troubleshoo
 - `REPROMPTER_LAYERED_CONTEXT=0|1` — disable/enable layered context assembly
 - `REPROMPTER_STRICT_EVAL=0|1` — disable/enable strict artifact evaluator defaults
 - `REPROMPTER_PATTERN_LIBRARY=0|1` — disable/enable pattern selector activation
+- `REPROMPTER_TELEMETRY=0|1` — disable/enable runtime telemetry emission for observability reports
+
+### Telemetry and observability
+Every Repromptverse run should emit stage-level telemetry events with `runId`, `taskId`, stage name, status, latency, and provider/model where applicable.
+- Event stages: `route_intent`, `select_patterns`, `resolve_model`, `build_context`, `plan_ready`, `spawn_agent`, `poll_artifacts`, `evaluate_artifact`, `finalize_run`
+- Storage: `.reprompter/telemetry/events.ndjson`
+- Report command: `npm run telemetry:report`
 
 ### Pattern library (pluggable)
 Treat prompt/context engineering advancements as toggleable patterns (not fixed doctrine):

@@ -7,6 +7,7 @@ const { resolveModelForAgent } = require("./capability-policy");
 const { buildAgentContext, approxTokens } = require("./context-builder");
 const { createRuntimeAdapter } = require("./runtime-adapter");
 const { evaluateArtifact } = require("./artifact-evaluator");
+const { createTelemetryStore } = require("./telemetry-store");
 
 const FEATURE_ENV = {
   policyEngine: "REPROMPTER_POLICY_ENGINE",
@@ -42,6 +43,56 @@ function resolveFeatureFlags(overrides = {}) {
       flagOverrides.patternLibrary ??
       parseBooleanEnv(process.env[FEATURE_ENV.patternLibrary], true),
   };
+}
+
+function createRunId() {
+  const rand = Math.random().toString(36).slice(2, 10);
+  return `rpt-${Date.now()}-${rand}`;
+}
+
+function createTaskId(rawTask = "") {
+  const seed = String(rawTask || "task").trim().toLowerCase().replace(/\s+/g, "-");
+  const compact = seed.replace(/[^a-z0-9-]/g, "").slice(0, 32) || "task";
+  return `${compact}-${Date.now().toString(36)}`;
+}
+
+function resolveTelemetry(options = {}) {
+  const telemetry = options.telemetry || {};
+  const enabled =
+    telemetry.enabled ??
+    parseBooleanEnv(process.env.REPROMPTER_TELEMETRY, true);
+
+  if (!enabled) {
+    return {
+      enabled: false,
+      writeEvent() {
+        return null;
+      },
+    };
+  }
+
+  const store = createTelemetryStore({
+    rootDir: telemetry.rootDir || options.rootDir || process.cwd(),
+    dirPath: telemetry.dirPath,
+    filePath: telemetry.filePath,
+  });
+
+  return {
+    enabled: true,
+    store,
+    writeEvent(event) {
+      return store.writeEvent(event);
+    },
+  };
+}
+
+function emitStageEvent(telemetry, baseEvent, event = {}) {
+  if (!telemetry || !telemetry.enabled) return null;
+  return telemetry.writeEvent({
+    ...baseEvent,
+    timestamp: new Date().toISOString(),
+    ...event,
+  });
 }
 
 function deriveDomainFromProfile(profile) {
@@ -118,15 +169,30 @@ function buildMinimalContext(agentSpec = {}, taskSpec = {}) {
 }
 
 function buildExecutionPlan(rawTask, options = {}) {
+  const runId = options.runId || createRunId();
+  const taskId = options.taskId || createTaskId(rawTask);
+  const runtime = options.runtime || "openclaw";
+  const telemetry = resolveTelemetry(options);
   const featureFlags = resolveFeatureFlags(options.featureFlags);
+  const baseEvent = { runId, taskId, runtime };
+
+  const routeStart = Date.now();
   const intent = routeIntent(rawTask, {
     forceMultiAgent: options.forceMultiAgent,
     forceSingle: options.forceSingle,
+  });
+  emitStageEvent(telemetry, baseEvent, {
+    stage: "route_intent",
+    status: "ok",
+    latencyMs: Date.now() - routeStart,
+    reason: intent.reason,
+    metadata: { profile: intent.profile, mode: intent.mode },
   });
 
   const domain = options.domain || deriveDomainFromProfile(intent.profile);
   const preferredOutcome = options.preferredOutcome || "quality_reliability";
 
+  const patternStart = Date.now();
   const patternSelection = featureFlags.patternLibrary
     ? selectPatterns(
         {
@@ -145,6 +211,15 @@ function buildExecutionPlan(rawTask, options = {}) {
         patterns: [],
         reasons: ["pattern-library-disabled"],
       };
+  emitStageEvent(telemetry, baseEvent, {
+    stage: "select_patterns",
+    status: "ok",
+    latencyMs: Date.now() - patternStart,
+    metadata: {
+      enabled: featureFlags.patternLibrary,
+      count: patternSelection.patternIds.length,
+    },
+  });
 
   const agentSpec = {
     id: options.agentId || "lead-agent",
@@ -179,26 +254,66 @@ function buildExecutionPlan(rawTask, options = {}) {
     reliabilityTarget: agentSpec.reliabilityTarget,
   };
 
+  const modelStart = Date.now();
   const modelPlan = featureFlags.policyEngine
     ? resolveModelForAgent(agentSpec, taskSpec, {
-        preferProvider: options.preferProvider,
-        avoidProvider: options.avoidProvider,
-      })
+      preferProvider: options.preferProvider,
+      avoidProvider: options.avoidProvider,
+    })
     : buildStaticModelPlan({
-        staticModel: options.staticModel,
-        staticFallbackChain: options.staticFallbackChain,
-        preferredOutcome,
-      });
+      staticModel: options.staticModel,
+      staticFallbackChain: options.staticFallbackChain,
+      preferredOutcome,
+    });
+  emitStageEvent(telemetry, baseEvent, {
+    stage: "resolve_model",
+    status: "ok",
+    latencyMs: Date.now() - modelStart,
+    provider: modelPlan.selected.provider,
+    model: modelPlan.selected.model,
+    metadata: {
+      enabled: featureFlags.policyEngine,
+      tier: modelPlan.selected.capabilityTier,
+      fallbackCount: modelPlan.fallbackChain.length,
+    },
+  });
 
+  const contextStart = Date.now();
   const contextPlan = featureFlags.layeredContext
     ? buildAgentContext(agentSpec, taskSpec, options.repoFacts || {}, {
         totalTokens: options.totalContextTokens || 1400,
         layerBudgets: options.layerBudgets,
       })
     : buildMinimalContext(agentSpec, taskSpec);
+  emitStageEvent(telemetry, baseEvent, {
+    stage: "build_context",
+    status: "ok",
+    latencyMs: Date.now() - contextStart,
+    tokenEstimate: contextPlan.tokenEstimate,
+    metadata: {
+      enabled: featureFlags.layeredContext,
+      layers: Array.isArray(contextPlan.manifest?.layers)
+        ? contextPlan.manifest.layers.length
+        : 0,
+    },
+  });
+
+  emitStageEvent(telemetry, baseEvent, {
+    stage: "plan_ready",
+    status: "ok",
+    tokenEstimate: contextPlan.tokenEstimate,
+    metadata: {
+      domain,
+      preferredOutcome,
+      profile: intent.profile,
+    },
+  });
 
   return {
-    runtime: options.runtime || "openclaw",
+    runId,
+    taskId,
+    runtime,
+    telemetry,
     featureFlags,
     intent,
     domain,
@@ -211,6 +326,12 @@ function buildExecutionPlan(rawTask, options = {}) {
 }
 
 async function executePlan(plan, options = {}) {
+  const telemetry = plan.telemetry || resolveTelemetry(options);
+  const baseEvent = {
+    runId: plan.runId || options.runId || createRunId(),
+    taskId: plan.taskId || options.taskId || createTaskId(plan.taskSpec?.task),
+    runtime: plan.runtime || "openclaw",
+  };
   const featureFlags = resolveFeatureFlags({
     ...plan.featureFlags,
     ...(options.featureFlags || {}),
@@ -218,18 +339,42 @@ async function executePlan(plan, options = {}) {
   const adapter = createRuntimeAdapter(plan.runtime, options.adapterOptions || {});
   const label = options.label || `${plan.domain}-agent`;
 
+  const spawnStart = Date.now();
   const spawnResult = await adapter.spawnAgent(plan.contextPlan.promptContext, {
     model: plan.modelPlan.selected.model,
     provider: plan.modelPlan.selected.provider,
   }, label);
+  emitStageEvent(telemetry, baseEvent, {
+    stage: "spawn_agent",
+    status: "ok",
+    latencyMs: Date.now() - spawnStart,
+    provider: plan.modelPlan.selected.provider,
+    model: plan.modelPlan.selected.model,
+    metadata: {
+      runRef: spawnResult.runId,
+      label,
+    },
+  });
 
   const expectedArtifacts = options.expectedArtifacts || [plan.taskSpec.outputPath];
+  const pollStart = Date.now();
   const pollResult = await adapter.pollArtifacts(plan.taskSpec.task, expectedArtifacts, {
     maxPolls: options.maxPolls || 20,
     stableThreshold: options.stableThreshold || 3,
     intervalMs: options.intervalMs || 0,
   });
+  emitStageEvent(telemetry, baseEvent, {
+    stage: "poll_artifacts",
+    status: pollResult.status === "completed" ? "ok" : pollResult.status,
+    latencyMs: Date.now() - pollStart,
+    metadata: {
+      polls: pollResult.polls,
+      expectedArtifacts: expectedArtifacts.length,
+      missingArtifacts: pollResult.missingArtifacts.length,
+    },
+  });
 
+  const evalStart = Date.now();
   const evaluation = options.artifactText
     ? evaluateArtifact(
         options.artifactText,
@@ -243,6 +388,38 @@ async function executePlan(plan, options = {}) {
             }
       )
     : null;
+  if (evaluation) {
+    emitStageEvent(telemetry, baseEvent, {
+      stage: "evaluate_artifact",
+      status: evaluation.pass ? "ok" : "error",
+      latencyMs: Date.now() - evalStart,
+      pass: evaluation.pass,
+      metadata: {
+        score: evaluation.overallScore,
+        threshold: evaluation.threshold,
+        gapCount: evaluation.gaps.length,
+      },
+    });
+  } else {
+    emitStageEvent(telemetry, baseEvent, {
+      stage: "evaluate_artifact",
+      status: "skipped",
+      latencyMs: Date.now() - evalStart,
+    });
+  }
+
+  const finalizedPass =
+    pollResult.status === "completed" &&
+    (!evaluation || evaluation.pass === true);
+  emitStageEvent(telemetry, baseEvent, {
+    stage: "finalize_run",
+    status: finalizedPass ? "ok" : "error",
+    pass: finalizedPass,
+    metadata: {
+      pollStatus: pollResult.status,
+      hasEvaluation: Boolean(evaluation),
+    },
+  });
 
   return {
     adapter: {
@@ -250,6 +427,8 @@ async function executePlan(plan, options = {}) {
       supportsParallel: adapter.supportsParallel(),
     },
     featureFlags,
+    runId: baseEvent.runId,
+    taskId: baseEvent.taskId,
     spawnResult,
     pollResult,
     evaluation,

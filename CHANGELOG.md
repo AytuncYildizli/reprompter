@@ -12,8 +12,10 @@
 - **Pattern selector** — `scripts/pattern-selector.js` for pluggable prompt/context advancement patterns
 - **Runtime adapters** — `scripts/runtime-adapter.js` + `scripts/runtime-adapter-openclaw.js` for OpenClaw-first execution with sequential fallback
 - **Runtime orchestrator** — `scripts/repromptverse-runtime.js` composes routing, patterns, policy, context, adapter execution, and optional artifact evaluation
+- **Telemetry schema + store** — `scripts/telemetry-schema.js` and `scripts/telemetry-store.js` for stage-level run instrumentation
+- **Observability report generator** — `scripts/run-observability-report.js` with markdown/json outputs under `benchmarks/observability/`
 - **Provider/evaluator benchmark harness** — `scripts/run-provider-benchmark.js` + new fixtures and reports (`benchmarks/v8.3-provider-benchmark.*`)
-- **Expanded test suite** — dedicated unit tests for capability policy, context builder, evaluator, pattern selector, runtime adapter, and orchestrator integration
+- **Expanded test suite** — dedicated unit tests for capability policy, context builder, evaluator, pattern selector, runtime adapter, orchestrator integration, and telemetry/reporting
 - **Runtime feature flags** for controlled rollout: `REPROMPTER_POLICY_ENGINE`, `REPROMPTER_LAYERED_CONTEXT`, `REPROMPTER_STRICT_EVAL`, `REPROMPTER_PATTERN_LIBRARY`
 
 ### Fixed
