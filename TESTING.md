@@ -206,6 +206,51 @@ Verification scenarios for the RePrompter skill. Run these manually to validate 
 - Quality rubric is shown across six dimensions
 - If score < 7, one delta rewrite is produced before final output
 
+## Scenario 21: Capability Policy Tier Routing
+
+**Input:** Provider benchmark fixture set (`benchmarks/fixtures/provider-routing-fixtures.json`)
+**Expected:** Capability policy assigns the expected tier per fixture.
+**Verify:**
+- `npm run benchmark:provider` reports routing accuracy 100%
+- Cases cover `reasoning_high`, `long_context`, `cost_optimized`, `reasoning_medium`, and `tool_reliability`
+- Output includes selected provider/model and reason trace
+
+## Scenario 22: Layered Context Budgeting
+
+**Input:** Context builder unit fixtures (`scripts/context-builder.test.js`)
+**Expected:** Contract layer preserved; lower-priority layers truncate under budget pressure.
+**Verify:**
+- `npm run test:context-builder` passes
+- Manifest includes layer budgets, used tokens, and truncation flags
+- Tight budget still includes Layer 1 task contract
+
+## Scenario 23: Strict Artifact Gate
+
+**Input:** Evaluator fixtures (`benchmarks/fixtures/evaluator-quality-fixtures.json`)
+**Expected:** Artifacts fail on missing sections, missing line refs, or forbidden boundary patterns.
+**Verify:**
+- `npm run test:artifact-evaluator` passes
+- `npm run benchmark:provider` reports evaluator accuracy 100%
+- Failed artifacts include explicit gap messages for delta retry prompts
+
+## Scenario 24: OpenClaw Adapter + Sequential Fallback
+
+**Input:** Runtime adapter unit suite (`scripts/runtime-adapter.test.js`)
+**Expected:** OpenClaw adapter reports parallel support; sequential adapter disables it with same polling contract.
+**Verify:**
+- `npm run test:runtime-adapter` passes
+- `pollArtifacts` returns `completed` when outputs exist
+- `pollArtifacts` returns `stalled` on no-progress state
+
+## Scenario 25: End-to-End Runtime Composition
+
+**Input:** Runtime orchestrator suite (`scripts/repromptverse-runtime.test.js`)
+**Expected:** Plan composition includes routing + patterns + model policy + context build, and execution path can spawn/poll/evaluate with adapters.
+**Verify:**
+- `npm run test:repromptverse-runtime` passes
+- Build path returns intent profile, selected model, and context manifest
+- Execute path supports OpenClaw and sequential adapters
+
 ---
 
 ## Anti-Patterns (Should NOT Happen)

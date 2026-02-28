@@ -8,7 +8,7 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-8.2.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-8.3.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 [![Issues](https://img.shields.io/github/issues/aytuncyildizli/reprompter?color=da3633)](https://github.com/aytuncyildizli/reprompter/issues)
@@ -19,7 +19,7 @@
 
 ---
 
-RePrompter interviews you, figures out what you actually want, and writes the prompt you were too lazy to write yourself. **v8.2 standardizes on Repromptverse** and adds stricter orchestration controls plus domain swarm packs — routing, termination, artifact contracts, evaluator-driven retries, and lazy-loaded profiles for marketing/engineering/ops/research.
+RePrompter interviews you, figures out what you actually want, and writes the prompt you were too lazy to write yourself. **v8.3 adds provider-aware subagent routing, layered context budgets, strict artifact gating, runtime feature flags, and benchmarkable prompt/context pattern packs.**
 
 Compatibility:
 - **Single prompt-improvement mode:** Claude Code, OpenClaw, Codex, or any structured-prompt LLM
@@ -38,7 +38,7 @@ Compatibility matrix:
 
 <br/>
 
-## v8.2 Highlights
+## v8.3 Highlights
 
 - Repromptverse is now the single multi-agent mode.
 - Domain swarm routing is built-in: marketing, engineering, ops, research.
@@ -53,9 +53,20 @@ Microsoft-inspired design patterns adopted in Repromptverse:
 - Evaluator loop (score -> delta retry)
 
 Quick links:
-- Release: https://github.com/AytuncYildizli/reprompter/releases/tag/v8.2.0
-- Benchmark report: `benchmarks/v8.2-swarm-benchmark.md`
-- Launch pack: `benchmarks/launch-pack-v8.2.md`
+- Release: https://github.com/AytuncYildizli/reprompter/releases/tag/v8.3.0
+- Benchmark report: `benchmarks/v8.3-swarm-benchmark.md`
+- Provider benchmark: `benchmarks/v8.3-provider-benchmark.md`
+
+## v8.3 Runtime Optimization Track
+
+- Capability policy engine for provider/model selection with fallback chains.
+- OpenClaw-first runtime adapter with sequential fallback parity.
+- Runtime orchestrator that composes routing, policy, context, and evaluator in one execution contract.
+- Budgeted layered context builder with token-manifest output.
+- Strict artifact evaluator gates with delta-retry targeting.
+- Pluggable prompt/context pattern library for benchmark-driven upgrades.
+- Provider + evaluator benchmark harness (`benchmarks/v8.3-provider-benchmark.*`).
+- Feature flags: `REPROMPTER_POLICY_ENGINE`, `REPROMPTER_LAYERED_CONTEXT`, `REPROMPTER_STRICT_EVAL`, `REPROMPTER_PATTERN_LIBRARY`.
 
 ## The Problem
 
@@ -526,9 +537,9 @@ Every transformation is scored on six weighted dimensions:
 
 ---
 
-## v8.2 — Router + Benchmark Hardening
+## v8.3 — Runtime + Benchmark Hardening
 
-Repromptverse is now the single multi-agent mode. v8.2 adds domain-specific lazy-load profiles:
+Repromptverse is now the single multi-agent mode. v8.3 adds domain-specific lazy-load profiles plus runtime optimization controls:
 
 - **Routing policy**: explicit next-speaker logic (selector-style where needed)
 - **Termination policy**: max turns/time + no-progress stop condition
@@ -538,7 +549,12 @@ Repromptverse is now the single multi-agent mode. v8.2 adds domain-specific lazy
 - **Engineering swarm profile**: architecture/feature/refactor/migration/test coverage
 - **Ops swarm profile**: incident/uptime/gateway/cron/health/SLO
 - **Research swarm profile**: benchmark/compare/tradeoff/analysis
+- **Implicit complexity detection**: auto-enables multi-agent routing for `audit`, `parallel`, or 2+ detected domains
 - **Single-mode pattern pack**: intent router + constraint normalizer + self-eval + one-step delta rewrite
+- **Capability policy engine**: provider/model routing by capability tier with fallback chains
+- **Layered context builder**: token-budgeted context manifests per agent
+- **Strict artifact evaluator**: schema/verifiability/boundary gates before synthesis
+- **Runtime feature flags**: policy/context/eval/pattern toggles for phased rollout
 
 Design input borrowed from Microsoft patterns:
 
@@ -550,21 +566,33 @@ Benchmark + validation commands:
 ```bash
 npm run validate:templates
 npm run test:intent-router
+npm run test:capability-policy
+npm run test:context-builder
+npm run test:artifact-evaluator
+npm run test:pattern-selector
+npm run test:runtime-adapter
+npm run test:repromptverse-runtime
 npm run benchmark:swarms
+npm run benchmark:provider
+npm run check
 ```
 
 Generated benchmark artifacts:
-- `benchmarks/v8.2-swarm-benchmark.md`
-- `benchmarks/v8.2-swarm-benchmark.json`
+- `benchmarks/v8.3-swarm-benchmark.md`
+- `benchmarks/v8.3-swarm-benchmark.json`
+- `benchmarks/v8.3-provider-benchmark.md`
+- `benchmarks/v8.3-provider-benchmark.json`
 
 Current benchmark snapshot (fixture-driven):
 
 | Metric | Value |
 |---|---|
-| Routing accuracy | 100% (6/6) |
+| Routing accuracy | 100% (9/9) |
 | Domain profiles covered | marketing, engineering, ops, research, generic repromptverse |
 | Template contract coverage | 100% for all swarm templates |
 | Proxy quality | 10/10 (domain swarms), 8/10 (generic repromptverse) |
+| Provider routing benchmark | 100% (5/5) |
+| Artifact evaluator benchmark | 100% (4/4) |
 
 Codex troubleshooting:
 

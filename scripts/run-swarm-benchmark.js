@@ -8,8 +8,8 @@ const { routeIntent } = require("./intent-router");
 const ROOT = path.resolve(__dirname, "..");
 const FIXTURE_PATH = path.join(ROOT, "benchmarks", "fixtures", "swarm-benchmark-fixtures.json");
 const OUTPUT_DIR = path.join(ROOT, "benchmarks");
-const OUTPUT_MD = path.join(OUTPUT_DIR, "v8.2-swarm-benchmark.md");
-const OUTPUT_JSON = path.join(OUTPUT_DIR, "v8.2-swarm-benchmark.json");
+const OUTPUT_MD = path.join(OUTPUT_DIR, "v8.3-swarm-benchmark.md");
+const OUTPUT_JSON = path.join(OUTPUT_DIR, "v8.3-swarm-benchmark.json");
 
 const TEMPLATE_MAP = {
   "marketing-swarm": "references/marketing-swarm-template.md",
@@ -143,7 +143,7 @@ function run() {
   ]);
 
   const md = [
-    "# RePrompter v8.2 Swarm Benchmark",
+    "# RePrompter v8.3 Swarm Benchmark",
     "",
     `Generated: ${summary.generatedAt}`,
     "",

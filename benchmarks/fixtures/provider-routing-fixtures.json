@@ -1,0 +1,72 @@
+[
+  {
+    "id": "route-01",
+    "agentSpec": {
+      "domain": "security",
+      "role": "auditor",
+      "outputType": "evaluation",
+      "complexity": 9
+    },
+    "taskSpec": {
+      "task": "Audit auth and secrets handling",
+      "preferredOutcome": "quality_reliability"
+    },
+    "expectedTier": "reasoning_high"
+  },
+  {
+    "id": "route-02",
+    "agentSpec": {
+      "domain": "research",
+      "role": "analyst",
+      "outputType": "analysis",
+      "contextTokens": 180000
+    },
+    "taskSpec": {
+      "task": "Compare long-context memory strategies",
+      "preferredOutcome": "quality_reliability"
+    },
+    "expectedTier": "long_context"
+  },
+  {
+    "id": "route-03",
+    "agentSpec": {
+      "domain": "ops",
+      "role": "triage",
+      "outputType": "triage",
+      "complexity": 3
+    },
+    "taskSpec": {
+      "task": "Summarize queue latency anomalies",
+      "preferredOutcome": "cost_speed"
+    },
+    "expectedTier": "cost_optimized"
+  },
+  {
+    "id": "route-04",
+    "agentSpec": {
+      "domain": "engineering",
+      "role": "implementer",
+      "outputType": "analysis",
+      "complexity": 6
+    },
+    "taskSpec": {
+      "task": "Plan backend migration",
+      "preferredOutcome": "balanced"
+    },
+    "expectedTier": "reasoning_medium"
+  },
+  {
+    "id": "route-05",
+    "agentSpec": {
+      "domain": "engineering",
+      "role": "runtime operator",
+      "outputType": "execution",
+      "complexity": 5
+    },
+    "taskSpec": {
+      "task": "Coordinate tool execution across integrations",
+      "preferredOutcome": "quality_reliability"
+    },
+    "expectedTier": "tool_reliability"
+  }
+]

@@ -34,5 +34,23 @@
     "prompt": "launch growth seo content hooks",
     "expectedProfile": "marketing-swarm",
     "forceMultiAgent": true
+  },
+  {
+    "id": "implicit-01",
+    "prompt": "audit auth, config, and memory handling for quality gaps",
+    "expectedProfile": "repromptverse",
+    "forceMultiAgent": false
+  },
+  {
+    "id": "implicit-02",
+    "prompt": "run frontend and backend investigations in parallel",
+    "expectedProfile": "engineering-swarm",
+    "forceMultiAgent": false
+  },
+  {
+    "id": "implicit-03",
+    "prompt": "coordinate frontend, api, and database workstreams",
+    "expectedProfile": "engineering-swarm",
+    "forceMultiAgent": false
   }
 ]

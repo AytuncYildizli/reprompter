@@ -25,6 +25,20 @@ const MULTI_AGENT_TRIGGERS = [
   "parallel agents",
 ];
 
+const COMPLEXITY_TRIGGERS = ["parallel", "in parallel"];
+
+const DOMAIN_KEYWORD_SETS = [
+  { domain: "frontend", keywords: ["frontend", "ui", "react", "nextjs", "next.js"] },
+  { domain: "backend", keywords: ["backend", "server", "service"] },
+  { domain: "api", keywords: ["api", "endpoint", "contract"] },
+  { domain: "database", keywords: ["database", "db", "schema", "sql"] },
+  { domain: "infrastructure", keywords: ["infra", "infrastructure", "deployment", "slo"] },
+  { domain: "security", keywords: ["security", "auth", "authentication"] },
+  { domain: "cost", keywords: ["cost", "billing", "spend"] },
+  { domain: "config", keywords: ["config", "configuration", "settings"] },
+  { domain: "memory", keywords: ["memory", "tokens", "context window"] },
+];
+
 const ROUTING_RULES = [
   {
     profile: "marketing-swarm",
@@ -139,6 +153,13 @@ function hasKeyword(text, keyword) {
   return re.test(text);
 }
 
+function hasTerm(text, term) {
+  if (term.includes(" ") || term.includes("-") || term.includes(".")) {
+    return hasPhrase(text, term);
+  }
+  return hasKeyword(text, term);
+}
+
 function scoreRule(text, rule) {
   let score = 0;
   const hits = [];
@@ -169,10 +190,27 @@ function detectExplicitProfile(text) {
   return null;
 }
 
+function countDistinctDomains(text) {
+  let count = 0;
+  for (const set of DOMAIN_KEYWORD_SETS) {
+    if (set.keywords.some((keyword) => hasTerm(text, keyword))) {
+      count += 1;
+    }
+  }
+  return count;
+}
+
+function detectImplicitMultiAgent(text) {
+  if (hasKeyword(text, "audit")) return true;
+  if (COMPLEXITY_TRIGGERS.some((trigger) => hasPhrase(text, trigger))) return true;
+  return countDistinctDomains(text) >= 2;
+}
+
 function isMultiAgentIntent(text, options = {}) {
   if (options.forceMultiAgent === true) return true;
   if (options.forceSingle === true) return false;
-  return MULTI_AGENT_TRIGGERS.some((p) => hasPhrase(text, p));
+  if (MULTI_AGENT_TRIGGERS.some((p) => hasPhrase(text, p))) return true;
+  return detectImplicitMultiAgent(text);
 }
 
 function rankCandidates(candidates) {
@@ -191,6 +229,16 @@ function routeIntent(input, options = {}) {
       score: 0,
       hits: [],
       reason: "empty-input",
+    };
+  }
+
+  if (options.forceSingle === true) {
+    return {
+      mode: "single",
+      profile: "single",
+      score: 0,
+      hits: [],
+      reason: "forced-single-mode",
     };
   }
 

@@ -1,5 +1,25 @@
 # RePrompter Changelog
 
+## v8.3.0 (2026-02-28)
+
+### Added
+- **Implicit multi-agent intent detection** in `scripts/intent-router.js` for complexity signals (`audit`, `parallel`) and multi-domain prompts (2+ detected systems)
+- **Router regression tests** for implicit-intent activation and `forceSingle` override behavior
+- **Benchmark fixture expansion** from 6 to 9 routing cases, including implicit-intent scenarios
+- **Capability policy engine** — `scripts/capability-policy.js` for provider/model tier routing with fallback chains
+- **Layered context builder** — `scripts/context-builder.js` with token-budget manifest output
+- **Strict artifact evaluator** — `scripts/artifact-evaluator.js` for gated acceptance and retry targeting
+- **Pattern selector** — `scripts/pattern-selector.js` for pluggable prompt/context advancement patterns
+- **Runtime adapters** — `scripts/runtime-adapter.js` + `scripts/runtime-adapter-openclaw.js` for OpenClaw-first execution with sequential fallback
+- **Runtime orchestrator** — `scripts/repromptverse-runtime.js` composes routing, patterns, policy, context, adapter execution, and optional artifact evaluation
+- **Provider/evaluator benchmark harness** — `scripts/run-provider-benchmark.js` + new fixtures and reports (`benchmarks/v8.3-provider-benchmark.*`)
+- **Expanded test suite** — dedicated unit tests for capability policy, context builder, evaluator, pattern selector, runtime adapter, and orchestrator integration
+- **Runtime feature flags** for controlled rollout: `REPROMPTER_POLICY_ENGINE`, `REPROMPTER_LAYERED_CONTEXT`, `REPROMPTER_STRICT_EVAL`, `REPROMPTER_PATTERN_LIBRARY`
+
+### Fixed
+- **`forceSingle` precedence** now overrides explicit profile triggers, guaranteeing deterministic single-mode routing when requested
+- **Skill packaging filter** now excludes all `scripts/*.test.js` instead of a single test file
+
 ## v8.2.0 (2026-02-24)
 
 ### Added

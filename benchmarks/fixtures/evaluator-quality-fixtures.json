@@ -1,0 +1,47 @@
+[
+  {
+    "id": "eval-01",
+    "artifact": "## Findings\n- Critical auth bypass at src/auth.ts:42\n\n## Decisions\n- Patch token validation in auth middleware.\n\n## Risks\n- Potential session invalidation side effects at src/session.ts:16\n\n## Next Actions\n- Add regression tests in test/auth.test.ts:44",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": ["findings", "decisions", "risks", "next actions"],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "eval-02",
+    "artifact": "## Findings\n- Missing controls",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": ["findings", "decisions"],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "eval-03",
+    "artifact": "## Findings\n- Potential risk\n\n## Decisions\n- Investigate\n\n## Risks\n- Unknown\n\n## Next Actions\n- Follow up",
+    "contractSpec": {
+      "threshold": 6,
+      "requiredSections": ["findings", "decisions", "risks", "next actions"],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "eval-04",
+    "artifact": "## Findings\n- Scope changed: edited .env and deployment scripts\n\n## Decisions\n- Continue\n\n## Risks\n- Unknown\n\n## Next Actions\n- Ship",
+    "contractSpec": {
+      "threshold": 6,
+      "requiredSections": ["findings", "decisions", "risks", "next actions"],
+      "requiresLineRefs": false,
+      "forbiddenPatterns": ["edited \\.env"]
+    },
+    "expectedPass": false,
+    "maxScore": 10
+  }
+]

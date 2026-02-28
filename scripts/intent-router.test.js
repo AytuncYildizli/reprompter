@@ -65,3 +65,29 @@ test("explicit profile trigger wins over conflicting keywords", () => {
   assert.equal(result.profile, "ops-swarm");
   assert.equal(result.reason, "explicit-profile-trigger");
 });
+
+test("auto-detects audit prompts as multi-agent without explicit trigger", () => {
+  const result = routeIntent("audit auth, config, and memory handling for quality gaps");
+  assert.equal(result.mode, "multi-agent");
+  assert.equal(result.profile, "repromptverse");
+  assert.equal(result.reason, "generic-multi-agent-fallback");
+});
+
+test("auto-detects parallel prompts as multi-agent without explicit trigger", () => {
+  const result = routeIntent("run frontend and backend investigations in parallel");
+  assert.equal(result.mode, "multi-agent");
+  assert.equal(result.profile, "engineering-swarm");
+});
+
+test("auto-detects multi-domain prompts as multi-agent without explicit trigger", () => {
+  const result = routeIntent("coordinate frontend, api, and database workstreams");
+  assert.equal(result.mode, "multi-agent");
+  assert.equal(result.profile, "engineering-swarm");
+});
+
+test("forceSingle overrides explicit profile triggers", () => {
+  const result = routeIntent("ops swarm incident response", { forceSingle: true });
+  assert.equal(result.mode, "single");
+  assert.equal(result.profile, "single");
+  assert.equal(result.reason, "forced-single-mode");
+});

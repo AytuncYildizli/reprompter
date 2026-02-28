@@ -12,10 +12,10 @@ compatibility: |
   Sequential fallback works with any LLM runtime.
 metadata:
   author: AytuncYildizli
-  version: 8.2.0
+  version: 8.3.0
 ---
 
-# RePrompter v8.2
+# RePrompter v8.3
 
 > **Your prompt sucks. Let's fix that.** Single prompts or full agent teams — one skill, two modes.
 
@@ -483,6 +483,51 @@ Generated prompts should COMPLEMENT runtime context (CLAUDE.md, skills, MCP tool
 1. Check what context is already loaded (project files, skills, MCP servers)
 2. Reference existing context: "Using the project structure from CLAUDE.md..."
 3. Add ONLY what's missing — avoid restating what the model already knows
+
+### Capability policy routing (OpenClaw + multi-LLM)
+When multiple providers/models are available, route each agent by capability tier:
+- `reasoning_high`: audits, synthesis, high-risk tasks
+- `long_context`: very large context windows or broad codebase scans
+- `cost_optimized` / `latency_optimized`: low-risk triage and bulk tasks
+- Always emit fallback chain with provider diversity (avoid single-provider hard dependency)
+
+### Budgeted layered context
+Build per-agent context in layers with explicit budgets:
+1. Task contract (always preserved)
+2. Local code facts
+3. Selected references
+4. Prior artifacts/handoffs
+
+Emit a context manifest (used tokens, truncation flags, dropped entries) so retries are reproducible and debuggable.
+
+### Strict artifact gate
+Before synthesis, evaluate each artifact for:
+- Required section coverage
+- Verifiability (file:line refs when required)
+- Boundary compliance (forbidden-pattern checks)
+- Overall weighted score threshold
+
+If gate fails, retry only with delta prompts (max 2 retries).
+
+Implementation note: combine routing + patterns + model policy + context + adapter + evaluator through a single orchestration contract (`scripts/repromptverse-runtime.js`) to keep behavior deterministic across runtimes.
+
+### Runtime feature flags
+Repromptverse runtime supports deterministic toggles for rollout and troubleshooting:
+- `REPROMPTER_POLICY_ENGINE=0|1` — disable/enable capability-based model routing
+- `REPROMPTER_LAYERED_CONTEXT=0|1` — disable/enable layered context assembly
+- `REPROMPTER_STRICT_EVAL=0|1` — disable/enable strict artifact evaluator defaults
+- `REPROMPTER_PATTERN_LIBRARY=0|1` — disable/enable pattern selector activation
+
+### Pattern library (pluggable)
+Treat prompt/context engineering advancements as toggleable patterns (not fixed doctrine):
+- Constraint-first framing
+- Uncertainty labeling
+- Self-critique checkpoint
+- Delta retry scaffold
+- Evidence-strength labeling
+- Context-manifest transparency
+
+Activate by task/domain/outcome profile and validate via benchmark fixtures.
 
 ### Token budget
 Keep generated prompts under ~2K tokens for single mode, ~1K per agent for Repromptverse. Longer prompts waste context window without improving quality. If a prompt exceeds budget, split into phases or move detail into constraints.

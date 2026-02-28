@@ -1,13 +1,20 @@
 {
   "name": "reprompter",
-  "version": "8.2.0",
+  "version": "8.3.0",
   "private": true,
   "description": "Prompt engineering skill for Claude Code, OpenClaw, and Codex",
   "scripts": {
     "validate:templates": "bash scripts/validate-templates.sh",
     "test:intent-router": "node --test scripts/intent-router.test.js",
+    "test:capability-policy": "node --test scripts/capability-policy.test.js",
+    "test:context-builder": "node --test scripts/context-builder.test.js",
+    "test:artifact-evaluator": "node --test scripts/artifact-evaluator.test.js",
+    "test:pattern-selector": "node --test scripts/pattern-selector.test.js",
+    "test:runtime-adapter": "node --test scripts/runtime-adapter.test.js",
+    "test:repromptverse-runtime": "node --test scripts/repromptverse-runtime.test.js",
     "benchmark:swarms": "node scripts/run-swarm-benchmark.js",
-    "check": "npm run validate:templates && npm run test:intent-router && npm run benchmark:swarms"
+    "benchmark:provider": "node scripts/run-provider-benchmark.js",
+    "check": "npm run validate:templates && npm run test:intent-router && npm run test:capability-policy && npm run test:context-builder && npm run test:artifact-evaluator && npm run test:pattern-selector && npm run test:runtime-adapter && npm run test:repromptverse-runtime && npm run benchmark:swarms && npm run benchmark:provider"
   },
   "repository": {
     "type": "git",
