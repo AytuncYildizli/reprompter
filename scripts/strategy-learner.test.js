@@ -10,6 +10,8 @@ const { createOutcomeStore } = require("./outcome-collector");
 const { fingerprint } = require("./recipe-fingerprint");
 const {
   recommendStrategy,
+  bestRecipeForDomain,
+  applyFlywheelBias,
   buildFlywheelReport,
   findSimilarRecipes,
   groupByRecipeHash,
@@ -231,6 +233,111 @@ describe("strategy-learner", () => {
       assert.strictEqual(result.hasData, true);
       assert.ok(result.recommendation);
       assert.ok(result.recommendation.score >= 7.0);
+    });
+  });
+
+  describe("bestRecipeForDomain()", () => {
+    it("returns not found for empty store", () => {
+      const store = tmpStore();
+      stores.push(store);
+      const result = bestRecipeForDomain("security", { store });
+      assert.strictEqual(result.found, false);
+      assert.strictEqual(result.bias, null);
+    });
+
+    it("returns bias with patterns and tier for domain with enough data", () => {
+      const store = tmpStore();
+      stores.push(store);
+      for (let i = 0; i < 3; i++) {
+        store.writeOutcome(makeOutcome({}, {}, { effectivenessScore: 9.0 }));
+      }
+      const result = bestRecipeForDomain("security", { store });
+      assert.strictEqual(result.found, true);
+      assert.ok(result.bias);
+      assert.ok(Array.isArray(result.bias.preferPatterns));
+      assert.ok(result.bias.preferTier);
+      assert.ok(result.bias.score > 0);
+      assert.ok(result.bias.confidence);
+    });
+
+    it("returns not found when fewer than MIN_SAMPLES outcomes", () => {
+      const store = tmpStore();
+      stores.push(store);
+      store.writeOutcome(makeOutcome({}, {}, { effectivenessScore: 9.0 }));
+      const result = bestRecipeForDomain("security", { store });
+      assert.strictEqual(result.found, false);
+    });
+  });
+
+  describe("applyFlywheelBias()", () => {
+    it("returns not applied when no bias found", () => {
+      const result = applyFlywheelBias(null, ["pattern-a"]);
+      assert.strictEqual(result.applied, false);
+      assert.deepStrictEqual(result.patterns, ["pattern-a"]);
+    });
+
+    it("returns not applied when confidence below threshold", () => {
+      const bias = {
+        found: true,
+        bias: {
+          preferPatterns: ["new-pattern"],
+          preferTier: "reasoning_high",
+          confidence: "low",
+          score: 8.0,
+          sampleCount: 2,
+        },
+      };
+      const result = applyFlywheelBias(bias, ["existing"], { minConfidence: "medium" });
+      assert.strictEqual(result.applied, false);
+    });
+
+    it("merges new patterns at medium confidence", () => {
+      const bias = {
+        found: true,
+        bias: {
+          preferPatterns: ["new-pattern", "existing"],
+          preferTier: "reasoning_high",
+          confidence: "medium",
+          score: 8.5,
+          sampleCount: 5,
+        },
+      };
+      const result = applyFlywheelBias(bias, ["existing"], { minConfidence: "medium" });
+      assert.strictEqual(result.applied, true);
+      assert.ok(result.patterns.includes("new-pattern"));
+      assert.ok(result.patterns.includes("existing"));
+      assert.strictEqual(result.tier, null, "tier not set at medium confidence");
+    });
+
+    it("sets tier preference at high confidence", () => {
+      const bias = {
+        found: true,
+        bias: {
+          preferPatterns: ["extra"],
+          preferTier: "cost_optimized",
+          confidence: "high",
+          score: 9.0,
+          sampleCount: 12,
+        },
+      };
+      const result = applyFlywheelBias(bias, [], { minConfidence: "medium" });
+      assert.strictEqual(result.applied, true);
+      assert.strictEqual(result.tier, "cost_optimized");
+    });
+
+    it("does not duplicate existing patterns", () => {
+      const bias = {
+        found: true,
+        bias: {
+          preferPatterns: ["constraint-first-framing"],
+          preferTier: null,
+          confidence: "medium",
+          score: 7.0,
+          sampleCount: 6,
+        },
+      };
+      const result = applyFlywheelBias(bias, ["constraint-first-framing"]);
+      assert.strictEqual(result.applied, false, "no new patterns to add");
     });
   });
 

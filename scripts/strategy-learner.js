@@ -199,8 +199,103 @@ function buildFlywheelReport(options = {}) {
   };
 }
 
+function bestRecipeForDomain(domain, options = {}) {
+  const store = options.store || createOutcomeStore({ rootDir: options.rootDir });
+  const outcomes = store.readOutcomes({
+    domain: domain || undefined,
+    limit: options.limit || 200,
+  });
+
+  if (outcomes.length < MIN_SAMPLES) {
+    return { found: false, bias: null };
+  }
+
+  const groups = groupByRecipeHash(outcomes);
+  const now = Date.now();
+  const scored = Object.values(groups)
+    .map((group) => ({
+      ...group,
+      ...scoreRecipeGroup(group, now),
+    }))
+    .filter((g) => g.sampleCount >= MIN_SAMPLES && g.confidence !== "insufficient")
+    .sort((a, b) => b.score - a.score);
+
+  if (scored.length === 0) {
+    return { found: false, bias: null };
+  }
+
+  const best = scored[0];
+  const vector = best.recipe && best.recipe.vector;
+  if (!vector) {
+    return { found: false, bias: null };
+  }
+
+  return {
+    found: true,
+    bias: {
+      preferPatterns: vector.patterns || [],
+      preferTier: vector.capabilityTier || null,
+      preferTemplate: vector.templateId || null,
+      score: best.score,
+      confidence: best.confidence,
+      sampleCount: best.sampleCount,
+      recipeHash: best.hash,
+    },
+  };
+}
+
+function applyFlywheelBias(bias, currentPatternIds = [], options = {}) {
+  if (!bias || !bias.found || !bias.bias) {
+    return { applied: false, patterns: currentPatternIds, tier: null, changes: [] };
+  }
+
+  const rec = bias.bias;
+  const minConfidence = options.minConfidence || "medium";
+  const confidenceRank = { insufficient: 0, none: 0, low: 1, medium: 2, high: 3 };
+
+  if ((confidenceRank[rec.confidence] || 0) < (confidenceRank[minConfidence] || 2)) {
+    return {
+      applied: false,
+      patterns: currentPatternIds,
+      tier: null,
+      changes: [],
+      reason: `confidence ${rec.confidence} below threshold ${minConfidence}`,
+    };
+  }
+
+  const changes = [];
+  const currentSet = new Set(currentPatternIds.map((p) => p.toLowerCase()));
+  const mergedPatterns = [...currentPatternIds];
+
+  // Add recommended patterns that aren't already selected
+  for (const pattern of rec.preferPatterns) {
+    if (!currentSet.has(pattern.toLowerCase())) {
+      mergedPatterns.push(pattern);
+      changes.push(`+pattern:${pattern}`);
+    }
+  }
+
+  // Tier preference (only at high confidence)
+  let preferTier = null;
+  if (rec.confidence === "high" && rec.preferTier) {
+    preferTier = rec.preferTier;
+    changes.push(`prefer-tier:${rec.preferTier}`);
+  }
+
+  return {
+    applied: changes.length > 0,
+    patterns: mergedPatterns,
+    tier: preferTier,
+    changes,
+    score: rec.score,
+    confidence: rec.confidence,
+  };
+}
+
 module.exports = {
   recommendStrategy,
+  bestRecipeForDomain,
+  applyFlywheelBias,
   buildFlywheelReport,
   findSimilarRecipes,
   groupByRecipeHash,

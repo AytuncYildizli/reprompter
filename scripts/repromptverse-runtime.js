@@ -10,7 +10,7 @@ const { evaluateArtifact } = require("./artifact-evaluator");
 const { createTelemetryStore } = require("./telemetry-store");
 const { fingerprint: fingerprintRecipe } = require("./recipe-fingerprint");
 const { createOutcomeStore, computeEffectiveness } = require("./outcome-collector");
-const { recommendStrategy } = require("./strategy-learner");
+const { recommendStrategy, bestRecipeForDomain, applyFlywheelBias } = require("./strategy-learner");
 
 const FEATURE_ENV = {
   policyEngine: "REPROMPTER_POLICY_ENGINE",
@@ -199,6 +199,34 @@ function buildExecutionPlan(rawTask, options = {}) {
   const domain = options.domain || deriveDomainFromProfile(intent.profile);
   const preferredOutcome = options.preferredOutcome || "quality_reliability";
 
+  // Flywheel: pre-decision lookup — query historical best recipe for this domain
+  let flywheelBias = null;
+  let biasResult = { applied: false, patterns: [], tier: null, changes: [] };
+  if (featureFlags.flywheel) {
+    const biasStart = Date.now();
+    try {
+      flywheelBias = bestRecipeForDomain(domain, {
+        rootDir: options.rootDir || process.cwd(),
+      });
+      emitStageEvent(telemetry, baseEvent, {
+        stage: "learn_strategy",
+        status: "ok",
+        latencyMs: Date.now() - biasStart,
+        metadata: {
+          found: flywheelBias.found,
+          score: flywheelBias.bias ? flywheelBias.bias.score : null,
+          confidence: flywheelBias.bias ? flywheelBias.bias.confidence : null,
+        },
+      });
+    } catch {
+      emitStageEvent(telemetry, baseEvent, {
+        stage: "learn_strategy",
+        status: "error",
+        latencyMs: Date.now() - biasStart,
+      });
+    }
+  }
+
   const patternStart = Date.now();
   const patternSelection = featureFlags.patternLibrary
     ? selectPatterns(
@@ -218,6 +246,20 @@ function buildExecutionPlan(rawTask, options = {}) {
         patterns: [],
         reasons: ["pattern-library-disabled"],
       };
+
+  // Flywheel: apply bias — merge recommended patterns into selection
+  if (featureFlags.flywheel && flywheelBias) {
+    biasResult = applyFlywheelBias(flywheelBias, patternSelection.patternIds, {
+      minConfidence: options.flywheelMinConfidence || "medium",
+    });
+    if (biasResult.applied) {
+      patternSelection.patternIds = biasResult.patterns;
+      patternSelection.reasons.push(
+        `flywheel-bias: ${biasResult.changes.join(", ")} (score=${biasResult.score}, confidence=${biasResult.confidence})`
+      );
+    }
+  }
+
   emitStageEvent(telemetry, baseEvent, {
     stage: "select_patterns",
     status: "ok",
@@ -225,6 +267,8 @@ function buildExecutionPlan(rawTask, options = {}) {
     metadata: {
       enabled: featureFlags.patternLibrary,
       count: patternSelection.patternIds.length,
+      flywheelBiasApplied: biasResult.applied,
+      flywheelChanges: biasResult.changes,
     },
   });
 
@@ -260,6 +304,11 @@ function buildExecutionPlan(rawTask, options = {}) {
     contextTokens: agentSpec.contextTokens,
     reliabilityTarget: agentSpec.reliabilityTarget,
   };
+
+  // Flywheel: if bias recommends a capability tier, set it as preferred outcome hint
+  if (biasResult.tier && featureFlags.policyEngine) {
+    agentSpec.flywheelPreferredTier = biasResult.tier;
+  }
 
   const modelStart = Date.now();
   const modelPlan = featureFlags.policyEngine
@@ -305,9 +354,8 @@ function buildExecutionPlan(rawTask, options = {}) {
     },
   });
 
-  // Flywheel: fingerprint the recipe at plan_ready
+  // Flywheel: fingerprint the ACTUAL recipe (after bias was applied)
   let recipeFingerprint = null;
-  let flywheelRecommendation = null;
   if (featureFlags.flywheel) {
     const fpStart = Date.now();
     recipeFingerprint = fingerprintRecipe({
@@ -327,33 +375,9 @@ function buildExecutionPlan(rawTask, options = {}) {
       metadata: {
         hash: recipeFingerprint.hash,
         readable: recipeFingerprint.readable,
+        biasApplied: biasResult.applied,
       },
     });
-
-    // Check for historical recommendations
-    const learnStart = Date.now();
-    try {
-      flywheelRecommendation = recommendStrategy(recipeFingerprint.vector, {
-        rootDir: options.rootDir || process.cwd(),
-        domain,
-      });
-      emitStageEvent(telemetry, baseEvent, {
-        stage: "learn_strategy",
-        status: "ok",
-        latencyMs: Date.now() - learnStart,
-        metadata: {
-          hasData: flywheelRecommendation.hasData,
-          hasRecommendation: flywheelRecommendation.recommendation !== null,
-          totalOutcomes: flywheelRecommendation.totalOutcomes || 0,
-        },
-      });
-    } catch {
-      emitStageEvent(telemetry, baseEvent, {
-        stage: "learn_strategy",
-        status: "error",
-        latencyMs: Date.now() - learnStart,
-      });
-    }
   }
 
   emitStageEvent(telemetry, baseEvent, {
@@ -365,6 +389,8 @@ function buildExecutionPlan(rawTask, options = {}) {
       preferredOutcome,
       profile: intent.profile,
       flywheelHash: recipeFingerprint ? recipeFingerprint.hash : null,
+      flywheelBiasApplied: biasResult.applied,
+      flywheelBiasChanges: biasResult.changes,
     },
   });
 
@@ -382,7 +408,7 @@ function buildExecutionPlan(rawTask, options = {}) {
     modelPlan,
     contextPlan,
     recipeFingerprint,
-    flywheelRecommendation,
+    flywheelBias: biasResult,
   };
 }
 
