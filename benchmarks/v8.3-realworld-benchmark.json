@@ -1,0 +1,1617 @@
+{
+  "generatedAt": "2026-03-14T23:05:39.721Z",
+  "routing": {
+    "fixtureCount": 64,
+    "passCount": 64,
+    "accuracy": 100,
+    "confidence95": {
+      "lower": 0.9434,
+      "upper": 1
+    },
+    "results": [
+      {
+        "id": "rw-route-001",
+        "expectedProfile": "marketing-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "marketing-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 13
+      },
+      {
+        "id": "rw-route-002",
+        "expectedProfile": "marketing-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "marketing-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "explicit-profile-trigger",
+        "score": 100
+      },
+      {
+        "id": "rw-route-003",
+        "expectedProfile": "marketing-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "marketing-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 11
+      },
+      {
+        "id": "rw-route-004",
+        "expectedProfile": "marketing-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "marketing-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "explicit-profile-trigger",
+        "score": 100
+      },
+      {
+        "id": "rw-route-005",
+        "expectedProfile": "marketing-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "marketing-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 2
+      },
+      {
+        "id": "rw-route-006",
+        "expectedProfile": "marketing-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "marketing-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 12
+      },
+      {
+        "id": "rw-route-007",
+        "expectedProfile": "marketing-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "marketing-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "explicit-profile-trigger",
+        "score": 100
+      },
+      {
+        "id": "rw-route-008",
+        "expectedProfile": "marketing-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "marketing-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 7
+      },
+      {
+        "id": "rw-route-009",
+        "expectedProfile": "marketing-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "marketing-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 9
+      },
+      {
+        "id": "rw-route-010",
+        "expectedProfile": "marketing-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "marketing-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 6
+      },
+      {
+        "id": "rw-route-011",
+        "expectedProfile": "marketing-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "marketing-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 6
+      },
+      {
+        "id": "rw-route-012",
+        "expectedProfile": "marketing-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "marketing-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "explicit-profile-trigger",
+        "score": 100
+      },
+      {
+        "id": "rw-route-013",
+        "expectedProfile": "engineering-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "engineering-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 10
+      },
+      {
+        "id": "rw-route-014",
+        "expectedProfile": "engineering-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "engineering-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "explicit-profile-trigger",
+        "score": 100
+      },
+      {
+        "id": "rw-route-015",
+        "expectedProfile": "engineering-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "engineering-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 7
+      },
+      {
+        "id": "rw-route-016",
+        "expectedProfile": "engineering-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "engineering-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 3
+      },
+      {
+        "id": "rw-route-017",
+        "expectedProfile": "engineering-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "engineering-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 6
+      },
+      {
+        "id": "rw-route-018",
+        "expectedProfile": "engineering-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "engineering-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 9
+      },
+      {
+        "id": "rw-route-019",
+        "expectedProfile": "engineering-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "engineering-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 7
+      },
+      {
+        "id": "rw-route-020",
+        "expectedProfile": "engineering-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "engineering-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 2
+      },
+      {
+        "id": "rw-route-021",
+        "expectedProfile": "engineering-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "engineering-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 2
+      },
+      {
+        "id": "rw-route-022",
+        "expectedProfile": "engineering-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "engineering-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 6
+      },
+      {
+        "id": "rw-route-023",
+        "expectedProfile": "engineering-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "engineering-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "explicit-profile-trigger",
+        "score": 100
+      },
+      {
+        "id": "rw-route-024",
+        "expectedProfile": "engineering-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "engineering-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 4
+      },
+      {
+        "id": "rw-route-025",
+        "expectedProfile": "ops-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "ops-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 7
+      },
+      {
+        "id": "rw-route-026",
+        "expectedProfile": "ops-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "ops-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "explicit-profile-trigger",
+        "score": 100
+      },
+      {
+        "id": "rw-route-027",
+        "expectedProfile": "ops-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "ops-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 10
+      },
+      {
+        "id": "rw-route-028",
+        "expectedProfile": "ops-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "ops-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 5
+      },
+      {
+        "id": "rw-route-029",
+        "expectedProfile": "ops-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "ops-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 5
+      },
+      {
+        "id": "rw-route-030",
+        "expectedProfile": "ops-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "ops-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 6
+      },
+      {
+        "id": "rw-route-031",
+        "expectedProfile": "ops-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "ops-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 10
+      },
+      {
+        "id": "rw-route-032",
+        "expectedProfile": "ops-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "ops-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 2
+      },
+      {
+        "id": "rw-route-033",
+        "expectedProfile": "ops-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "ops-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 4
+      },
+      {
+        "id": "rw-route-034",
+        "expectedProfile": "ops-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "ops-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 2
+      },
+      {
+        "id": "rw-route-035",
+        "expectedProfile": "ops-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "ops-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "explicit-profile-trigger",
+        "score": 100
+      },
+      {
+        "id": "rw-route-036",
+        "expectedProfile": "ops-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "ops-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 5
+      },
+      {
+        "id": "rw-route-037",
+        "expectedProfile": "research-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "research-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 5
+      },
+      {
+        "id": "rw-route-038",
+        "expectedProfile": "research-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "research-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "explicit-profile-trigger",
+        "score": 100
+      },
+      {
+        "id": "rw-route-039",
+        "expectedProfile": "research-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "research-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 4
+      },
+      {
+        "id": "rw-route-040",
+        "expectedProfile": "research-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "research-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 3
+      },
+      {
+        "id": "rw-route-041",
+        "expectedProfile": "research-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "research-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 6
+      },
+      {
+        "id": "rw-route-042",
+        "expectedProfile": "research-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "research-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 4
+      },
+      {
+        "id": "rw-route-043",
+        "expectedProfile": "research-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "research-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 4
+      },
+      {
+        "id": "rw-route-044",
+        "expectedProfile": "research-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "research-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 4
+      },
+      {
+        "id": "rw-route-045",
+        "expectedProfile": "research-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "research-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 5
+      },
+      {
+        "id": "rw-route-046",
+        "expectedProfile": "research-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "research-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 7
+      },
+      {
+        "id": "rw-route-047",
+        "expectedProfile": "research-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "research-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "explicit-profile-trigger",
+        "score": 100
+      },
+      {
+        "id": "rw-route-048",
+        "expectedProfile": "research-swarm",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "research-swarm",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "rule-match",
+        "score": 7
+      },
+      {
+        "id": "rw-route-049",
+        "expectedProfile": "repromptverse",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "repromptverse",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "generic-multi-agent-fallback",
+        "score": 0
+      },
+      {
+        "id": "rw-route-050",
+        "expectedProfile": "repromptverse",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "repromptverse",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "generic-multi-agent-fallback",
+        "score": 0
+      },
+      {
+        "id": "rw-route-051",
+        "expectedProfile": "repromptverse",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "repromptverse",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "generic-multi-agent-fallback",
+        "score": 0
+      },
+      {
+        "id": "rw-route-052",
+        "expectedProfile": "repromptverse",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "repromptverse",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "generic-multi-agent-fallback",
+        "score": 0
+      },
+      {
+        "id": "rw-route-053",
+        "expectedProfile": "repromptverse",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "repromptverse",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "generic-multi-agent-fallback",
+        "score": 0
+      },
+      {
+        "id": "rw-route-054",
+        "expectedProfile": "repromptverse",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "repromptverse",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "generic-multi-agent-fallback",
+        "score": 0
+      },
+      {
+        "id": "rw-route-055",
+        "expectedProfile": "repromptverse",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "repromptverse",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "generic-multi-agent-fallback",
+        "score": 0
+      },
+      {
+        "id": "rw-route-056",
+        "expectedProfile": "repromptverse",
+        "expectedMode": "multi-agent",
+        "detectedProfile": "repromptverse",
+        "detectedMode": "multi-agent",
+        "pass": true,
+        "reason": "generic-multi-agent-fallback",
+        "score": 0
+      },
+      {
+        "id": "rw-route-057",
+        "expectedProfile": "single",
+        "expectedMode": "single",
+        "detectedProfile": "single",
+        "detectedMode": "single",
+        "pass": true,
+        "reason": "single-mode-intent",
+        "score": 0
+      },
+      {
+        "id": "rw-route-058",
+        "expectedProfile": "single",
+        "expectedMode": "single",
+        "detectedProfile": "single",
+        "detectedMode": "single",
+        "pass": true,
+        "reason": "single-mode-intent",
+        "score": 0
+      },
+      {
+        "id": "rw-route-059",
+        "expectedProfile": "single",
+        "expectedMode": "single",
+        "detectedProfile": "single",
+        "detectedMode": "single",
+        "pass": true,
+        "reason": "single-mode-intent",
+        "score": 0
+      },
+      {
+        "id": "rw-route-060",
+        "expectedProfile": "single",
+        "expectedMode": "single",
+        "detectedProfile": "single",
+        "detectedMode": "single",
+        "pass": true,
+        "reason": "single-mode-intent",
+        "score": 0
+      },
+      {
+        "id": "rw-route-061",
+        "expectedProfile": "single",
+        "expectedMode": "single",
+        "detectedProfile": "single",
+        "detectedMode": "single",
+        "pass": true,
+        "reason": "single-mode-intent",
+        "score": 0
+      },
+      {
+        "id": "rw-route-062",
+        "expectedProfile": "single",
+        "expectedMode": "single",
+        "detectedProfile": "single",
+        "detectedMode": "single",
+        "pass": true,
+        "reason": "single-mode-intent",
+        "score": 0
+      },
+      {
+        "id": "rw-route-063",
+        "expectedProfile": "single",
+        "expectedMode": "single",
+        "detectedProfile": "single",
+        "detectedMode": "single",
+        "pass": true,
+        "reason": "single-mode-intent",
+        "score": 0
+      },
+      {
+        "id": "rw-route-064",
+        "expectedProfile": "single",
+        "expectedMode": "single",
+        "detectedProfile": "single",
+        "detectedMode": "single",
+        "pass": true,
+        "reason": "single-mode-intent",
+        "score": 0
+      }
+    ]
+  },
+  "artifacts": {
+    "fixtureCount": 84,
+    "passCount": 84,
+    "accuracy": 100,
+    "confidence95": {
+      "lower": 0.9563,
+      "upper": 1
+    },
+    "results": [
+      {
+        "id": "rw-eval-001",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-002",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-003",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-004",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-005",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-006",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-007",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-008",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-009",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-010",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-011",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-012",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-013",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-014",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-015",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-016",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-017",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-018",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-019",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-020",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-021",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-022",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-023",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-024",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-025",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-026",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-027",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-028",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-029",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-030",
+        "type": "pass",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9.5,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "rw-eval-031",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-032",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-033",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-034",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-035",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-036",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-037",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-038",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-039",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-040",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-041",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-042",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-043",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-044",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-045",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-046",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-047",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-048",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-049",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-050",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-051",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-052",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-053",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-054",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-055",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-056",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-057",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-058",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-059",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-060",
+        "type": "fail_missing_sections",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.25,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions, next actions"
+        ]
+      },
+      {
+        "id": "rw-eval-061",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "rw-eval-062",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "rw-eval-063",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "rw-eval-064",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "rw-eval-065",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "rw-eval-066",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "rw-eval-067",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "rw-eval-068",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "rw-eval-069",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "rw-eval-070",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "rw-eval-071",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "rw-eval-072",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "rw-eval-073",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "rw-eval-074",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "rw-eval-075",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "rw-eval-076",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "rw-eval-077",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "rw-eval-078",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "rw-eval-079",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "rw-eval-080",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "rw-eval-081",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "rw-eval-082",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "rw-eval-083",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "rw-eval-084",
+        "type": "fail_no_line_refs",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7.5,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      }
+    ]
+  },
+  "failures": {
+    "routing": [],
+    "artifacts": []
+  }
+}

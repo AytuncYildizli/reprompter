@@ -1,5 +1,58 @@
 # RePrompter Changelog
 
+## v9.0.0 (2026-03-15)
+
+### Added
+- **Prompt Flywheel engine** — closed-loop outcome learning system that gets smarter with every use
+- **Recipe fingerprinting** — `scripts/recipe-fingerprint.js` produces deterministic SHA-256 hashes of prompt strategy vectors (template + patterns + tier + domain + layers + quality bucket). Order-invariant, case-insensitive.
+- **Outcome collection** — `scripts/outcome-collector.js` passively captures execution signals (artifact score/pass, retry count, execution time) and links them to recipe fingerprints. Storage: `.reprompter/flywheel/outcomes.ndjson`
+- **Strategy learning** — `scripts/strategy-learner.js` queries the outcome ledger for similar past tasks, computes time-decay weighted effectiveness scores (7-day half-life), and recommends best-performing recipes with confidence levels
+- **Runtime integration** — flywheel hooks at `plan_ready` (fingerprint + strategy lookup) and `finalize_run` (outcome collection) in `scripts/repromptverse-runtime.js`
+- **Feature flag** — `REPROMPTER_FLYWHEEL=0|1` for controlled rollout (enabled by default)
+- **Telemetry stages** — 3 new event types: `fingerprint_recipe`, `collect_outcome`, `learn_strategy`
+- **Flywheel benchmark harness** — `scripts/run-flywheel-benchmark.js` with 13 fixtures covering fingerprint determinism (4), effectiveness scoring (6), and strategy learning (3) with Wilson 95% CI
+- **Unit test suites** — `recipe-fingerprint.test.js` (14 tests), `outcome-collector.test.js` (19 tests), `strategy-learner.test.js` (15 tests)
+- **npm scripts** — `test:recipe-fingerprint`, `test:outcome-collector`, `test:strategy-learner`, `benchmark:flywheel`, `flywheel:report`
+
+### Privacy
+- All flywheel data is stored locally in `.reprompter/flywheel/`. No data is transmitted anywhere.
+
+## v8.3.1 (2026-02-28)
+
+### Added
+- **Real-world benchmark harness** — `scripts/run-realworld-benchmark.js` with routing + artifact fixture evaluation and Wilson 95% confidence intervals
+- **Expanded real-world fixtures** — `benchmarks/fixtures/realworld-routing-fixtures.json` (64 cases) and `benchmarks/fixtures/realworld-artifact-fixtures.json` (84 cases)
+- **Real-world benchmark artifacts** — `benchmarks/v8.3-realworld-benchmark.md` and `benchmarks/v8.3-realworld-benchmark.json`
+- **Router regression coverage** for low-signal multi-agent fallbacks and single-mode false-positive protection (`scripts/intent-router.test.js`)
+
+### Fixed
+- **Implicit multi-agent over-triggering** in `scripts/intent-router.js` by requiring coordination-scope signals for multi-domain auto-detection
+- **Weak single-keyword profile matches** now fall back to generic `repromptverse` via a minimum routing score gate
+- **Ops/research routing misses** improved with additional domain phrases (`incident containment`, `recovery`, `decision matrix`, `evidence scoring`)
+- **Benchmark evaluator pass accounting** in `scripts/run-provider-benchmark.js` and `scripts/run-realworld-benchmark.js` so score bounds are only enforced for expected-pass fixtures by default (with `enforceScoreBounds` opt-in)
+
+## v8.3.0 (2026-02-28)
+
+### Added
+- **Implicit multi-agent intent detection** in `scripts/intent-router.js` for complexity signals (`audit`, `parallel`) and multi-domain prompts (2+ detected systems)
+- **Router regression tests** for implicit-intent activation and `forceSingle` override behavior
+- **Benchmark fixture expansion** from 6 to 9 routing cases, including implicit-intent scenarios
+- **Capability policy engine** — `scripts/capability-policy.js` for provider/model tier routing with fallback chains
+- **Layered context builder** — `scripts/context-builder.js` with token-budget manifest output
+- **Strict artifact evaluator** — `scripts/artifact-evaluator.js` for gated acceptance and retry targeting
+- **Pattern selector** — `scripts/pattern-selector.js` for pluggable prompt/context advancement patterns
+- **Runtime adapters** — `scripts/runtime-adapter.js` + `scripts/runtime-adapter-openclaw.js` for OpenClaw-first execution with sequential fallback
+- **Runtime orchestrator** — `scripts/repromptverse-runtime.js` composes routing, patterns, policy, context, adapter execution, and optional artifact evaluation
+- **Telemetry schema + store** — `scripts/telemetry-schema.js` and `scripts/telemetry-store.js` for stage-level run instrumentation
+- **Observability report generator** — `scripts/run-observability-report.js` with markdown/json outputs under `benchmarks/observability/`
+- **Provider/evaluator benchmark harness** — `scripts/run-provider-benchmark.js` + new fixtures and reports (`benchmarks/v8.3-provider-benchmark.*`)
+- **Expanded test suite** — dedicated unit tests for capability policy, context builder, evaluator, pattern selector, runtime adapter, orchestrator integration, and telemetry/reporting
+- **Runtime feature flags** for controlled rollout: `REPROMPTER_POLICY_ENGINE`, `REPROMPTER_LAYERED_CONTEXT`, `REPROMPTER_STRICT_EVAL`, `REPROMPTER_PATTERN_LIBRARY`
+
+### Fixed
+- **`forceSingle` precedence** now overrides explicit profile triggers, guaranteeing deterministic single-mode routing when requested
+- **Skill packaging filter** now excludes all `scripts/*.test.js` instead of a single test file
+
 ## v8.2.0 (2026-02-24)
 
 ### Added

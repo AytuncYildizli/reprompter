@@ -1,0 +1,1430 @@
+[
+  {
+    "id": "rw-eval-001",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth1.ts:41\n\n## Decisions\n- Apply mitigation in src/server1.ts:11 and add guardrails.\n\n## Risks\n- Regression risk in src/session1.ts:13 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth1.test.ts:21 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-002",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth2.ts:42\n\n## Decisions\n- Apply mitigation in src/server2.ts:12 and add guardrails.\n\n## Risks\n- Regression risk in src/session2.ts:14 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth2.test.ts:22 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-003",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth3.ts:43\n\n## Decisions\n- Apply mitigation in src/server3.ts:13 and add guardrails.\n\n## Risks\n- Regression risk in src/session3.ts:15 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth3.test.ts:23 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-004",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth4.ts:44\n\n## Decisions\n- Apply mitigation in src/server4.ts:14 and add guardrails.\n\n## Risks\n- Regression risk in src/session4.ts:16 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth4.test.ts:24 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-005",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth5.ts:45\n\n## Decisions\n- Apply mitigation in src/server5.ts:15 and add guardrails.\n\n## Risks\n- Regression risk in src/session5.ts:17 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth5.test.ts:25 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-006",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth6.ts:46\n\n## Decisions\n- Apply mitigation in src/server6.ts:16 and add guardrails.\n\n## Risks\n- Regression risk in src/session6.ts:18 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth6.test.ts:26 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-007",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth7.ts:47\n\n## Decisions\n- Apply mitigation in src/server7.ts:17 and add guardrails.\n\n## Risks\n- Regression risk in src/session7.ts:19 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth7.test.ts:27 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-008",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth8.ts:48\n\n## Decisions\n- Apply mitigation in src/server8.ts:18 and add guardrails.\n\n## Risks\n- Regression risk in src/session8.ts:20 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth8.test.ts:28 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-009",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth9.ts:49\n\n## Decisions\n- Apply mitigation in src/server9.ts:19 and add guardrails.\n\n## Risks\n- Regression risk in src/session9.ts:21 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth9.test.ts:29 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-010",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth10.ts:50\n\n## Decisions\n- Apply mitigation in src/server10.ts:20 and add guardrails.\n\n## Risks\n- Regression risk in src/session10.ts:22 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth10.test.ts:20 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-011",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth11.ts:51\n\n## Decisions\n- Apply mitigation in src/server11.ts:21 and add guardrails.\n\n## Risks\n- Regression risk in src/session11.ts:23 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth11.test.ts:21 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-012",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth12.ts:52\n\n## Decisions\n- Apply mitigation in src/server12.ts:22 and add guardrails.\n\n## Risks\n- Regression risk in src/session12.ts:12 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth12.test.ts:22 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-013",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth13.ts:53\n\n## Decisions\n- Apply mitigation in src/server13.ts:23 and add guardrails.\n\n## Risks\n- Regression risk in src/session13.ts:13 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth13.test.ts:23 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-014",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth14.ts:54\n\n## Decisions\n- Apply mitigation in src/server14.ts:24 and add guardrails.\n\n## Risks\n- Regression risk in src/session14.ts:14 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth14.test.ts:24 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-015",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth15.ts:55\n\n## Decisions\n- Apply mitigation in src/server15.ts:10 and add guardrails.\n\n## Risks\n- Regression risk in src/session15.ts:15 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth15.test.ts:25 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-016",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth16.ts:56\n\n## Decisions\n- Apply mitigation in src/server16.ts:11 and add guardrails.\n\n## Risks\n- Regression risk in src/session16.ts:16 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth16.test.ts:26 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-017",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth17.ts:57\n\n## Decisions\n- Apply mitigation in src/server17.ts:12 and add guardrails.\n\n## Risks\n- Regression risk in src/session17.ts:17 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth17.test.ts:27 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-018",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth18.ts:58\n\n## Decisions\n- Apply mitigation in src/server18.ts:13 and add guardrails.\n\n## Risks\n- Regression risk in src/session18.ts:18 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth18.test.ts:28 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-019",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth19.ts:59\n\n## Decisions\n- Apply mitigation in src/server19.ts:14 and add guardrails.\n\n## Risks\n- Regression risk in src/session19.ts:19 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth19.test.ts:29 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-020",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth20.ts:40\n\n## Decisions\n- Apply mitigation in src/server20.ts:15 and add guardrails.\n\n## Risks\n- Regression risk in src/session20.ts:20 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth20.test.ts:20 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-021",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth21.ts:41\n\n## Decisions\n- Apply mitigation in src/server21.ts:16 and add guardrails.\n\n## Risks\n- Regression risk in src/session21.ts:21 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth21.test.ts:21 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-022",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth22.ts:42\n\n## Decisions\n- Apply mitigation in src/server22.ts:17 and add guardrails.\n\n## Risks\n- Regression risk in src/session22.ts:22 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth22.test.ts:22 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-023",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth23.ts:43\n\n## Decisions\n- Apply mitigation in src/server23.ts:18 and add guardrails.\n\n## Risks\n- Regression risk in src/session23.ts:23 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth23.test.ts:23 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-024",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth24.ts:44\n\n## Decisions\n- Apply mitigation in src/server24.ts:19 and add guardrails.\n\n## Risks\n- Regression risk in src/session24.ts:12 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth24.test.ts:24 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-025",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth25.ts:45\n\n## Decisions\n- Apply mitigation in src/server25.ts:20 and add guardrails.\n\n## Risks\n- Regression risk in src/session25.ts:13 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth25.test.ts:25 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-026",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth26.ts:46\n\n## Decisions\n- Apply mitigation in src/server26.ts:21 and add guardrails.\n\n## Risks\n- Regression risk in src/session26.ts:14 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth26.test.ts:26 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-027",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth27.ts:47\n\n## Decisions\n- Apply mitigation in src/server27.ts:22 and add guardrails.\n\n## Risks\n- Regression risk in src/session27.ts:15 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth27.test.ts:27 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-028",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth28.ts:48\n\n## Decisions\n- Apply mitigation in src/server28.ts:23 and add guardrails.\n\n## Risks\n- Regression risk in src/session28.ts:16 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth28.test.ts:28 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-029",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth29.ts:49\n\n## Decisions\n- Apply mitigation in src/server29.ts:24 and add guardrails.\n\n## Risks\n- Regression risk in src/session29.ts:17 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth29.test.ts:29 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-030",
+    "type": "pass",
+    "artifact": "## Findings\n- High: auth risk in src/auth30.ts:50\n\n## Decisions\n- Apply mitigation in src/server30.ts:10 and add guardrails.\n\n## Risks\n- Regression risk in src/session30.ts:18 if ordering changes.\n\n## Next Actions\n- Add tests in test/auth30.test.ts:20 and verify rollout.",
+    "contractSpec": {
+      "threshold": 8,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": true,
+    "minScore": 8
+  },
+  {
+    "id": "rw-eval-031",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod31.ts:16\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-032",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod32.ts:17\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-033",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod33.ts:18\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-034",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod34.ts:19\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-035",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod35.ts:20\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-036",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod36.ts:21\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-037",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod37.ts:22\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-038",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod38.ts:23\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-039",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod39.ts:24\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-040",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod40.ts:5\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-041",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod41.ts:6\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-042",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod42.ts:7\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-043",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod43.ts:8\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-044",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod44.ts:9\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-045",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod45.ts:10\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-046",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod46.ts:11\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-047",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod47.ts:12\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-048",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod48.ts:13\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-049",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod49.ts:14\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-050",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod50.ts:15\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-051",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod51.ts:16\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-052",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod52.ts:17\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-053",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod53.ts:18\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-054",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod54.ts:19\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-055",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod55.ts:20\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-056",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod56.ts:21\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-057",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod57.ts:22\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-058",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod58.ts:23\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-059",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod59.ts:24\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-060",
+    "type": "fail_missing_sections",
+    "artifact": "## Findings\n- Medium issue found in src/mod60.ts:5\n\n## Risks\n- Potential regression risk",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": false
+    },
+    "expectedPass": false,
+    "maxScore": 7
+  },
+  {
+    "id": "rw-eval-061",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 61",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  },
+  {
+    "id": "rw-eval-062",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 62",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  },
+  {
+    "id": "rw-eval-063",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 63",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  },
+  {
+    "id": "rw-eval-064",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 64",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  },
+  {
+    "id": "rw-eval-065",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 65",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  },
+  {
+    "id": "rw-eval-066",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 66",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  },
+  {
+    "id": "rw-eval-067",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 67",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  },
+  {
+    "id": "rw-eval-068",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 68",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  },
+  {
+    "id": "rw-eval-069",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 69",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  },
+  {
+    "id": "rw-eval-070",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 70",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  },
+  {
+    "id": "rw-eval-071",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 71",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  },
+  {
+    "id": "rw-eval-072",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 72",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  },
+  {
+    "id": "rw-eval-073",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 73",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  },
+  {
+    "id": "rw-eval-074",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 74",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  },
+  {
+    "id": "rw-eval-075",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 75",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  },
+  {
+    "id": "rw-eval-076",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 76",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  },
+  {
+    "id": "rw-eval-077",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 77",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  },
+  {
+    "id": "rw-eval-078",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 78",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  },
+  {
+    "id": "rw-eval-079",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 79",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  },
+  {
+    "id": "rw-eval-080",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 80",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  },
+  {
+    "id": "rw-eval-081",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 81",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  },
+  {
+    "id": "rw-eval-082",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 82",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  },
+  {
+    "id": "rw-eval-083",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 83",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  },
+  {
+    "id": "rw-eval-084",
+    "type": "fail_no_line_refs",
+    "artifact": "## Findings\n- Problem detected in authentication path\n\n## Decisions\n- Patch middleware order\n\n## Risks\n- Regression possible\n\n## Next Actions\n- Execute follow-up checklist 84",
+    "contractSpec": {
+      "threshold": 7,
+      "requiredSections": [
+        "findings",
+        "decisions",
+        "risks",
+        "next actions"
+      ],
+      "requiresLineRefs": true
+    },
+    "expectedPass": false,
+    "maxScore": 8
+  }
+]

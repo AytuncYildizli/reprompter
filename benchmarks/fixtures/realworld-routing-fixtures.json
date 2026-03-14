@@ -1,0 +1,388 @@
+[
+  {
+    "id": "rw-route-001",
+    "prompt": "repromptverse launch campaign for product-led growth with seo and funnel optimization",
+    "expectedProfile": "marketing-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-002",
+    "prompt": "repromptverse marketing swarm create conversion-focused go-to-market and content calendar plan",
+    "expectedProfile": "marketing-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-003",
+    "prompt": "run with quality for campaign positioning, distribution, and audience copy testing",
+    "expectedProfile": "marketing-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-004",
+    "prompt": "repromptverse campaign swarm for brand positioning and funnel conversion analysis",
+    "expectedProfile": "marketing-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-005",
+    "prompt": "repromptverse optimize launch hooks, ctas, and audience messaging strategy",
+    "expectedProfile": "marketing-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-006",
+    "prompt": "repromptverse growth plan with seo, content calendar, and distribution cadences",
+    "expectedProfile": "marketing-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-007",
+    "prompt": "repromptverse marketing swarm design community launch and retention funnel",
+    "expectedProfile": "marketing-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-008",
+    "prompt": "repromptverse campaign planning for activation copy and lead conversion",
+    "expectedProfile": "marketing-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-009",
+    "prompt": "run with quality campaign strategy for seo-led acquisition with content calendar",
+    "expectedProfile": "marketing-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-010",
+    "prompt": "repromptverse define positioning narrative and performance distribution plan",
+    "expectedProfile": "marketing-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-011",
+    "prompt": "repromptverse build multichannel campaign brief with conversion model",
+    "expectedProfile": "marketing-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-012",
+    "prompt": "repromptverse campaign swarm align copy, cta, and audience segmentation",
+    "expectedProfile": "marketing-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-013",
+    "prompt": "repromptverse refactor auth module, migrate api contract, and increase test coverage",
+    "expectedProfile": "engineering-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-014",
+    "prompt": "repromptverse engineering swarm for architecture cleanup and integration test hardening",
+    "expectedProfile": "engineering-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-015",
+    "prompt": "run with quality backend frontend database migration with regression checks",
+    "expectedProfile": "engineering-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-016",
+    "prompt": "repromptverse stabilize build compile pipeline and type regressions in module boundaries",
+    "expectedProfile": "engineering-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-017",
+    "prompt": "repromptverse feature delivery planning for backend services and frontend module rollout",
+    "expectedProfile": "engineering-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-018",
+    "prompt": "repromptverse code review and schema migration readiness for core api changes",
+    "expectedProfile": "engineering-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-019",
+    "prompt": "repromptverse architecture and implementation plan for monolith to services migration",
+    "expectedProfile": "engineering-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-020",
+    "prompt": "run in parallel frontend and backend investigations for release-blocking bug",
+    "expectedProfile": "engineering-swarm",
+    "expectedMode": "multi-agent",
+    "forceMultiAgent": false
+  },
+  {
+    "id": "rw-route-021",
+    "prompt": "coordinate frontend api and database workstreams for release gating",
+    "expectedProfile": "engineering-swarm",
+    "expectedMode": "multi-agent",
+    "forceMultiAgent": false
+  },
+  {
+    "id": "rw-route-022",
+    "prompt": "repromptverse improve integration tests and api contract consistency",
+    "expectedProfile": "engineering-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-023",
+    "prompt": "repromptverse engineering swarm for refactor and release validation",
+    "expectedProfile": "engineering-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-024",
+    "prompt": "repromptverse implementation strategy for backend module and frontend handoff",
+    "expectedProfile": "engineering-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-025",
+    "prompt": "repromptverse gateway timeout incident with uptime drops and cron failures",
+    "expectedProfile": "ops-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-026",
+    "prompt": "ops swarm incident response for latency spikes and on-call remediation",
+    "expectedProfile": "ops-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-027",
+    "prompt": "run with quality postmortem and rollback plan for service health degradation",
+    "expectedProfile": "ops-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-028",
+    "prompt": "repromptverse error budget breach analysis with reliability and outage tracking",
+    "expectedProfile": "ops-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-029",
+    "prompt": "repromptverse root cause and remediation sequencing for deployment outage",
+    "expectedProfile": "ops-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-030",
+    "prompt": "repromptverse service health investigation across alerts, uptime, and latency",
+    "expectedProfile": "ops-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-031",
+    "prompt": "repromptverse sla/slo reliability hardening with rollback safeguards",
+    "expectedProfile": "ops-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-032",
+    "prompt": "repromptverse diagnose infra timeout regression and fix rollout strategy",
+    "expectedProfile": "ops-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-033",
+    "prompt": "audit uptime latency and cron reliability controls for payment gateway",
+    "expectedProfile": "ops-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-034",
+    "prompt": "audit incident workflow and observability gaps for production services",
+    "expectedProfile": "ops-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-035",
+    "prompt": "repromptverse operations swarm for outage prevention and postmortem quality",
+    "expectedProfile": "ops-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-036",
+    "prompt": "run with quality incident containment plan and recovery verification",
+    "expectedProfile": "ops-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-037",
+    "prompt": "run with quality benchmark memory architectures and compare tradeoff matrix",
+    "expectedProfile": "research-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-038",
+    "prompt": "repromptverse research swarm for option analysis with confidence labels",
+    "expectedProfile": "research-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-039",
+    "prompt": "repromptverse compare alternatives and produce evidence-backed decision memo",
+    "expectedProfile": "research-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-040",
+    "prompt": "repromptverse benchmark model latency and cost tradeoffs for production",
+    "expectedProfile": "research-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-041",
+    "prompt": "run with quality market scan and literature review synthesis",
+    "expectedProfile": "research-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-042",
+    "prompt": "repromptverse evaluate hypothesis quality and findings confidence",
+    "expectedProfile": "research-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-043",
+    "prompt": "repromptverse competitive analysis and tradeoff scoring report",
+    "expectedProfile": "research-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-044",
+    "prompt": "repromptverse compare options for orchestration topology and reliability",
+    "expectedProfile": "research-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-045",
+    "prompt": "benchmark alternatives and compare analysis for multi-agent routing",
+    "expectedProfile": "research-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-046",
+    "prompt": "audit benchmark methodology and evidence quality for research output",
+    "expectedProfile": "research-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-047",
+    "prompt": "repromptverse research swarm to evaluate memory systems and insights",
+    "expectedProfile": "research-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-048",
+    "prompt": "run with quality for decision matrix and evidence scoring",
+    "expectedProfile": "research-swarm",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-049",
+    "prompt": "repromptverse coordinate three agents for internal quality audit",
+    "expectedProfile": "repromptverse",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-050",
+    "prompt": "repromptverse help me plan this team workflow",
+    "expectedProfile": "repromptverse",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-051",
+    "prompt": "repromptverse run 4 agents and synthesize final output",
+    "expectedProfile": "repromptverse",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-052",
+    "prompt": "smart agents execute an audit across systems and summarize findings",
+    "expectedProfile": "repromptverse",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-053",
+    "prompt": "run with quality using parallel agents for this task",
+    "expectedProfile": "repromptverse",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-054",
+    "prompt": "reprompter teams coordinate independent reports then merge",
+    "expectedProfile": "repromptverse",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-055",
+    "prompt": "repromptverse orchestrate subagents with retry policy",
+    "expectedProfile": "repromptverse",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-056",
+    "prompt": "repromptverse multi-agent run with bounded polling",
+    "expectedProfile": "repromptverse",
+    "expectedMode": "multi-agent"
+  },
+  {
+    "id": "rw-route-057",
+    "prompt": "fix typo in header title",
+    "expectedProfile": "single",
+    "expectedMode": "single"
+  },
+  {
+    "id": "rw-route-058",
+    "prompt": "rename settings button to preferences",
+    "expectedProfile": "single",
+    "expectedMode": "single"
+  },
+  {
+    "id": "rw-route-059",
+    "prompt": "update api docs sentence for auth section",
+    "expectedProfile": "single",
+    "expectedMode": "single"
+  },
+  {
+    "id": "rw-route-060",
+    "prompt": "remove unused css class in navbar",
+    "expectedProfile": "single",
+    "expectedMode": "single"
+  },
+  {
+    "id": "rw-route-061",
+    "prompt": "create test for login validator",
+    "expectedProfile": "single",
+    "expectedMode": "single"
+  },
+  {
+    "id": "rw-route-062",
+    "prompt": "refactor helper function name in utils",
+    "expectedProfile": "single",
+    "expectedMode": "single"
+  },
+  {
+    "id": "rw-route-063",
+    "prompt": "delete stale comment in config loader",
+    "expectedProfile": "single",
+    "expectedMode": "single"
+  },
+  {
+    "id": "rw-route-064",
+    "prompt": "update readme intro line",
+    "expectedProfile": "single",
+    "expectedMode": "single"
+  }
+]

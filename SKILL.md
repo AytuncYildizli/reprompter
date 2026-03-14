@@ -12,10 +12,10 @@ compatibility: |
   Sequential fallback works with any LLM runtime.
 metadata:
   author: AytuncYildizli
-  version: 8.2.0
+  version: 9.0.0
 ---
 
-# RePrompter v8.2
+# RePrompter v9.0.0
 
 > **Your prompt sucks. Let's fix that.** Single prompts or full agent teams — one skill, two modes.
 
@@ -483,6 +483,82 @@ Generated prompts should COMPLEMENT runtime context (CLAUDE.md, skills, MCP tool
 1. Check what context is already loaded (project files, skills, MCP servers)
 2. Reference existing context: "Using the project structure from CLAUDE.md..."
 3. Add ONLY what's missing — avoid restating what the model already knows
+
+### Capability policy routing (OpenClaw + multi-LLM)
+When multiple providers/models are available, route each agent by capability tier:
+- `reasoning_high`: audits, synthesis, high-risk tasks
+- `long_context`: very large context windows or broad codebase scans
+- `cost_optimized` / `latency_optimized`: low-risk triage and bulk tasks
+- Always emit fallback chain with provider diversity (avoid single-provider hard dependency)
+
+### Budgeted layered context
+Build per-agent context in layers with explicit budgets:
+1. Task contract (always preserved)
+2. Local code facts
+3. Selected references
+4. Prior artifacts/handoffs
+
+Emit a context manifest (used tokens, truncation flags, dropped entries) so retries are reproducible and debuggable.
+
+### Strict artifact gate
+Before synthesis, evaluate each artifact for:
+- Required section coverage
+- Verifiability (file:line refs when required)
+- Boundary compliance (forbidden-pattern checks)
+- Overall weighted score threshold
+
+If gate fails, retry only with delta prompts (max 2 retries).
+
+Implementation note: combine routing + patterns + model policy + context + adapter + evaluator through a single orchestration contract (`scripts/repromptverse-runtime.js`) to keep behavior deterministic across runtimes.
+
+### Runtime feature flags
+Repromptverse runtime supports deterministic toggles for rollout and troubleshooting:
+- `REPROMPTER_POLICY_ENGINE=0|1` — disable/enable capability-based model routing
+- `REPROMPTER_LAYERED_CONTEXT=0|1` — disable/enable layered context assembly
+- `REPROMPTER_STRICT_EVAL=0|1` — disable/enable strict artifact evaluator defaults
+- `REPROMPTER_PATTERN_LIBRARY=0|1` — disable/enable pattern selector activation
+- `REPROMPTER_TELEMETRY=0|1` — disable/enable runtime telemetry emission for observability reports
+- `REPROMPTER_FLYWHEEL=0|1` — disable/enable Prompt Flywheel outcome learning (v9.0+)
+
+### Telemetry and observability
+Every Repromptverse run should emit stage-level telemetry events with `runId`, `taskId`, stage name, status, latency, and provider/model where applicable.
+- Event stages: `route_intent`, `select_patterns`, `resolve_model`, `build_context`, `plan_ready`, `spawn_agent`, `poll_artifacts`, `evaluate_artifact`, `finalize_run`, `fingerprint_recipe`, `collect_outcome`, `learn_strategy`
+- Storage: `.reprompter/telemetry/events.ndjson`
+- Report command: `npm run telemetry:report`
+
+### Prompt Flywheel (v9.0+)
+Closed-loop outcome learning system. Every prompt reprompter generates carries a **recipe fingerprint** — a deterministic hash of the strategy decisions (template, patterns, capability tier, domain, context layers, quality bucket). After execution, **outcome signals** are passively collected and linked back to the fingerprint.
+
+**All data is stored locally.** Nothing is transmitted anywhere. Storage: `.reprompter/flywheel/outcomes.ndjson`.
+
+**How it works:**
+1. **Fingerprint** — At `plan_ready`, the recipe vector (template + patterns + tier + domain + layers + quality bucket) is hashed into a 16-char fingerprint
+2. **Outcome collection** — At `finalize_run`, passive signals are captured: artifact evaluator score/pass, retry count, execution time. Linked to the recipe fingerprint.
+3. **Strategy learning** — On future runs, the learner queries the outcome ledger for similar past tasks, scores each recipe group (time-decay weighted), and recommends the historically best-performing strategy
+
+**Effectiveness scoring:**
+- Base: artifact evaluator score
+- Penalties: retries (-0.5 each), post-corrections (-0.3 each, capped at -2.0)
+- Bonus: first-attempt pass (+0.5)
+- Overrides: explicit user reject (caps at 3.0), explicit user accept (floors at 7.0)
+
+**Time decay:** 7-day half-life. Recent outcomes weigh more. Month-old outcomes have <10% influence.
+
+**Confidence levels:** high (10+ samples), medium (5-9), low (2-4), insufficient (<2, no recommendation made).
+
+Report command: `npm run flywheel:report`
+Benchmark command: `npm run benchmark:flywheel`
+
+### Pattern library (pluggable)
+Treat prompt/context engineering advancements as toggleable patterns (not fixed doctrine):
+- Constraint-first framing
+- Uncertainty labeling
+- Self-critique checkpoint
+- Delta retry scaffold
+- Evidence-strength labeling
+- Context-manifest transparency
+
+Activate by task/domain/outcome profile and validate via benchmark fixtures.
 
 ### Token budget
 Keep generated prompts under ~2K tokens for single mode, ~1K per agent for Repromptverse. Longer prompts waste context window without improving quality. If a prompt exceeds budget, split into phases or move detail into constraints.

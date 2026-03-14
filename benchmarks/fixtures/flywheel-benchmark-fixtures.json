@@ -1,0 +1,223 @@
+{
+  "fingerprint_determinism": [
+    {
+      "id": "fp-same-input",
+      "description": "Identical recipe inputs produce same hash",
+      "recipeA": {
+        "templateId": "security-template",
+        "patterns": ["constraint-first-framing", "uncertainty-labeling"],
+        "capabilityTier": "reasoning_high",
+        "domain": "security",
+        "contextLayers": 4,
+        "qualityScore": 8.5
+      },
+      "recipeB": {
+        "templateId": "security-template",
+        "patterns": ["constraint-first-framing", "uncertainty-labeling"],
+        "capabilityTier": "reasoning_high",
+        "domain": "security",
+        "contextLayers": 4,
+        "qualityScore": 8.5
+      },
+      "expectSameHash": true
+    },
+    {
+      "id": "fp-different-template",
+      "description": "Different template ID produces different hash",
+      "recipeA": {
+        "templateId": "security-template",
+        "patterns": ["constraint-first-framing"],
+        "capabilityTier": "reasoning_high",
+        "domain": "security",
+        "contextLayers": 4,
+        "qualityScore": 8.5
+      },
+      "recipeB": {
+        "templateId": "bugfix-template",
+        "patterns": ["constraint-first-framing"],
+        "capabilityTier": "reasoning_high",
+        "domain": "security",
+        "contextLayers": 4,
+        "qualityScore": 8.5
+      },
+      "expectSameHash": false
+    },
+    {
+      "id": "fp-pattern-order-invariant",
+      "description": "Pattern order does not affect hash",
+      "recipeA": {
+        "templateId": "engineering-swarm-template",
+        "patterns": ["self-critique-checkpoint", "delta-retry-scaffold", "constraint-first-framing"],
+        "capabilityTier": "reasoning_high",
+        "domain": "engineering",
+        "contextLayers": 3,
+        "qualityScore": 7.0
+      },
+      "recipeB": {
+        "templateId": "engineering-swarm-template",
+        "patterns": ["constraint-first-framing", "delta-retry-scaffold", "self-critique-checkpoint"],
+        "capabilityTier": "reasoning_high",
+        "domain": "engineering",
+        "contextLayers": 3,
+        "qualityScore": 7.0
+      },
+      "expectSameHash": true
+    },
+    {
+      "id": "fp-case-insensitive",
+      "description": "Case differences do not affect hash",
+      "recipeA": {
+        "templateId": "ops-swarm-template",
+        "patterns": ["Evidence-Strength-Labeling"],
+        "capabilityTier": "Reasoning_High",
+        "domain": "OPS",
+        "contextLayers": 2,
+        "qualityScore": 6.0
+      },
+      "recipeB": {
+        "templateId": "ops-swarm-template",
+        "patterns": ["evidence-strength-labeling"],
+        "capabilityTier": "reasoning_high",
+        "domain": "ops",
+        "contextLayers": 2,
+        "qualityScore": 6.0
+      },
+      "expectSameHash": true
+    }
+  ],
+  "effectiveness_scoring": [
+    {
+      "id": "eff-perfect-run",
+      "description": "High artifact score, first-attempt pass, no corrections",
+      "signals": {
+        "artifactScore": 9.5,
+        "artifactPass": true,
+        "retryCount": 0,
+        "postCorrectionEdits": 0
+      },
+      "expectedMin": 9.5,
+      "expectedMax": 10.0
+    },
+    {
+      "id": "eff-retry-penalty",
+      "description": "Good score but needed 2 retries",
+      "signals": {
+        "artifactScore": 8.0,
+        "artifactPass": true,
+        "retryCount": 2
+      },
+      "expectedMin": 6.5,
+      "expectedMax": 7.5
+    },
+    {
+      "id": "eff-user-reject",
+      "description": "User explicitly rejected output",
+      "signals": {
+        "artifactScore": 8.0,
+        "artifactPass": true,
+        "retryCount": 0,
+        "userVerdict": "reject"
+      },
+      "expectedMin": 0.0,
+      "expectedMax": 3.0
+    },
+    {
+      "id": "eff-user-accept-override",
+      "description": "Low artifact score but user accepted",
+      "signals": {
+        "artifactScore": 4.0,
+        "artifactPass": false,
+        "retryCount": 1,
+        "userVerdict": "accept"
+      },
+      "expectedMin": 7.0,
+      "expectedMax": 10.0
+    },
+    {
+      "id": "eff-correction-penalty",
+      "description": "Good score but many post-corrections",
+      "signals": {
+        "artifactScore": 8.5,
+        "artifactPass": true,
+        "retryCount": 0,
+        "postCorrectionEdits": 5
+      },
+      "expectedMin": 7.0,
+      "expectedMax": 8.5
+    },
+    {
+      "id": "eff-baseline-no-signals",
+      "description": "Neutral baseline when no signals present",
+      "signals": {},
+      "expectedMin": 4.0,
+      "expectedMax": 6.0
+    }
+  ],
+  "strategy_learning": [
+    {
+      "id": "learn-empty-store",
+      "description": "No data returns no recommendation",
+      "outcomes": [],
+      "expectRecommendation": false
+    },
+    {
+      "id": "learn-insufficient-samples",
+      "description": "Single outcome is not enough for recommendation",
+      "outcomes": [
+        {
+          "recipe": {
+            "templateId": "security-template",
+            "domain": "security",
+            "capabilityTier": "reasoning_high",
+            "patterns": ["constraint-first-framing"],
+            "contextLayers": 4,
+            "qualityScore": 8.5
+          },
+          "effectivenessScore": 8.5
+        }
+      ],
+      "expectRecommendation": false
+    },
+    {
+      "id": "learn-sufficient-samples",
+      "description": "Three identical recipes produce recommendation",
+      "outcomes": [
+        {
+          "recipe": {
+            "templateId": "security-template",
+            "domain": "security",
+            "capabilityTier": "reasoning_high",
+            "patterns": ["constraint-first-framing"],
+            "contextLayers": 4,
+            "qualityScore": 8.5
+          },
+          "effectivenessScore": 9.0
+        },
+        {
+          "recipe": {
+            "templateId": "security-template",
+            "domain": "security",
+            "capabilityTier": "reasoning_high",
+            "patterns": ["constraint-first-framing"],
+            "contextLayers": 4,
+            "qualityScore": 8.5
+          },
+          "effectivenessScore": 8.5
+        },
+        {
+          "recipe": {
+            "templateId": "security-template",
+            "domain": "security",
+            "capabilityTier": "reasoning_high",
+            "patterns": ["constraint-first-framing"],
+            "contextLayers": 4,
+            "qualityScore": 8.5
+          },
+          "effectivenessScore": 8.0
+        }
+      ],
+      "expectRecommendation": true,
+      "expectedScoreMin": 8.0
+    }
+  ]
+}

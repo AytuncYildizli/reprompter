@@ -206,6 +206,119 @@ Verification scenarios for the RePrompter skill. Run these manually to validate 
 - Quality rubric is shown across six dimensions
 - If score < 7, one delta rewrite is produced before final output
 
+## Scenario 21: Capability Policy Tier Routing
+
+**Input:** Provider benchmark fixture set (`benchmarks/fixtures/provider-routing-fixtures.json`)
+**Expected:** Capability policy assigns the expected tier per fixture.
+**Verify:**
+- `npm run benchmark:provider` reports routing accuracy 100%
+- Cases cover `reasoning_high`, `long_context`, `cost_optimized`, `reasoning_medium`, and `tool_reliability`
+- Output includes selected provider/model and reason trace
+
+## Scenario 22: Layered Context Budgeting
+
+**Input:** Context builder unit fixtures (`scripts/context-builder.test.js`)
+**Expected:** Contract layer preserved; lower-priority layers truncate under budget pressure.
+**Verify:**
+- `npm run test:context-builder` passes
+- Manifest includes layer budgets, used tokens, and truncation flags
+- Tight budget still includes Layer 1 task contract
+
+## Scenario 23: Strict Artifact Gate
+
+**Input:** Evaluator fixtures (`benchmarks/fixtures/evaluator-quality-fixtures.json`)
+**Expected:** Artifacts fail on missing sections, missing line refs, or forbidden boundary patterns.
+**Verify:**
+- `npm run test:artifact-evaluator` passes
+- `npm run benchmark:provider` reports evaluator accuracy 100%
+- Failed artifacts include explicit gap messages for delta retry prompts
+
+## Scenario 24: OpenClaw Adapter + Sequential Fallback
+
+**Input:** Runtime adapter unit suite (`scripts/runtime-adapter.test.js`)
+**Expected:** OpenClaw adapter reports parallel support; sequential adapter disables it with same polling contract.
+**Verify:**
+- `npm run test:runtime-adapter` passes
+- `pollArtifacts` returns `completed` when outputs exist
+- `pollArtifacts` returns `stalled` on no-progress state
+
+## Scenario 25: End-to-End Runtime Composition
+
+**Input:** Runtime orchestrator suite (`scripts/repromptverse-runtime.test.js`)
+**Expected:** Plan composition includes routing + patterns + model policy + context build, and execution path can spawn/poll/evaluate with adapters.
+**Verify:**
+- `npm run test:repromptverse-runtime` passes
+- Build path returns intent profile, selected model, and context manifest
+- Execute path supports OpenClaw and sequential adapters
+
+## Scenario 26: Telemetry Coverage + Observability Report
+
+**Input:** Runtime execution with telemetry enabled and report generation (`npm run telemetry:report`)
+**Expected:** Every run emits stage events and report aggregates run-level metrics.
+**Verify:**
+- `.reprompter/telemetry/events.ndjson` contains stage events with `runId` and `taskId`
+- Includes core stages: route, pattern, model, context, spawn, poll, evaluate, finalize
+- `benchmarks/observability/v8.3-observability-report.md` and `.json` are generated
+- Report includes run count, stall/timeout rates, stage latency summary, provider distribution
+
+## Scenario 27: Real-World Benchmark Coverage
+
+**Input:** Real-world routing + artifact fixtures (`benchmarks/fixtures/realworld-routing-fixtures.json`, `benchmarks/fixtures/realworld-artifact-fixtures.json`)
+**Expected:** Real-world benchmark validates routing precision and evaluator correctness at larger sample size.
+**Verify:**
+- `npm run benchmark:realworld` reports routing accuracy 100% (64/64)
+- `npm run benchmark:realworld` reports artifact accuracy 100% (84/84)
+- Output includes Wilson 95% confidence intervals in markdown/json reports
+- Artifacts are generated at `benchmarks/v8.3-realworld-benchmark.md` and `.json`
+
+## Scenario 28: Recipe Fingerprint Determinism
+
+**Input:** Fingerprint benchmark fixture set (`benchmarks/fixtures/flywheel-benchmark-fixtures.json`, `fingerprint_determinism`)
+**Expected:** Identical recipe inputs produce identical hashes; different inputs produce different hashes; pattern order and case do not affect output.
+**Verify:**
+- `npm run test:recipe-fingerprint` passes (14 tests)
+- `npm run benchmark:flywheel` reports fingerprint accuracy 100% (4/4)
+
+## Scenario 29: Outcome Collection and Effectiveness Scoring
+
+**Input:** Outcome collector unit suite (`scripts/outcome-collector.test.js`) + effectiveness benchmark fixtures
+**Expected:** Outcomes are validated, stored to NDJSON, filtered by domain, and effectiveness scores correctly computed from signals.
+**Verify:**
+- `npm run test:outcome-collector` passes (19 tests)
+- `npm run benchmark:flywheel` reports effectiveness accuracy 100% (6/6)
+- Signals are sanitized: negatives clamped, invalid types stripped, unknown verdicts rejected
+- User reject verdict caps score at 3.0; user accept floors at 7.0
+
+## Scenario 30: Strategy Learning and Recommendation
+
+**Input:** Strategy learner unit suite (`scripts/strategy-learner.test.js`) + strategy benchmark fixtures
+**Expected:** Learner queries outcome ledger, groups by recipe hash, computes time-decay weighted scores, and recommends best recipe.
+**Verify:**
+- `npm run test:strategy-learner` passes (15 tests)
+- `npm run benchmark:flywheel` reports strategy accuracy 100% (3/3)
+- Empty store returns `hasData: false` with helpful message
+- Insufficient samples (<2) returns no recommendation
+- 3+ similar outcomes return recommendation with confidence level
+
+## Scenario 31: Flywheel Runtime Integration
+
+**Input:** Run `buildExecutionPlan` and `executePlan` with `flywheel: true` feature flag
+**Expected:** Recipe fingerprint is computed at plan_ready; outcome is collected at finalize_run; telemetry includes `fingerprint_recipe`, `collect_outcome`, and `learn_strategy` events.
+**Verify:**
+- `npm run test:repromptverse-runtime` passes
+- Plan result includes `recipeFingerprint` and `flywheelRecommendation` fields
+- Execution result includes `outcomeRecord` field
+- `.reprompter/flywheel/outcomes.ndjson` contains outcome entry after execution
+
+## Scenario 32: Flywheel Privacy (Local-Only Storage)
+
+**Setup:** Run a full Repromptverse cycle with flywheel enabled.
+**Expected:** All flywheel data stored in `.reprompter/flywheel/` locally. No network calls.
+**Verify:**
+- Outcome file exists at `.reprompter/flywheel/outcomes.ndjson`
+- No HTTP/fetch imports in any flywheel module
+- Module source contains only `fs`, `path`, `crypto`, `child_process` (execFileSync for git) imports
+
 ---
 
 ## Anti-Patterns (Should NOT Happen)

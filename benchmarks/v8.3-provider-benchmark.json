@@ -1,0 +1,112 @@
+{
+  "generatedAt": "2026-03-14T23:05:39.444Z",
+  "routing": {
+    "fixtureCount": 5,
+    "passCount": 5,
+    "accuracy": 100,
+    "confidence95": {
+      "lower": 0.5655,
+      "upper": 1
+    },
+    "results": [
+      {
+        "id": "route-01",
+        "expectedTier": "reasoning_high",
+        "detectedTier": "reasoning_high",
+        "selectedModel": "anthropic/claude-opus-4",
+        "selectedProvider": "anthropic",
+        "pass": true,
+        "reason": "tier=reasoning_high; domain=security; outcome=quality_reliability; context=0"
+      },
+      {
+        "id": "route-02",
+        "expectedTier": "long_context",
+        "detectedTier": "long_context",
+        "selectedModel": "google/gemini-2.5-pro",
+        "selectedProvider": "google",
+        "pass": true,
+        "reason": "tier=long_context; domain=research; outcome=quality_reliability; context=180000"
+      },
+      {
+        "id": "route-03",
+        "expectedTier": "cost_optimized",
+        "detectedTier": "cost_optimized",
+        "selectedModel": "google/gemini-2.5-flash",
+        "selectedProvider": "google",
+        "pass": true,
+        "reason": "tier=cost_optimized; domain=ops; outcome=cost_speed; context=0"
+      },
+      {
+        "id": "route-04",
+        "expectedTier": "reasoning_medium",
+        "detectedTier": "reasoning_medium",
+        "selectedModel": "anthropic/claude-opus-4",
+        "selectedProvider": "anthropic",
+        "pass": true,
+        "reason": "tier=reasoning_medium; domain=engineering; outcome=balanced; context=0"
+      },
+      {
+        "id": "route-05",
+        "expectedTier": "tool_reliability",
+        "detectedTier": "tool_reliability",
+        "selectedModel": "anthropic/claude-opus-4",
+        "selectedProvider": "anthropic",
+        "pass": true,
+        "reason": "tier=tool_reliability; domain=engineering; outcome=quality_reliability; context=0"
+      }
+    ]
+  },
+  "evaluator": {
+    "fixtureCount": 4,
+    "passCount": 4,
+    "accuracy": 100,
+    "confidence95": {
+      "lower": 0.5101,
+      "upper": 1
+    },
+    "results": [
+      {
+        "id": "eval-01",
+        "expectedPass": true,
+        "detectedPass": true,
+        "overallScore": 9,
+        "threshold": 8,
+        "pass": true,
+        "gaps": []
+      },
+      {
+        "id": "eval-02",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 5.75,
+        "threshold": 7,
+        "pass": true,
+        "gaps": [
+          "Missing sections: decisions"
+        ]
+      },
+      {
+        "id": "eval-03",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 7,
+        "threshold": 6,
+        "pass": true,
+        "gaps": [
+          "Missing file:line references."
+        ]
+      },
+      {
+        "id": "eval-04",
+        "expectedPass": false,
+        "detectedPass": false,
+        "overallScore": 8,
+        "threshold": 6,
+        "pass": true,
+        "gaps": [
+          "Boundary violations matched: edited \\.env"
+        ]
+      }
+    ]
+  }
+}

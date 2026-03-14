@@ -1,0 +1,115 @@
+{
+  "timestamp": "2026-03-14T23:05:40.000Z",
+  "version": "9.0.0",
+  "summary": {
+    "total": 13,
+    "passed": 13,
+    "failed": 0,
+    "accuracy": "100.0%",
+    "wilsonCI95": "[77.19%, 100%]"
+  },
+  "fingerprint": {
+    "total": 4,
+    "passed": 4,
+    "results": [
+      {
+        "id": "fp-same-input",
+        "pass": true,
+        "expected": "same",
+        "actual": "same",
+        "hashA": "190dc08a78b373c4",
+        "hashB": "190dc08a78b373c4"
+      },
+      {
+        "id": "fp-different-template",
+        "pass": true,
+        "expected": "different",
+        "actual": "different",
+        "hashA": "4c6d523b03f84f97",
+        "hashB": "0e6a3b97c2d89e0c"
+      },
+      {
+        "id": "fp-pattern-order-invariant",
+        "pass": true,
+        "expected": "same",
+        "actual": "same",
+        "hashA": "6765606cf86543ad",
+        "hashB": "6765606cf86543ad"
+      },
+      {
+        "id": "fp-case-insensitive",
+        "pass": true,
+        "expected": "same",
+        "actual": "same",
+        "hashA": "14094e34f698bd3d",
+        "hashB": "14094e34f698bd3d"
+      }
+    ]
+  },
+  "effectiveness": {
+    "total": 6,
+    "passed": 6,
+    "results": [
+      {
+        "id": "eff-perfect-run",
+        "pass": true,
+        "score": 10,
+        "expectedRange": "[9.5, 10]"
+      },
+      {
+        "id": "eff-retry-penalty",
+        "pass": true,
+        "score": 7,
+        "expectedRange": "[6.5, 7.5]"
+      },
+      {
+        "id": "eff-user-reject",
+        "pass": true,
+        "score": 3,
+        "expectedRange": "[0, 3]"
+      },
+      {
+        "id": "eff-user-accept-override",
+        "pass": true,
+        "score": 7,
+        "expectedRange": "[7, 10]"
+      },
+      {
+        "id": "eff-correction-penalty",
+        "pass": true,
+        "score": 7.5,
+        "expectedRange": "[7, 8.5]"
+      },
+      {
+        "id": "eff-baseline-no-signals",
+        "pass": true,
+        "score": 5,
+        "expectedRange": "[4, 6]"
+      }
+    ]
+  },
+  "strategy": {
+    "total": 3,
+    "passed": 3,
+    "results": [
+      {
+        "id": "learn-empty-store",
+        "pass": true,
+        "hasRecommendation": false,
+        "score": null
+      },
+      {
+        "id": "learn-insufficient-samples",
+        "pass": true,
+        "hasRecommendation": false,
+        "score": null
+      },
+      {
+        "id": "learn-sufficient-samples",
+        "pass": true,
+        "hasRecommendation": true,
+        "score": 8.5
+      }
+    ]
+  }
+}
