@@ -1,21 +1,17 @@
-# [9.1.0](https://github.com/AytuncYildizli/reprompter/compare/v9.0.0...v9.1.0) (2026-03-14)
-
-
-### Features
-
-* close the flywheel loop — bias now changes execution behavior ([601b0dd](https://github.com/AytuncYildizli/reprompter/commit/601b0dd867bedc750423db3ec42eeccafebec08b))
-
-# [8.3.0](https://github.com/AytuncYildizli/reprompter/compare/v8.2.0...v8.3.0) (2026-03-14)
-
-
-### Features
-
-* milestone 1 telemetry and observability pipeline ([45d05cb](https://github.com/AytuncYildizli/reprompter/commit/45d05cb2f847041a56fd6146936fe36d117e4a5f))
-* milestone 2 real-world benchmarks and routing calibration ([540fd9a](https://github.com/AytuncYildizli/reprompter/commit/540fd9a51650af4d15de125c857d73fa2a956a81))
-* release v8.3.0 runtime optimization stack ([d9420fb](https://github.com/AytuncYildizli/reprompter/commit/d9420fbd2523cd1fc7bb6b79e2e5f2060f2ff32b))
-* release v9.0.0 prompt flywheel engine ([a87c9f1](https://github.com/AytuncYildizli/reprompter/commit/a87c9f1700122942d0ea376ac91b72569966d088))
-
 # RePrompter Changelog
+
+## v9.1.0 (2026-03-15)
+
+### Added
+- **Closed-loop flywheel** — historical outcomes now automatically change future execution behavior
+- **Pre-decision domain lookup** — `bestRecipeForDomain()` queries historical best recipe before pattern/model decisions are made (no fingerprint needed)
+- **Confidence-gated bias application** — `applyFlywheelBias()` merges winning patterns at medium+ confidence, overrides capability tier at high confidence
+- **Restructured execution flow** — flywheel lookup moved before pattern selection and model resolution so bias can influence decisions
+
+### Changed
+- `buildExecutionPlan` flow: routeIntent → flywheelLookup → biased selectPatterns → biased resolveModel → buildContext → fingerprint (of actual decisions)
+- Plan result now includes `flywheelBias` (with `applied`, `changes`, `confidence` fields) instead of unused `flywheelRecommendation`
+- Pattern selection reasons include flywheel bias trace when applied
 
 ## v9.0.0 (2026-03-15)
 
