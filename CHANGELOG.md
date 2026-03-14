@@ -1,3 +1,10 @@
+# [9.1.0](https://github.com/AytuncYildizli/reprompter/compare/v9.0.0...v9.1.0) (2026-03-14)
+
+
+### Features
+
+* close the flywheel loop — bias now changes execution behavior ([601b0dd](https://github.com/AytuncYildizli/reprompter/commit/601b0dd867bedc750423db3ec42eeccafebec08b))
+
 # [8.3.0](https://github.com/AytuncYildizli/reprompter/compare/v8.2.0...v8.3.0) (2026-03-14)
 
 
