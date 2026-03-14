@@ -12,10 +12,10 @@ compatibility: |
   Sequential fallback works with any LLM runtime.
 metadata:
   author: AytuncYildizli
-  version: 9.0.0
+  version: 9.1.0
 ---
 
-# RePrompter v9.0.0
+# RePrompter v9.1.0
 
 > **Your prompt sucks. Let's fix that.** Single prompts or full agent teams — one skill, two modes.
 
