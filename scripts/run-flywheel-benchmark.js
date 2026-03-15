@@ -136,7 +136,7 @@ function run() {
 
   const report = {
     timestamp,
-    version: "9.1.0",
+    version: "9.2.1",
     summary: {
       total: totalCount,
       passed: totalPass,

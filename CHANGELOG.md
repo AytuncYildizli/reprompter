@@ -1,18 +1,18 @@
-## [9.2.1](https://github.com/AytuncYildizli/reprompter/compare/v9.2.0...v9.2.1) (2026-03-15)
-
-
-### Bug Fixes
-
-* resolve 7 critical flywheel gaps (3-agent parallel fix) ([5969e25](https://github.com/AytuncYildizli/reprompter/commit/5969e25cbc4cd6d6cbd577b75a5cc895c1f47cf8))
-
-# [9.2.0](https://github.com/AytuncYildizli/reprompter/compare/v9.1.0...v9.2.0) (2026-03-14)
-
-
-### Features
-
-* release v9.1.0 closed-loop flywheel ([9934c75](https://github.com/AytuncYildizli/reprompter/commit/9934c7572c497d512045f15982e8ed164dd8c87c))
-
 # RePrompter Changelog
+
+## v9.2.1 (2026-03-15)
+
+### Fixed
+- **7 critical flywheel gaps** resolved by 3-agent parallel team (RuntimeEngineer, OutcomeEngineer, DocsEngineer)
+- `flywheelPreferredTier` now consumed by capability-policy.js (+2 score boost)
+- `postCorrectionEdits` collected via git log heuristic
+- `.reprompter/` added to .gitignore
+- Pattern merge complete (full objects via `getPatternById`)
+- Ledger rotation with `trimOutcomes(500)` and atomic write
+- E2E integration test (5 tests covering full flywheel cycle)
+- SKILL.md flywheel user guidance added
+- Version alignment: all files now report 9.2.1
+- CHANGELOG cleanup: removed semantic-release auto-generated duplicates
 
 ## v9.1.0 (2026-03-15)
 

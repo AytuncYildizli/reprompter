@@ -29,7 +29,8 @@ function createOutcomeStore(options = {}) {
 
     ensureDir();
     fs.appendFileSync(filePath, `${JSON.stringify(validated.outcome)}\n`, "utf8");
-    trimOutcomes();
+    const maxFromEnv = Number(process.env.REPROMPTER_FLYWHEEL_MAX_OUTCOMES || 0);
+    trimOutcomes(maxFromEnv > 0 ? maxFromEnv : 500);
     return validated.outcome;
   }
 

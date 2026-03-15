@@ -12,10 +12,10 @@ compatibility: |
   Sequential fallback works with any LLM runtime.
 metadata:
   author: AytuncYildizli
-  version: 9.1.0
+  version: 9.2.1
 ---
 
-# RePrompter v9.1.0
+# RePrompter v9.2.1
 
 > **Your prompt sucks. Let's fix that.** Single prompts or full agent teams — one skill, two modes.
 
@@ -535,6 +535,9 @@ When the flywheel has enough historical data to influence a recommendation, the 
 **When to show flywheel info:**
 - Show a brief one-liner when flywheel bias is applied to a plan (e.g., "Flywheel: using constraint-first pattern based on 8 past runs (score 8.7, high confidence)")
 - Show when the recommended strategy differs from what would have been selected without historical data
+- If the flywheel recommends a different template (via `flywheelBias.template`), prefer that template for prompt generation in Phase 2 unless the user explicitly overrides
+
+**Template bias:** When `flywheelBias.template` is set, use that template ID for prompt generation instead of the default intent-routed template. This is the most impactful flywheel signal — template choice shapes the entire prompt structure. Log the override: "Flywheel: using {template} (historically {score}/10 over {N} runs)"
 
 **When NOT to show flywheel info:**
 - No outcome data exists yet (cold start) — do not mention the flywheel at all
@@ -542,7 +545,7 @@ When the flywheel has enough historical data to influence a recommendation, the 
 - Bias lookup found data but no changes were applied — nothing to report
 
 **Format:** Always a single inline note, never a table or multi-line block. Example:
-> Flywheel: preferring `reasoning_high` tier + `self-critique-checkpoint` pattern (9 runs, score 8.3/10, high confidence)
+> Flywheel: preferring `security-template` + `self-critique-checkpoint` pattern (9 runs, score 8.3/10, high confidence)
 
 **Privacy:** All flywheel data is local (`.reprompter/flywheel/`). Never reference specific past prompts, tasks, or user content in flywheel messages — only aggregate statistics (run count, score, confidence level).
 
