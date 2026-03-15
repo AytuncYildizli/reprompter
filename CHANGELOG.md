@@ -1,10 +1,3 @@
-## [9.2.2](https://github.com/AytuncYildizli/reprompter/compare/v9.2.1...v9.2.2) (2026-03-15)
-
-
-### Bug Fixes
-
-* polish to 100/100 — version sync, changelog, template bias, trim config ([adac038](https://github.com/AytuncYildizli/reprompter/commit/adac038de2898efa7fd9901a0a81fb0a31532e04))
-
 # RePrompter Changelog
 
 ## v9.2.1 (2026-03-15)
