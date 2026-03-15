@@ -2,7 +2,7 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { selectPatterns, renderPatternGuidance } = require("./pattern-selector");
+const { selectPatterns, renderPatternGuidance, getPatternById } = require("./pattern-selector");
 
 test("selects evidence and uncertainty patterns for security audit task", () => {
   const result = selectPatterns(
@@ -40,4 +40,23 @@ test("renderPatternGuidance returns bullet list output", () => {
   const result = selectPatterns({ task: "analyze performance" }, "ops");
   const guidance = renderPatternGuidance(result);
   assert.match(guidance, /^- /m);
+});
+
+test("getPatternById returns full pattern object for valid id", () => {
+  const pattern = getPatternById("constraint-first-framing");
+  assert.ok(pattern);
+  assert.equal(pattern.id, "constraint-first-framing");
+  assert.equal(pattern.title, "Constraint-First Framing");
+  assert.ok(pattern.guidance);
+});
+
+test("getPatternById is case-insensitive", () => {
+  const pattern = getPatternById("Constraint-First-Framing");
+  assert.ok(pattern);
+  assert.equal(pattern.id, "constraint-first-framing");
+});
+
+test("getPatternById returns null for unknown id", () => {
+  const pattern = getPatternById("nonexistent-pattern");
+  assert.equal(pattern, null);
 });

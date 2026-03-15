@@ -11,6 +11,7 @@ const {
   validateOutcome,
   sanitizeSignals,
   computeEffectiveness,
+  collectGitSignals,
 } = require("./outcome-collector");
 const { fingerprint } = require("./recipe-fingerprint");
 
@@ -216,6 +217,90 @@ describe("outcome-collector", () => {
       const high = computeEffectiveness({ artifactScore: 10, artifactPass: true, retryCount: 0 });
       assert.ok(low >= 0);
       assert.ok(high <= 10);
+    });
+  });
+
+  describe("collectGitSignals()", () => {
+    it("returns an object with postCorrectionEdits key", () => {
+      // Run in current repo — should at least return a signals object
+      const signals = collectGitSignals(process.cwd());
+      assert.strictEqual(typeof signals, "object");
+      // postCorrectionEdits should be a number (0 or more) when in a git repo
+      if (signals.postCorrectionEdits !== undefined) {
+        assert.strictEqual(typeof signals.postCorrectionEdits, "number");
+        assert.ok(signals.postCorrectionEdits >= 0);
+      }
+    });
+
+    it("returns empty signals for non-git directory", () => {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "rpt-nogit-"));
+      try {
+        const signals = collectGitSignals(tmpDir);
+        assert.strictEqual(typeof signals, "object");
+        // Should not have git signals in a non-git dir
+        assert.strictEqual(signals.filesChanged, undefined);
+        assert.strictEqual(signals.postCorrectionEdits, undefined);
+      } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
+  });
+
+  describe("trimOutcomes()", () => {
+    it("trims ledger to maxEntries keeping most recent", () => {
+      const store = tmpStore();
+      stores.push(store);
+      for (let i = 0; i < 20; i++) {
+        store.writeOutcome(sampleOutcome({ runId: `rpt-trim-${i}` }));
+      }
+      // Force trim to 10
+      store.trimOutcomes(10);
+      const outcomes = store.readOutcomes();
+      assert.strictEqual(outcomes.length, 10);
+      // Should keep the last 10 (rpt-trim-10 through rpt-trim-19)
+      assert.strictEqual(outcomes[0].runId, "rpt-trim-10");
+      assert.strictEqual(outcomes[9].runId, "rpt-trim-19");
+    });
+
+    it("no-ops when entries are within limit", () => {
+      const store = tmpStore();
+      stores.push(store);
+      for (let i = 0; i < 3; i++) {
+        store.writeOutcome(sampleOutcome({ runId: `rpt-small-${i}` }));
+      }
+      store.trimOutcomes(500);
+      assert.strictEqual(store.readOutcomes().length, 3);
+    });
+
+    it("auto-trims on writeOutcome when ledger exceeds default max", () => {
+      const store = tmpStore();
+      stores.push(store);
+      // Write 505 outcomes (exceeds default 500)
+      const lines = [];
+      for (let i = 0; i < 505; i++) {
+        const o = sampleOutcome({ runId: `rpt-auto-${i}` });
+        const validated = validateOutcome(o);
+        lines.push(JSON.stringify(validated.outcome));
+      }
+      // Write all at once, then one more via writeOutcome to trigger trim
+      fs.mkdirSync(path.dirname(store.filePath), { recursive: true });
+      fs.writeFileSync(store.filePath, lines.join("\n") + "\n", "utf8");
+      // Now write one more to trigger auto-trim
+      store.writeOutcome(sampleOutcome({ runId: "rpt-auto-final" }));
+      const outcomes = store.readOutcomes();
+      assert.ok(outcomes.length <= 500, `Expected <= 500, got ${outcomes.length}`);
+      assert.strictEqual(outcomes[outcomes.length - 1].runId, "rpt-auto-final");
+    });
+
+    it("uses atomic write (temp file does not linger)", () => {
+      const store = tmpStore();
+      stores.push(store);
+      for (let i = 0; i < 10; i++) {
+        store.writeOutcome(sampleOutcome({ runId: `rpt-atomic-${i}` }));
+      }
+      store.trimOutcomes(5);
+      // Temp file should not exist after trim
+      assert.strictEqual(fs.existsSync(`${store.filePath}.tmp`), false);
     });
   });
 });

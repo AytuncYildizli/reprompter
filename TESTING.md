@@ -319,6 +319,18 @@ Verification scenarios for the RePrompter skill. Run these manually to validate 
 - No HTTP/fetch imports in any flywheel module
 - Module source contains only `fs`, `path`, `crypto`, `child_process` (execFileSync for git) imports
 
+## Scenario 33: Flywheel End-to-End Integration
+
+**Input:** Full cycle: seed outcomes, plan with flywheel, execute with flywheel, re-plan to verify learning, cold-start case.
+**Expected:** Flywheel collects outcomes, influences future plans, and handles cold start gracefully.
+**Verify:**
+- `npm run test:flywheel-e2e` passes (5 sub-tests)
+- Cold start: `buildExecutionPlan` with flywheel enabled produces no bias when outcome store is empty
+- Seeded outcomes: after writing 3+ outcomes for a domain, `buildExecutionPlan` applies flywheel bias
+- Execution: `executePlan` with flywheel writes an `outcomeRecord` to `.reprompter/flywheel/outcomes.ndjson`
+- Re-plan: a second `buildExecutionPlan` after execution reflects the newly collected outcome data
+- Telemetry includes `fingerprint_recipe`, `collect_outcome`, and `learn_strategy` stage events
+
 ---
 
 ## Anti-Patterns (Should NOT Happen)

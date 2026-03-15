@@ -122,10 +122,16 @@ function renderPatternGuidance(selectionResult) {
     .join("\n");
 }
 
+function getPatternById(id) {
+  const normalized = normalizeText(id);
+  return PATTERN_CATALOG.find((p) => normalizeText(p.id) === normalized) || null;
+}
+
 module.exports = {
   PATTERN_CATALOG,
   selectPatterns,
   renderPatternGuidance,
+  getPatternById,
 };
 
 if (require.main === module) {

@@ -246,6 +246,19 @@ function scoreModel(model, requirements, policyConfig = {}) {
     score -= 1;
   }
 
+  if (policyConfig.flywheelPreferredTier) {
+    const preferredWeights = PRIMARY_TIER_WEIGHTS[policyConfig.flywheelPreferredTier];
+    if (preferredWeights) {
+      let tierScore = 0;
+      for (const [metric, weight] of Object.entries(preferredWeights)) {
+        tierScore += (model.metrics[metric] || 0) * weight;
+      }
+      if (tierScore >= 7) {
+        score += 2;
+      }
+    }
+  }
+
   score += applyHardPenalties(model, requirements);
   return score;
 }
@@ -288,8 +301,11 @@ function resolveModelForAgent(agentSpec = {}, taskSpec = {}, policyConfig = {}) 
   }
 
   const requirements = inferCapabilityRequirements(agentSpec, taskSpec);
+  const effectiveConfig = agentSpec.flywheelPreferredTier
+    ? { ...policyConfig, flywheelPreferredTier: agentSpec.flywheelPreferredTier }
+    : policyConfig;
   const ranked = modelCatalog
-    .map((model) => ({ model, score: scoreModel(model, requirements, policyConfig) }))
+    .map((model) => ({ model, score: scoreModel(model, requirements, effectiveConfig) }))
     .sort((a, b) => b.score - a.score);
 
   const primary = ranked[0].model;

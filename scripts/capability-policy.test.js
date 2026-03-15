@@ -85,6 +85,44 @@ test("provider preference nudges selection when models are near", () => {
   assert.equal(withPreference.selected.provider, "provider-b");
 });
 
+test("flywheelPreferredTier boosts models matching the preferred tier", () => {
+  const plan = resolveModelForAgent(
+    { domain: "ops", outputType: "triage", complexity: 3, flywheelPreferredTier: "latency_optimized" },
+    { preferredOutcome: "quality_reliability", task: "Quick triage" }
+  );
+
+  // With latency_optimized preferred tier, latency-heavy models should get a +2 boost
+  // gemini-2.5-flash has latency:10 which scores well under latency_optimized weights
+  const flashCandidate = plan.rankedCandidates.find((c) => c.model === "google/gemini-2.5-flash");
+  assert.ok(flashCandidate, "flash model should be in candidates");
+
+  // Run again without the flywheel tier to compare
+  const planWithout = resolveModelForAgent(
+    { domain: "ops", outputType: "triage", complexity: 3 },
+    { preferredOutcome: "quality_reliability", task: "Quick triage" }
+  );
+  const flashWithout = planWithout.rankedCandidates.find((c) => c.model === "google/gemini-2.5-flash");
+  assert.ok(flashCandidate.score > flashWithout.score, "flywheel tier should boost the score");
+});
+
+test("flywheelPreferredTier with invalid tier name has no effect", () => {
+  const plan = resolveModelForAgent(
+    { domain: "engineering", outputType: "analysis", flywheelPreferredTier: "nonexistent_tier" },
+    { preferredOutcome: "balanced", task: "Plan migration" }
+  );
+
+  const planWithout = resolveModelForAgent(
+    { domain: "engineering", outputType: "analysis" },
+    { preferredOutcome: "balanced", task: "Plan migration" }
+  );
+
+  // Scores should be identical since the tier doesn't exist
+  assert.deepEqual(
+    plan.rankedCandidates.map((c) => c.score),
+    planWithout.rankedCandidates.map((c) => c.score)
+  );
+});
+
 test("default model catalog stays populated", () => {
   assert.ok(Array.isArray(DEFAULT_MODEL_CATALOG));
   assert.ok(DEFAULT_MODEL_CATALOG.length >= 5);

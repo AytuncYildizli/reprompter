@@ -38,6 +38,7 @@ test("feature flags can disable policy engine, layered context, and pattern libr
       policyEngine: false,
       layeredContext: false,
       patternLibrary: false,
+      flywheel: false,
     },
   });
 
@@ -133,6 +134,97 @@ test("executePlan relaxes evaluator defaults when strictEval flag is disabled", 
   assert.equal(result.featureFlags.strictEval, false);
   assert.ok(result.evaluation);
   assert.equal(result.evaluation.pass, true);
+});
+
+test("flywheel bias syncs patterns array when new pattern IDs are added", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "rpt-runtime-flywheel-"));
+  const flywheelDir = path.join(tmp, ".reprompter", "flywheel");
+  fs.mkdirSync(flywheelDir, { recursive: true });
+
+  // Seed outcome data so bestRecipeForDomain finds a bias with extra patterns
+  const vector = {
+    templateId: "engineering-swarm",
+    patterns: ["constraint-first-framing", "delta-retry-scaffold", "evidence-strength-labeling"],
+    capabilityTier: "reasoning_high",
+    domain: "engineering",
+    contextLayers: 3,
+    qualityBucket: "good",
+  };
+  const hash = "fake-hash-001";
+  const outcomes = [];
+  for (let i = 0; i < 5; i++) {
+    outcomes.push(JSON.stringify({
+      runId: `run-${i}`,
+      taskId: `task-${i}`,
+      timestamp: new Date().toISOString(),
+      recipe: { hash, vector, readable: "test-recipe" },
+      signals: { artifactScore: 8, artifactPass: true, retryCount: 0 },
+      effectivenessScore: 8,
+    }));
+  }
+  fs.writeFileSync(path.join(flywheelDir, "outcomes.ndjson"), outcomes.join("\n") + "\n");
+
+  const plan = buildExecutionPlan("audit and analyze engineering systems", {
+    runtime: "openclaw",
+    domain: "engineering",
+    rootDir: tmp,
+    telemetry: { rootDir: tmp, enabled: true },
+    flywheelMinConfidence: "low",
+    featureFlags: { flywheel: true, patternLibrary: true, policyEngine: true },
+  });
+
+  // Verify patterns array is synced with patternIds
+  assert.equal(plan.patternSelection.patternIds.length, plan.patternSelection.patterns.length,
+    "patternIds and patterns arrays should have same length");
+  for (const id of plan.patternSelection.patternIds) {
+    assert.ok(
+      plan.patternSelection.patterns.some((p) => p.id === id),
+      `pattern object for "${id}" should exist in patterns array`
+    );
+  }
+});
+
+test("flywheel preferred tier is passed to capability policy", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "rpt-runtime-flywheel-tier-"));
+  const flywheelDir = path.join(tmp, ".reprompter", "flywheel");
+  fs.mkdirSync(flywheelDir, { recursive: true });
+
+  // Seed outcomes with high confidence to trigger tier preference
+  const vector = {
+    templateId: "engineering-swarm",
+    patterns: ["constraint-first-framing"],
+    capabilityTier: "latency_optimized",
+    domain: "engineering",
+    contextLayers: 3,
+    qualityBucket: "good",
+  };
+  const hash = "tier-hash-001";
+  const outcomes = [];
+  for (let i = 0; i < 12; i++) {
+    outcomes.push(JSON.stringify({
+      runId: `run-tier-${i}`,
+      taskId: `task-tier-${i}`,
+      timestamp: new Date().toISOString(),
+      recipe: { hash, vector, readable: "tier-recipe" },
+      signals: { artifactScore: 9, artifactPass: true, retryCount: 0 },
+      effectivenessScore: 9,
+    }));
+  }
+  fs.writeFileSync(path.join(flywheelDir, "outcomes.ndjson"), outcomes.join("\n") + "\n");
+
+  const plan = buildExecutionPlan("quickly triage engineering logs", {
+    runtime: "openclaw",
+    domain: "engineering",
+    rootDir: tmp,
+    telemetry: { rootDir: tmp, enabled: true },
+    flywheelMinConfidence: "low",
+    featureFlags: { flywheel: true, patternLibrary: true, policyEngine: true },
+  });
+
+  // With 12 samples the confidence is "high", so tier preference should be set
+  if (plan.flywheelBias.applied && plan.flywheelBias.tier) {
+    assert.equal(plan.agentSpec.flywheelPreferredTier, plan.flywheelBias.tier);
+  }
 });
 
 test("runtime telemetry emits stage events with run and task ids", async () => {

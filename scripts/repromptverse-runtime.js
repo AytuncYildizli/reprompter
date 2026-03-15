@@ -2,7 +2,7 @@
 "use strict";
 
 const { routeIntent } = require("./intent-router");
-const { selectPatterns } = require("./pattern-selector");
+const { selectPatterns, getPatternById } = require("./pattern-selector");
 const { resolveModelForAgent } = require("./capability-policy");
 const { buildAgentContext, approxTokens } = require("./context-builder");
 const { createRuntimeAdapter } = require("./runtime-adapter");
@@ -254,6 +254,16 @@ function buildExecutionPlan(rawTask, options = {}) {
     });
     if (biasResult.applied) {
       patternSelection.patternIds = biasResult.patterns;
+      // Sync patterns array: add full pattern objects for newly added IDs
+      const existingIds = new Set(patternSelection.patterns.map((p) => p.id));
+      for (const id of biasResult.patterns) {
+        if (!existingIds.has(id)) {
+          const fullPattern = getPatternById(id);
+          if (fullPattern) {
+            patternSelection.patterns.push(fullPattern);
+          }
+        }
+      }
       patternSelection.reasons.push(
         `flywheel-bias: ${biasResult.changes.join(", ")} (score=${biasResult.score}, confidence=${biasResult.confidence})`
       );

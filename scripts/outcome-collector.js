@@ -29,7 +29,24 @@ function createOutcomeStore(options = {}) {
 
     ensureDir();
     fs.appendFileSync(filePath, `${JSON.stringify(validated.outcome)}\n`, "utf8");
+    trimOutcomes();
     return validated.outcome;
+  }
+
+  function trimOutcomes(maxEntries = 500) {
+    if (!fs.existsSync(filePath)) return;
+
+    const lines = fs
+      .readFileSync(filePath, "utf8")
+      .split(/\r?\n/)
+      .filter((l) => l.trim() !== "");
+
+    if (lines.length <= maxEntries) return;
+
+    const kept = lines.slice(lines.length - maxEntries);
+    const tmpPath = `${filePath}.tmp`;
+    fs.writeFileSync(tmpPath, kept.join("\n") + "\n", "utf8");
+    fs.renameSync(tmpPath, filePath);
   }
 
   function readOutcomes(readOptions = {}) {
@@ -77,6 +94,7 @@ function createOutcomeStore(options = {}) {
     filePath,
     writeOutcome,
     readOutcomes,
+    trimOutcomes,
     clear,
   };
 }
@@ -214,6 +232,24 @@ function collectGitSignals(rootDir = process.cwd()) {
     }
   } catch {
     // Not in a git repo or git not available — signals stay empty
+  }
+
+  // Post-correction proxy: count recent commits that modified the same files
+  try {
+    const recentLog = execFileSync(
+      "git",
+      ["log", "--since=10min", "--diff-filter=M", "--format=", "--name-only", "HEAD"],
+      { cwd: rootDir, encoding: "utf8", timeout: 5000 }
+    ).trim();
+
+    if (recentLog) {
+      const modifiedFiles = recentLog.split(/\r?\n/).filter((l) => l.trim() !== "");
+      signals.postCorrectionEdits = modifiedFiles.length;
+    } else {
+      signals.postCorrectionEdits = 0;
+    }
+  } catch {
+    // git log failed — leave postCorrectionEdits unset
   }
 
   return signals;
