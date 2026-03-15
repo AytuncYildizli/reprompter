@@ -331,6 +331,7 @@ describe("strategy-learner", () => {
         bias: {
           preferPatterns: ["constraint-first-framing"],
           preferTier: null,
+          preferTemplate: null,
           confidence: "medium",
           score: 7.0,
           sampleCount: 6,
@@ -338,6 +339,24 @@ describe("strategy-learner", () => {
       };
       const result = applyFlywheelBias(bias, ["constraint-first-framing"]);
       assert.strictEqual(result.applied, false, "no new patterns to add");
+    });
+
+    it("includes template preference at medium confidence", () => {
+      const bias = {
+        found: true,
+        bias: {
+          preferPatterns: [],
+          preferTier: null,
+          preferTemplate: "security-template",
+          confidence: "medium",
+          score: 8.5,
+          sampleCount: 7,
+        },
+      };
+      const result = applyFlywheelBias(bias, ["existing"], { minConfidence: "medium" });
+      assert.strictEqual(result.applied, true);
+      assert.strictEqual(result.template, "security-template");
+      assert.ok(result.changes.some((c) => c.includes("prefer-template")));
     });
   });
 

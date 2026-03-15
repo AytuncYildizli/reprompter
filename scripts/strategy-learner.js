@@ -275,6 +275,13 @@ function applyFlywheelBias(bias, currentPatternIds = [], options = {}) {
     }
   }
 
+  // Template preference (at medium+ confidence)
+  let preferTemplate = null;
+  if (rec.preferTemplate) {
+    preferTemplate = rec.preferTemplate;
+    changes.push(`prefer-template:${rec.preferTemplate}`);
+  }
+
   // Tier preference (only at high confidence)
   let preferTier = null;
   if (rec.confidence === "high" && rec.preferTier) {
@@ -286,6 +293,7 @@ function applyFlywheelBias(bias, currentPatternIds = [], options = {}) {
     applied: changes.length > 0,
     patterns: mergedPatterns,
     tier: preferTier,
+    template: preferTemplate,
     changes,
     score: rec.score,
     confidence: rec.confidence,
