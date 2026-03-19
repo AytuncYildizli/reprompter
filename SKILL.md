@@ -26,7 +26,7 @@ metadata:
 | Mode | Trigger | What happens |
 |------|---------|-------------|
 | **Single** | "reprompt this", "clean up this prompt" | Interview → structured prompt → score |
-| **Repromptverse** | "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "campaign swarm", "engineering swarm", "ops swarm", "research swarm" | Plan team → reprompt each agent → execute (tmux/TeamCreate/sessions_spawn/Codex/sequential) → evaluate → retry |
+| **Repromptverse** | "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "campaign swarm", "engineering swarm", "ops swarm", "research swarm" | Dimension Interview → Plan team → Agent Cards → reprompt each agent → execute → Result Cards → evaluate → retry |
 
 Auto-detection: if task mentions 2+ systems, "audit", or "parallel" → ask: "This looks like a multi-agent task. Want to use Repromptverse mode?"
 
@@ -364,6 +364,8 @@ Compact one-line status with each poll cycle:
 ```
 Agents: ✅ 2/4  ⏳ 1/4  🔄 1/4 (retry 1)
 ```
+
+**Emoji mapping:** ✅ = completed, ⏳ = in-progress, 🔄 = retrying
 
 **Rules:**
 - Replace verbose poll output with this compact format
@@ -800,7 +802,7 @@ Same audit task, 4 Opus agents:
 
 ## Test scenarios
 
-See [TESTING.md](TESTING.md) for 41 verification scenarios + anti-pattern examples.
+See [TESTING.md](TESTING.md) for 42 verification scenarios + anti-pattern examples.
 
 ---
 

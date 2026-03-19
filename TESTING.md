@@ -381,6 +381,12 @@ Verification scenarios for the RePrompter skill. Run these manually to validate 
 **Expected:** Proceed with empty interviewContext. Plan Cards show "Interview: skipped by user".
 **Verify:** No interviewContext applied to agent prompts. Team plan uses auto-detected context only.
 
+## Scenario 42: Plan Cards Re-render After User Adjustment
+
+**Input:** Any Repromptverse task. After Plan Cards shown, user says "remove the config reviewer agent" or "add a testing agent".
+**Expected:** Team plan adjusted per user request. Plan Cards re-rendered with updated agent roster.
+**Verify:** Updated Plan Cards table reflects the change. User confirmation gate asked again with new plan.
+
 ---
 
 ## Anti-Patterns (Should NOT Happen)
