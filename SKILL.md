@@ -4,7 +4,7 @@ description: |
   Transform messy prompts into well-structured, effective prompts — single or multi-agent.
   Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", rough text needing XML tags and best practices, "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "multi-agent marketing", "campaign swarm", "engineering swarm", "ops swarm", "research swarm", multi-agent tasks, audits, parallel work, anything going to agent teams.
   Don't use when: simple Q&A, pure chat, immediate execution-only tasks. See "Don't Use When" section for details.
-  Outputs: Structured XML/Markdown prompt, quality score (before/after), optional team brief + per-agent sub-prompts, agent team output files.
+  Outputs: Structured XML/Markdown prompt, quality score (before/after), optional team brief + per-agent sub-prompts, agent team output files, Agent Cards (plan/status/result).
   Success criteria: Single mode quality score ≥ 7/10; Repromptverse per-agent prompt quality score 8+/10; all required sections present, actionable and specific.
 compatibility: |
   Single mode works on Claude surfaces, OpenClaw, and Codex.
@@ -12,12 +12,12 @@ compatibility: |
   Sequential fallback works with any LLM runtime.
 metadata:
   author: AytuncYildizli
-  version: 9.2.1
+  version: 10.0.0
 ---
 
-# RePrompter v9.2.1
+# RePrompter v10.0.0
 
-> **Your prompt sucks. Let's fix that.** Single prompts or full agent teams — one skill, two modes.
+> **Your prompt sucks. Let's fix that.** Single prompts or full agent teams — one skill, two modes. **v10.0 adds Dimension Interview + Agent Cards to Repromptverse.**
 
 ---
 

@@ -1,6 +1,6 @@
 {
   "name": "reprompter",
-  "version": "9.2.1",
+  "version": "10.0.0",
   "private": true,
   "description": "Prompt engineering skill for Claude Code, OpenClaw, and Codex",
   "scripts": {
