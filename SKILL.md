@@ -222,10 +222,10 @@ Auto-detect tech stack from current working directory ONLY:
 ```
 Raw task in → quality output out. Every agent gets a reprompted prompt.
 
-Phase 1: Score raw prompt, plan team, define roles (YOU do this, ~30s)
+Phase 1: Score raw prompt, dimension interview if needed, plan team, show Agent Cards (YOU do this, ~45s)
 Phase 2: Write XML-structured prompt per agent (YOU do this, ~2min)
 Phase 3: Launch agents (tmux, TeamCreate, sessions_spawn, Codex, or sequential) (AUTOMATED)
-Phase 4: Read results, score, retry if needed (YOU do this)
+Phase 4: Show Result Cards, score, retry if needed (YOU do this)
 ```
 
 **Key insight:** The reprompt phase costs ZERO extra tokens — YOU write the prompts, not another AI.
@@ -253,13 +253,84 @@ Then merge with `references/repromptverse-template.md` for routing/termination/e
 Canonical implementation for deterministic routing lives in `scripts/intent-router.js`.
 If docs and code ever diverge, the script is the source of truth for benchmark/testing paths.
 
-### Phase 1: Team plan (~30 seconds)
+### Phase 1: Team plan (~45 seconds)
 
 1. **Score raw prompt** (1-10): Clarity, Specificity, Structure, Constraints, Decomposition
    - Phase 1 uses 5 quick-assessment dimensions. The full 6-dimension scoring (adding Verifiability) is used in Phase 4 evaluation.
-2. **Pick mode:** parallel (independent agents) or sequential (pipeline with dependencies)
-3. **Define team:** 2-5 agents max, each owns ONE domain, no overlap
-4. **Write team brief** to `/tmp/rpt-brief-{taskname}.md` (use unique tasknames to avoid collisions between concurrent runs)
+2. **Dimension Interview gate** — check which askable dimensions scored < 5 (see Dimension Interview section below)
+3. **Pick mode:** parallel (independent agents) or sequential (pipeline with dependencies)
+4. **Define team:** 2-5 agents max, each owns ONE domain, no overlap (informed by interviewContext if interview ran)
+5. **Show Plan Cards** (see Agent Cards section below)
+6. **User confirmation gate** — "Team plan ready. Proceed to execution?" User can approve, adjust, or cancel. In automated/batch runs, auto-proceed.
+7. **Write team brief** to `/tmp/rpt-brief-{taskname}.md` (use unique tasknames to avoid collisions; includes interviewContext section if interview ran)
+
+### Dimension Interview (Repromptverse only)
+
+Score-driven interview for Repromptverse mode. Distinct from Single mode's "Smart Interview" (which uses a standard question list). The Dimension Interview derives questions from low-scoring raw prompt dimensions.
+
+#### Trigger logic
+
+```
+scores = score_raw_prompt(rawInput)  # 5 dimensions from step 1
+
+# Structure is EXCLUDED — reprompter fixes structure via templates.
+# Only 4 dimensions are interview-eligible:
+askable = [d for d in scores if d.name != "Structure" and d.value < 5]
+
+# Threshold: strict less-than. Scores of 5+ do NOT trigger questions.
+if len(askable) == 0:
+    SKIP interview → proceed to step 3 (pick mode)
+elif len(askable) <= 2:
+    ASK 1-2 questions (one per low dimension)
+else:
+    ASK 3-4 questions (max 4, prioritized by lowest score first)
+```
+
+#### Dimension-to-question mapping
+
+| Dimension | Score < 5 triggers | Question approach |
+|-----------|-------------------|-------------------|
+| **Clarity** | Task is ambiguous or multi-interpretable | Open-ended with dynamic options extracted from prompt keywords |
+| **Specificity** | Scope is vague, no concrete targets | Dynamic options from prompt keywords + top-level directory names |
+| **Constraints** | No boundaries defined | "Any areas to exclude?" with context-aware options |
+| **Decomposition** | Unclear work split | "How many independent streams?" with suggested splits |
+
+**Question rules:**
+- Use `AskUserQuestion` with clickable options (consistent with Single mode)
+- Options are **dynamic**: extracted from prompt keywords + codebase context (config files + top-level dirs only — no deep analysis)
+- Every question includes a free-text escape hatch option
+- Priority order: lowest scoring dimension first
+- Language follows user's input language
+
+#### Skip/dismiss handling
+
+- User skips all questions → proceed with empty interviewContext. Plan Cards note: "Interview: skipped by user"
+- User answers some, skips others → populate only answered fields
+
+#### Interview output (interviewContext)
+
+Responses merge into an interviewContext written to the team brief file:
+
+```
+interviewContext = {
+  scope: [from Specificity answer],
+  excludes: [from Constraints answer],
+  successCriteria: [from answers, or omitted — Phase 2 derives from requirements],
+  taskClarification: [from Clarity answer, if asked]
+}
+```
+
+When `successCriteria` is not gathered (question not asked or user skipped), omit the field. Phase 2 derives success criteria from requirements as it does today.
+
+**How interviewContext feeds into later phases:**
+- **Agent count and roles** — scope determines which agents are created
+- **Per-agent `<constraints>`** — excludes injected into each agent's prompt
+- **Per-agent `<success_criteria>`** — user expectations propagated
+- **Template selection** — clarified task type may route to a different swarm profile
+
+**Precedence:** Interview responses override auto-detected codebase context. Conflicts noted in Plan Cards.
+
+**Flywheel:** interviewContext is excluded from recipe fingerprint hash. The fingerprint captures strategy (template + patterns + tier), not user scope answers.
 
 ### Phase 2: Repromptverse prompt pack (~2 minutes)
 
