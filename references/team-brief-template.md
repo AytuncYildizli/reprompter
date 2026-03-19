@@ -97,6 +97,14 @@ Lead orchestrator coordinating specialized agents to deliver the overall task sa
 - Constraints: {must/must-not}
 - Inputs/Dependencies: {what must exist first}
 
+## Interview Context (v10.0+, optional)
+<!-- Present only when Dimension Interview ran in Phase 1. Omit section entirely if interview was skipped. -->
+- Scope: {from Specificity answer, or "all"}
+- Excludes: {from Constraints answer, or "none"}
+- Success criteria: {from user answers, or "default — derived from requirements"}
+- Task clarification: {from Clarity answer, if asked}
+- Source: Dimension Interview (Phase 1)
+
 ## Coordination Rules
 - Shared files/modules: {list}
 - Ordering dependencies: {A before B, parallel-safe items}

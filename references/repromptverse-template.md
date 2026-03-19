@@ -70,17 +70,21 @@ Use this template for multi-agent tasks that need explicit routing, stop rules, 
 
 <output_format>
 Return:
-1. Team brief
-2. Per-agent prompt pack
-3. Runtime launch plan
-4. Evaluation + retry matrix
-5. Final synthesis report
+1. Team brief (with interviewContext section if Dimension Interview ran)
+2. Plan Cards table (mandatory — see Agent Cards in SKILL.md)
+3. Per-agent prompt pack
+4. Runtime launch plan
+5. Status Line during polling (mandatory — see Agent Cards in SKILL.md)
+6. Result Cards table before synthesis (mandatory — see Agent Cards in SKILL.md)
+7. Evaluation + retry matrix
+8. Final synthesis report
 </output_format>
 
 <success_criteria>
 - Every agent has explicit scope and measurable output
 - Routing and termination policies are present and enforceable
 - All artifacts are generated at declared paths
+- Plan Cards shown before execution, Result Cards shown before synthesis
 - Final synthesis is traceable to per-agent outputs
 </success_criteria>
 ```
