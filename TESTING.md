@@ -340,7 +340,7 @@ Verification scenarios for the RePrompter skill. Run these manually to validate 
 ## Scenario 35: Dimension Interview - High Score Skips Interview
 
 **Input:** "repromptverse - audit auth module and payment gateway for SQL injection, CSRF, and token expiry. Min 10 findings per agent. Frontend out of scope."
-**Expected:** All askable dimensions (Clarity, Specificity, Constraints, Decomposition) score >= 5. Interview skipped entirely.
+**Expected:** All askable dimensions (Clarity, Specificity, Constraints, Decomposition) score > 5 (above threshold). Interview skipped entirely.
 **Verify:** No AskUserQuestion call, Plan Cards shown immediately after raw score.
 
 ## Scenario 36: Plan Cards + User Confirmation Before Execution
@@ -381,7 +381,23 @@ Verification scenarios for the RePrompter skill. Run these manually to validate 
 **Expected:** Proceed with empty interviewContext. Plan Cards show "Interview: skipped by user".
 **Verify:** No interviewContext applied to agent prompts. Team plan uses auto-detected context only.
 
-## Scenario 42: Plan Cards Re-render After User Adjustment
+## Scenario 42: Reprompt Quality Scorecard Shown After Phase 2
+
+**Input:** Any Repromptverse task that completes Phase 2.
+**Expected:** Before/after quality comparison table shown after agent prompts are written, before execution.
+**Verify:**
+- Table shows raw prompt score vs reprompted average
+- Per-agent scores visible
+- Percentage improvement shown
+- Any agent prompt scoring < 8 is flagged
+
+## Scenario 43: Dimension Interview Triggers at Score 5 (Borderline)
+
+**Input:** "repromptverse - write 8 blog posts about crypto trading and commodities"
+**Expected:** Dimensions scoring exactly 5 (borderline) trigger interview questions (threshold is <=5, not <5).
+**Verify:** AskUserQuestion called for dimensions at 5/10. Dimensions at 6+ are not asked.
+
+## Scenario 44: Plan Cards Re-render After User Adjustment
 
 **Input:** Any Repromptverse task. After Plan Cards shown, user says "remove the config reviewer agent" or "add a testing agent".
 **Expected:** Team plan adjusted per user request. Plan Cards re-rendered with updated agent roster.
@@ -401,4 +417,5 @@ Verification scenarios for the RePrompter skill. Run these manually to validate 
 | Launch agents without showing Plan Cards | User must see agent plan before $2-4 execution |
 | Write synthesis without Result Cards | Result summary is mandatory before synthesis |
 | Ask Structure questions in Dimension Interview | Structure is auto-fixed, never asked |
-| Show Dimension Interview for high-score prompts | All askable dimensions >= 5 means skip |
+| Show Dimension Interview for high-score prompts | All askable dimensions > 5 means skip |
+| Skip Reprompt Quality Scorecard in Repromptverse | Users must see before/after improvement |

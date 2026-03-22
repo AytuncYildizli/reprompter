@@ -275,9 +275,9 @@ scores = score_raw_prompt(rawInput)  # 5 dimensions from step 1
 
 # Structure is EXCLUDED — reprompter fixes structure via templates.
 # Only 4 dimensions are interview-eligible:
-askable = [d for d in scores if d.name != "Structure" and d.value < 5]
+askable = [d for d in scores if d.name != "Structure" and d.value <= 5]
 
-# Threshold: strict less-than. Scores of 5+ do NOT trigger questions.
+# Threshold: less-than-or-equal. Scores of 5 ARE borderline and trigger questions.
 if len(askable) == 0:
     SKIP interview → proceed to step 3 (pick mode)
 elif len(askable) <= 2:
@@ -417,6 +417,27 @@ For EACH agent:
 **Score each prompt — target 8+/10.** If under 8, add more context/constraints.
 
 Write all to `/tmp/rpt-agent-prompts-{taskname}.md`
+
+#### Reprompt quality scorecard (mandatory)
+
+After writing all agent prompts, show the before/after comparison so the user sees the improvement:
+
+```markdown
+## Reprompt Quality
+
+| Metric | Raw prompt | After reprompt | Change |
+|--------|-----------|----------------|--------|
+| Overall | {raw}/10 | {after}/10 | +{pct}% |
+| Per-agent avg | - | {avg}/10 | - |
+| Agents | - | {N} | - |
+
+Raw prompt scored {raw}/10. After reprompting, each agent prompt scores {min}-{max}/10 (avg {avg}/10).
+```
+
+**Rules:**
+- MUST appear after Phase 2 prompt generation, before Phase 3 execution
+- Shows the user exactly how much reprompter improved their input
+- If any agent prompt scores < 8, note which ones and what was added to fix them
 
 ### Phase 3: Execute
 
@@ -802,7 +823,7 @@ Same audit task, 4 Opus agents:
 
 ## Test scenarios
 
-See [TESTING.md](TESTING.md) for 42 verification scenarios + anti-pattern examples.
+See [TESTING.md](TESTING.md) for 44 verification scenarios + anti-pattern examples.
 
 ---
 
