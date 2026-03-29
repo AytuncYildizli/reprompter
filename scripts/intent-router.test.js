@@ -105,3 +105,49 @@ test("forceSingle overrides explicit profile triggers", () => {
   assert.equal(result.profile, "single");
   assert.equal(result.reason, "forced-single-mode");
 });
+
+// --- Reverse mode tests ---
+
+test("routes reverse reprompt trigger to reverse mode", () => {
+  const result = routeIntent("reverse reprompt this code review output");
+  assert.equal(result.mode, "reverse");
+  assert.equal(result.profile, "reverse");
+  assert.equal(result.reason, "reverse-mode-trigger");
+});
+
+test("routes reprompt from example trigger to reverse mode", () => {
+  const result = routeIntent("reprompt from example: here is my great architecture doc");
+  assert.equal(result.mode, "reverse");
+  assert.equal(result.profile, "reverse");
+});
+
+test("routes learn from this trigger to reverse mode", () => {
+  const result = routeIntent("learn from this output and create a reusable prompt");
+  assert.equal(result.mode, "reverse");
+  assert.equal(result.profile, "reverse");
+});
+
+test("routes prompt dna trigger to reverse mode", () => {
+  const result = routeIntent("extract the prompt dna from this security audit");
+  assert.equal(result.mode, "reverse");
+  assert.equal(result.profile, "reverse");
+});
+
+test("forceReverse enables reverse mode", () => {
+  const result = routeIntent("some generic text", { forceReverse: true });
+  assert.equal(result.mode, "reverse");
+  assert.equal(result.reason, "forced-reverse-mode");
+});
+
+test("forceSingle overrides reverse triggers", () => {
+  const result = routeIntent("reverse reprompt this output", { forceSingle: true });
+  assert.equal(result.mode, "single");
+  assert.equal(result.profile, "single");
+  assert.equal(result.reason, "forced-single-mode");
+});
+
+test("reverse triggers take priority over multi-agent triggers", () => {
+  const result = routeIntent("reverse reprompt this repromptverse audit output");
+  assert.equal(result.mode, "reverse");
+  assert.equal(result.profile, "reverse");
+});

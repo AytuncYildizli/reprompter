@@ -12,6 +12,7 @@ const {
   sanitizeSignals,
   computeEffectiveness,
   collectGitSignals,
+  injectExemplar,
 } = require("./outcome-collector");
 const { fingerprint } = require("./recipe-fingerprint");
 
@@ -301,6 +302,92 @@ describe("outcome-collector", () => {
       store.trimOutcomes(5);
       // Temp file should not exist after trim
       assert.strictEqual(fs.existsSync(`${store.filePath}.tmp`), false);
+    });
+  });
+
+  describe("injectExemplar()", () => {
+    it("writes exemplar outcome with source field preserved", () => {
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), "rpt-inject-test-"));
+      stores.push({ dirPath: dir, clear() { fs.rmSync(dir, { recursive: true, force: true }); } });
+
+      const exemplar = {
+        runId: "rpt-reverse-test-1",
+        taskId: "reverse-code-review-test",
+        recipe: fingerprint({
+          templateId: "bugfix-template",
+          patterns: ["reverse-extraction"],
+          capabilityTier: "reasoning_high",
+          domain: "security",
+          contextLayers: 1,
+          qualityScore: 8.5,
+        }),
+        signals: {
+          artifactScore: 8.5,
+          artifactPass: true,
+          retryCount: 0,
+          userVerdict: "accept",
+          source: "reverse-exemplar",
+        },
+        effectivenessScore: 9.0,
+      };
+
+      const result = injectExemplar(exemplar, { dirPath: dir });
+      assert.ok(result);
+      assert.equal(result.signals.source, "reverse-exemplar");
+      assert.equal(result.signals.userVerdict, "accept");
+      assert.equal(result.runId, "rpt-reverse-test-1");
+    });
+
+    it("defaults source to reverse-exemplar when not set", () => {
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), "rpt-inject-default-"));
+      stores.push({ dirPath: dir, clear() { fs.rmSync(dir, { recursive: true, force: true }); } });
+
+      const exemplar = {
+        runId: "rpt-reverse-test-2",
+        taskId: "reverse-default-source",
+        recipe: fingerprint({
+          templateId: "feature-template",
+          patterns: ["reverse-extraction"],
+          capabilityTier: "reasoning_high",
+          domain: "general",
+          contextLayers: 1,
+          qualityScore: 7.0,
+        }),
+        signals: { artifactScore: 7.0, artifactPass: true, retryCount: 0 },
+        effectivenessScore: 7.5,
+      };
+
+      const result = injectExemplar(exemplar, { dirPath: dir });
+      assert.equal(result.signals.source, "reverse-exemplar");
+    });
+
+    it("throws for null exemplar", () => {
+      assert.throws(
+        () => injectExemplar(null),
+        (err) => err.code === "EXEMPLAR_VALIDATION_ERROR"
+      );
+    });
+
+    it("throws for non-object exemplar", () => {
+      assert.throws(
+        () => injectExemplar("not an object"),
+        (err) => err.code === "EXEMPLAR_VALIDATION_ERROR"
+      );
+    });
+
+    it("returns null when REPROMPTER_FLYWHEEL is disabled", () => {
+      const original = process.env.REPROMPTER_FLYWHEEL;
+      try {
+        process.env.REPROMPTER_FLYWHEEL = "0";
+        const result = injectExemplar({ runId: "test", taskId: "test", recipe: {}, signals: {} });
+        assert.equal(result, null);
+      } finally {
+        if (original === undefined) {
+          delete process.env.REPROMPTER_FLYWHEEL;
+        } else {
+          process.env.REPROMPTER_FLYWHEEL = original;
+        }
+      }
     });
   });
 });

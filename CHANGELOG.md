@@ -1,5 +1,35 @@
 # RePrompter Changelog
 
+## v11.0.0 (2026-03-30) — Reverse Reprompter
+
+### Added
+- **Mode 3: Reverse Reprompter** — extract optimal prompts from exemplar outputs. Show reprompter a great output (code review, architecture doc, PR description, etc.) and it reverse-engineers the prompt that would reproduce that quality.
+  - 4-phase pipeline: EXTRACT (structural analysis) → ANALYZE (task type, domain, tone classification) → SYNTHESIZE (XML prompt generation) → INJECT (flywheel seeding)
+  - 11 task type classifiers: code-review, security-audit, architecture-doc, api-spec, test-plan, bug-report, pr-description, documentation, content, research, ops-report
+  - Structural analysis: heading hierarchy, bullet density, code block count, table detection, file:line reference counting, average sentence length
+  - Tone detection: formal/neutral/casual with directive language markers
+  - Domain detection: 8 domains (frontend, backend, security, database, infrastructure, ops, mobile, ml)
+  - Quality analysis: specificity, coverage, clarity scoring
+  - Output format inference from exemplar structure
+  - Constraint extraction from exemplar patterns
+  - Prompt scoring on 6 dimensions
+  - **Extraction Card**: transparency table showing detected task type, domain, tone, structure, quality
+- **Flywheel exemplar injection** — `injectExemplar()` in outcome-collector.js seeds the flywheel with pre-graded outcomes from reverse-engineered exemplars. Solves the cold-start problem.
+  - `buildExemplarOutcome()` in reverse-engineer.js creates flywheel-compatible outcome records
+  - Exemplar outcomes get +0.5 effectiveness bonus (user-curated = high quality)
+  - Source field marked as `reverse-exemplar` for provenance tracking
+- **Reverse mode intent routing** — 10 trigger phrases detected in intent-router.js: "reverse reprompt", "reprompt from example", "learn from this", "extract prompt from", "prompt dna", "prompt genome", etc.
+- `references/reverse-template.md` — new template for reverse mode prompts with EXTRACT/ANALYZE/SYNTHESIZE documentation
+- 43 new tests in `scripts/reverse-engineer.test.js` covering structure analysis, tone detection, domain detection, task classification, quality analysis, format inference, full pipeline, scoring, flywheel injection, and edge cases
+
+### Changed
+- SKILL.md updated from 2 modes to 3 modes (Single, Repromptverse, Reverse)
+- Task types table expanded with Reverse entry
+- Description and trigger words updated to include reverse mode
+
+### Inspired by
+- [Extraktor](https://github.com/AytuncYildizli/extraktor) genome extraction pattern: dual-signal analysis (structural + content), phase-based pipeline with progressive enrichment
+
 ## v10.0.0 (2026-03-19) — Repromptmania
 
 ### Added
