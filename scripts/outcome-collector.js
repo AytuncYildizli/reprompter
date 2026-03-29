@@ -174,6 +174,11 @@ function sanitizeSignals(raw = {}) {
     signals.userVerdict = raw.userVerdict;
   }
 
+  // Provenance source (e.g., "reverse-exemplar")
+  if (typeof raw.source === "string" && raw.source.length > 0) {
+    signals.source = raw.source;
+  }
+
   return signals;
 }
 
@@ -256,7 +261,20 @@ function collectGitSignals(rootDir = process.cwd()) {
   return signals;
 }
 
+function parseBooleanEnv(raw, defaultValue) {
+  if (raw === undefined || raw === null || raw === "") return defaultValue;
+  const normalized = String(raw).trim().toLowerCase();
+  if (["1", "true", "yes", "on"].includes(normalized)) return true;
+  if (["0", "false", "no", "off"].includes(normalized)) return false;
+  return defaultValue;
+}
+
 function injectExemplar(exemplarOutcome, options = {}) {
+  // Respect REPROMPTER_FLYWHEEL feature flag (consistent with repromptverse-runtime.js)
+  if (parseBooleanEnv(process.env.REPROMPTER_FLYWHEEL, true) === false) {
+    return null;
+  }
+
   const store = createOutcomeStore({
     rootDir: options.rootDir || process.cwd(),
     dirPath: options.dirPath,

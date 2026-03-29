@@ -272,7 +272,18 @@ function routeIntent(input, options = {}) {
     };
   }
 
-  // Reverse mode detection (highest priority after empty check)
+  // Force flags are hard overrides — checked before any trigger detection
+  if (options.forceSingle === true) {
+    return {
+      mode: "single",
+      profile: "single",
+      score: 0,
+      hits: [],
+      reason: "forced-single-mode",
+    };
+  }
+
+  // Reverse mode detection (highest priority after force flags)
   if (options.forceReverse === true) {
     return {
       mode: "reverse",
@@ -291,16 +302,6 @@ function routeIntent(input, options = {}) {
       score: 100,
       hits: [reverseHit],
       reason: "reverse-mode-trigger",
-    };
-  }
-
-  if (options.forceSingle === true) {
-    return {
-      mode: "single",
-      profile: "single",
-      score: 0,
-      hits: [],
-      reason: "forced-single-mode",
     };
   }
 
