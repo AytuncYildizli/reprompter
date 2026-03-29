@@ -256,6 +256,42 @@ function collectGitSignals(rootDir = process.cwd()) {
   return signals;
 }
 
+function injectExemplar(exemplarOutcome, options = {}) {
+  const store = createOutcomeStore({
+    rootDir: options.rootDir || process.cwd(),
+    dirPath: options.dirPath,
+    filePath: options.filePath,
+  });
+
+  if (!exemplarOutcome || typeof exemplarOutcome !== "object") {
+    const error = new Error("exemplarOutcome must be a non-null object");
+    error.code = "EXEMPLAR_VALIDATION_ERROR";
+    throw error;
+  }
+
+  // Ensure the source signal is set
+  const signals = { ...(exemplarOutcome.signals || {}) };
+  if (!signals.source) {
+    signals.source = "reverse-exemplar";
+  }
+
+  const outcome = {
+    ...exemplarOutcome,
+    signals: sanitizeExemplarSignals(signals),
+  };
+
+  return store.writeOutcome(outcome);
+}
+
+function sanitizeExemplarSignals(raw = {}) {
+  const base = sanitizeSignals(raw);
+  // Preserve reverse-exemplar-specific fields
+  if (raw.source) {
+    base.source = String(raw.source);
+  }
+  return base;
+}
+
 module.exports = {
   createOutcomeStore,
   defaultOutcomeDir,
@@ -263,6 +299,7 @@ module.exports = {
   sanitizeSignals,
   computeEffectiveness,
   collectGitSignals,
+  injectExemplar,
 };
 
 if (require.main === module) {

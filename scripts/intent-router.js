@@ -15,6 +15,19 @@ const EXPLICIT_PROFILE_TRIGGERS = [
   { profile: "research-swarm", phrases: ["research swarm"] },
 ];
 
+const REVERSE_MODE_TRIGGERS = [
+  "reverse reprompt",
+  "reverse reprompter",
+  "reprompt from example",
+  "reprompt from this",
+  "learn from this",
+  "extract prompt from",
+  "reverse engineer prompt",
+  "prompt from output",
+  "prompt dna",
+  "prompt genome",
+];
+
 const MULTI_AGENT_TRIGGERS = [
   "repromptverse",
   "reprompter teams",
@@ -259,6 +272,28 @@ function routeIntent(input, options = {}) {
     };
   }
 
+  // Reverse mode detection (highest priority after empty check)
+  if (options.forceReverse === true) {
+    return {
+      mode: "reverse",
+      profile: "reverse",
+      score: 100,
+      hits: ["forced-reverse"],
+      reason: "forced-reverse-mode",
+    };
+  }
+
+  const reverseHit = REVERSE_MODE_TRIGGERS.find((trigger) => hasPhrase(text, trigger));
+  if (reverseHit) {
+    return {
+      mode: "reverse",
+      profile: "reverse",
+      score: 100,
+      hits: [reverseHit],
+      reason: "reverse-mode-trigger",
+    };
+  }
+
   if (options.forceSingle === true) {
     return {
       mode: "single",
@@ -314,6 +349,7 @@ function routeIntent(input, options = {}) {
 
 module.exports = {
   PROFILE_PRIORITY,
+  REVERSE_MODE_TRIGGERS,
   ROUTING_RULES,
   routeIntent,
 };

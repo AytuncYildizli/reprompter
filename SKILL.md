@@ -1,23 +1,23 @@
 ---
 name: reprompter
 description: |
-  Transform messy prompts into well-structured, effective prompts — single or multi-agent.
-  Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", rough text needing XML tags and best practices, "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "multi-agent marketing", "campaign swarm", "engineering swarm", "ops swarm", "research swarm", multi-agent tasks, audits, parallel work, anything going to agent teams.
+  Transform messy prompts into well-structured, effective prompts — single, multi-agent, or reverse-engineered from great outputs.
+  Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", rough text needing XML tags and best practices, "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "multi-agent marketing", "campaign swarm", "engineering swarm", "ops swarm", "research swarm", multi-agent tasks, audits, parallel work, anything going to agent teams, "reverse reprompt", "reprompt from example", "learn from this", "extract prompt from", "prompt dna", "prompt genome", reverse-engineering prompts from exemplar outputs.
   Don't use when: simple Q&A, pure chat, immediate execution-only tasks. See "Don't Use When" section for details.
-  Outputs: Structured XML/Markdown prompt, quality score (before/after), optional team brief + per-agent sub-prompts, agent team output files, Agent Cards (plan/status/result).
-  Success criteria: Single mode quality score ≥ 7/10; Repromptverse per-agent prompt quality score 8+/10; all required sections present, actionable and specific.
+  Outputs: Structured XML/Markdown prompt, quality score (before/after), optional team brief + per-agent sub-prompts, agent team output files, Agent Cards (plan/status/result), Extraction Card (reverse mode).
+  Success criteria: Single mode quality score ≥ 7/10; Repromptverse per-agent prompt quality score 8+/10; Reverse mode generated prompt score ≥ 7/10; all required sections present, actionable and specific.
 compatibility: |
   Single mode works on Claude surfaces, OpenClaw, and Codex.
   Repromptverse mode supports Claude Code (tmux/TeamCreate), OpenClaw (sessions_spawn), and Codex (parallel sessions if available, sequential fallback otherwise).
   Sequential fallback works with any LLM runtime.
 metadata:
   author: AytuncYildizli
-  version: 10.0.0
+  version: 11.0.0
 ---
 
-# RePrompter v10.0.0
+# RePrompter v11.0.0
 
-> **Your prompt sucks. Let's fix that.** Single prompts or full agent teams — one skill, two modes. **v10.0 adds Dimension Interview + Agent Cards to Repromptverse.**
+> **Your prompt sucks. Let's fix that.** Single prompts, full agent teams, or reverse-engineer from great outputs — one skill, three modes. **v11.0 adds Reverse Reprompter: extract optimal prompts from exemplar outputs.**
 
 ---
 
@@ -27,6 +27,7 @@ metadata:
 |------|---------|-------------|
 | **Single** | "reprompt this", "clean up this prompt" | Interview → structured prompt → score |
 | **Repromptverse** | "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "campaign swarm", "engineering swarm", "ops swarm", "research swarm" | Dimension Interview → Plan team → Agent Cards → reprompt each agent → execute → Result Cards → evaluate → retry |
+| **Reverse** | "reverse reprompt", "reprompt from example", "learn from this", "extract prompt from", "prompt dna", "prompt genome" | Analyze exemplar → classify → extract prompt DNA → generate XML prompt → score → inject into flywheel |
 
 Auto-detection: if task mentions 2+ systems, "audit", or "parallel" → ask: "This looks like a multi-agent task. Want to use Repromptverse mode?"
 
@@ -161,6 +162,7 @@ Detect task type from input. Each type has a dedicated template in `references/`
 | Research Swarm | `research-swarm-template.md` | Analysis/benchmark multi-agent orchestration |
 | Repromptverse | `repromptverse-template.md` | Multi-agent routing + termination + evaluator loop |
 | Multi-Agent | `swarm-template.md` | Basic multi-agent coordination |
+| Reverse | `reverse-template.md` | Reverse-engineered prompt from exemplar output |
 | Team Brief | `team-brief-template.md` | Team orchestration brief |
 
 **Priority** (most specific wins): marketing-swarm > engineering-swarm > ops-swarm > research-swarm > repromptverse > api > security > ui > testing > bugfix > refactor > content > docs > research > feature. For multi-agent tasks, use the best-fit swarm template + `repromptverse-template` + `team-brief-template`, then type-specific templates for each agent sub-prompt.
@@ -587,6 +589,138 @@ If Codex parallel sessions are not available, immediately fall back to Option E.
 No parallel execution tools available? Run each agent's reprompted prompt one at a time in the same session. Works with any LLM (Claude, GPT, Gemini, Codex, etc.). Slower but fully platform-agnostic.
 
 The reprompted prompts from Phase 2 are pure text. They work regardless of execution method.
+
+---
+
+## Mode 3: Reverse Reprompter
+
+### TL;DR
+
+```
+Great output in → optimal prompt out. Extract the DNA that produced excellence.
+
+Phase 1: EXTRACT — structural analysis of the exemplar (~5s)
+Phase 2: ANALYZE — classify task type, domain, tone, quality (~5s)
+Phase 3: SYNTHESIZE — generate full XML prompt matching the exemplar's pattern (~10s)
+Phase 4: INJECT — seed flywheel with pre-graded exemplar outcome (optional, ~2s)
+```
+
+**Key insight:** Users encounter great outputs constantly but can't reproduce the quality. Reverse Reprompter closes that gap by extracting the prompt that would have produced it.
+
+### Trigger words
+
+- "reverse reprompt", "reverse reprompter"
+- "reprompt from example", "reprompt from this"
+- "learn from this"
+- "extract prompt from"
+- "reverse engineer prompt"
+- "prompt from output", "prompt dna", "prompt genome"
+
+### Process
+
+1. **Receive exemplar** — user provides text (paste, file path, or points to an existing output)
+2. **Input guard** — must be substantial output (>50 chars, has structure). Reject raw prompts (use Single mode instead), empty text, or single-word inputs
+3. **Quick interview** (max 2 questions via AskUserQuestion):
+   - "What do you love about this output?" (with options: Structure / Depth / Tone / Coverage / Everything)
+   - "What context produced it?" (with options: Code review / Architecture / API work / Research / Other) — skip if task type is detectable with high confidence
+4. **Analyze** — extract structure, classify type, detect domain and tone
+5. **Generate** — produce full XML prompt using reverse template + best-fit task template
+6. **Score** — show quality dimensions of the generated prompt
+7. **Flywheel injection** — offer to save as pre-graded exemplar outcome
+
+### ⚠️ MUST GENERATE AFTER ANALYSIS
+
+After analysis completes, IMMEDIATELY:
+1. Generate the full reverse-engineered prompt
+2. Show the Extraction Card (see below)
+3. Show the generated prompt in XML format
+4. Show quality score
+5. Ask: "Save to flywheel? / Execute with this prompt? / Copy?"
+
+```
+❌ WRONG: Analyze exemplar → stop
+✅ RIGHT: Analyze exemplar → generate prompt → show Extraction Card → show score → offer actions
+```
+
+### Extraction Card (transparency layer)
+
+Rendered after analysis, before the generated prompt. Use this exact format:
+
+```markdown
+## Reverse Extraction
+
+| Dimension | Detected | Confidence |
+|-----------|----------|------------|
+| Task type | {code-review, architecture-doc, etc.} | {high/medium/low} |
+| Domain | {primary domain} | - |
+| Tone | {formal/neutral/casual} | - |
+| Structure | {N sections, M bullets, K code blocks} | - |
+| Quality | Clarity {N}/10, Specificity {N}/10, Coverage {N}/10 | - |
+
+Template match: `{template-id}` | Flywheel injection: {ready/skipped}
+```
+
+### Exemplar types supported
+
+| Exemplar type | Detected via | Template match |
+|---------------|-------------|----------------|
+| Code review | "critical issues", "suggestions", file:line refs | bugfix-template |
+| Security audit | "vulnerability", severity levels, CVE refs | security-template |
+| Architecture doc | "components", "tradeoffs", "decision" headings | research-template |
+| API specification | HTTP methods, status codes, endpoint paths | api-template |
+| Test plan | "test cases", "coverage", assertion patterns | testing-template |
+| Bug report | "steps to reproduce", "expected", "actual" | bugfix-template |
+| PR description | "what changed", "fixes #N", "breaking changes" | feature-template |
+| Documentation | "installation", "usage", "configuration" | docs-template |
+| Blog/content | "introduction", "key takeaways", "in this article" | content-template |
+| Research/analysis | "methodology", "findings", "recommendations" | research-template |
+| Ops report | "timeline", "root cause", "action items" | refactor-template |
+
+### Flywheel integration
+
+Reverse Reprompter is the **data pump** for the flywheel. Each reverse-engineered prompt creates a pre-graded outcome entry:
+
+```
+exemplar (known-good output) + generated prompt = high-confidence recipe
+→ injected into .reprompter/flywheel/outcomes.ndjson
+→ strategy learner can recommend this recipe for similar future tasks
+→ solves cold-start problem (no need to accumulate data from scratch)
+```
+
+**Injection rules:**
+- Only inject with explicit user consent ("Save to flywheel?")
+- Exemplar outcomes get a +0.5 effectiveness bonus (user curated = high quality)
+- Source field marked as `reverse-exemplar` to distinguish from execution outcomes
+- User verdict defaults to `accept` (they chose the exemplar because it's good)
+
+**When NOT to inject:**
+- User says "just show me the prompt" or "don't save"
+- Exemplar is too short or low quality (analysis quality score < 5)
+- Flywheel is disabled (`REPROMPTER_FLYWHEEL=0`)
+
+### Inspiration: Extraktor pattern
+
+Reverse Reprompter follows the same architectural pattern as [Extraktor](https://github.com/AytuncYildizli/extraktor) (design system reverse-engineering from websites):
+
+| Phase | Extraktor | Reverse Reprompter |
+|-------|-----------|-------------------|
+| **EXTRACT** | Scrape DOM, computed styles, assets | Parse structure, sections, patterns, tone |
+| **ANALYZE** | Vision AI identifies components, layout | Classify task type, detect template match, infer constraints |
+| **SYNTHESIZE** | Generate React components + genome.json | Generate XML prompt + flywheel entry |
+
+The key borrowed insight is **dual-signal analysis**: Extraktor sends Claude both the screenshot AND the DOM for better results. Reverse Reprompter uses both structural analysis (heading count, bullet density, code blocks) AND content analysis (keywords, tone markers, domain signals) for classification.
+
+### Token budget
+
+| Phase | Tokens | Source |
+|-------|--------|--------|
+| Interview | 50-200 | AskUserQuestion (0-2 questions) |
+| Analysis | 0 | Deterministic (no AI calls) |
+| Prompt generation | ~500-1000 | XML prompt output |
+| Extraction Card | ~100 | Summary table |
+| **Total** | **~650-1300** | **Lighter than Single mode** |
+
+Canonical implementation for structural analysis and classification lives in `scripts/reverse-engineer.js`. If docs and code ever diverge, the script is the source of truth.
 
 ---
 
