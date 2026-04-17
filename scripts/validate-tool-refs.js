@@ -41,8 +41,12 @@ const CHECKS = [
   },
   {
     name: "Broadcast SendMessage with structured payload (rejected at runtime; PR #27)",
-    // SendMessage( to="*" ... message={ ... } ) — may span lines.
-    pattern: /SendMessage\s*\(\s*to\s*=\s*"\*"[^)]*?message\s*=\s*\{/s,
+    // Matches any SendMessage(...) where BOTH `to="*"` AND `message={` appear
+    // somewhere inside the same argument list, regardless of order or line
+    // breaks. Prior versions of this regex required `to=` before `message=`,
+    // which meant a reordered `SendMessage(message={...}, to="*")` bypassed
+    // the check (codex flagged on PR #28).
+    pattern: /SendMessage\s*\((?=[^)]*?\bto\s*=\s*"\*")(?=[^)]*?\bmessage\s*=\s*\{)[^)]*\)/s,
     files: ["SKILL.md", "references"],
   },
   {

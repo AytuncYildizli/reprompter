@@ -453,9 +453,9 @@ If the user explicitly named an option in their request (e.g. "use tmux", "run i
 
 | Order | Capability check | If true, use |
 |-------|-----------------|--------------|
-| 1 | `TeamCreate` tool is listed in your current toolset | **Option B** — native Claude Code teams; teammates can message each other; no tmux init or send-keys timing risk |
+| 1 | **All four** of `TeamCreate`, `Agent`, `SendMessage`, and `TeamDelete` are listed in your current toolset. (Gating on `TeamCreate` alone is not enough — Option B's spawn/shutdown path needs the whole set; without it the run fails mid-execution rather than falling through to another option.) | **Option B** — native Claude Code teams; teammates can message each other; no tmux init or send-keys timing risk |
 | 2 | `sessions_spawn` tool is listed in your current toolset | **Option C** — OpenClaw |
-| 3 | `bash -c 'command -v tmux && command -v claude'` exits 0 | **Option A** — tmux + child `claude --model opus`, visible panes |
+| 3 | `bash -c 'command -v tmux && { v=$(claude --version 2>/dev/null \| awk "{print \$1}"); [[ "$v" =~ ^(2\.[1-9]\|[3-9]) ]]; }'` exits 0. (Binary presence alone is insufficient — Option A needs `claude` ≥ 2.1 so `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is honoured; older CLIs accept the env var but don't enable team mode.) | **Option A** — tmux + child `claude --model opus`, visible panes |
 | 4 | Running inside Codex (parallel sessions available) | **Option D** |
 | 5 | None of the above | **Option E** — sequential fallback (works with any LLM) |
 
@@ -477,7 +477,7 @@ Known pitfalls captured from 4.6 → 4.7 drift in this skill:
 - **`TeamDelete` ordering.** `TeamDelete()` fails if any teammate is still active. Shutdown is async; in-process teammates need a turn yield to approve each `shutdown_request` before cleanup succeeds.
 - **`TeamCreate` precedence.** `Agent(team_name=...)` errors if that team was not created first. Always call `TeamCreate` before any `Agent` with a `team_name` argument.
 
-Canonical signatures Option B depends on (what `npm run validate:tool-refs` enforces — if you change one, update the linter's check set in `scripts/validate-tool-refs.js` in the same PR so the new shape doesn't silently rot):
+Canonical signatures Option B depends on. **These are reference documentation, not a schema enforced by the validator.** `npm run validate:tool-refs` is a blocklist — it catches known-bad shapes from this repo's history (obsolete tool names, reordered broadcast calls, hardcoded model pins) but does not positively verify that every call here matches its schema. If you change a signature below, update the linter's check set in `scripts/validate-tool-refs.js` in the same PR (and also any Option B flow that relies on the old shape).
 
 ```text
 TeamCreate(team_name=<string>, description=<string>)
@@ -495,6 +495,8 @@ Agent(
 )
 
 SendMessage(to=<name-or-"*">, message=<str-or-obj>)
+
+TaskList()  # used during polling; returns current task statuses
 
 TeamDelete()
 ```
