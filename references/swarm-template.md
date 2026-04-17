@@ -1,6 +1,6 @@
 # Multi-Agent/Swarm Template
 
-Use this template for tasks requiring multiple coordinated agents.
+Use this template for tasks requiring multiple coordinated agents. It defines the **prompt structure** for swarm work. The **runtime** (how agents are actually spawned and coordinated) comes from SKILL.md Mode 2 (Repromptverse) Options A–E.
 
 ## Template
 
@@ -10,10 +10,10 @@ Use this template for tasks requiring multiple coordinated agents.
 </role>
 
 <context>
-- Orchestration: {Claude Flow, custom swarm, etc.}
+- Orchestration: {reprompter Option A (tmux) | B (TeamCreate+Agent) | C (sessions_spawn) | D (Codex) | E (sequential) — see SKILL.md}
 - Topology: {hierarchical, mesh, ring, star}
 - Available agents: {agent types available}
-- Memory system: {shared memory, message passing, etc.}
+- Coordination surface: {shared TaskList, per-agent artifact files at /tmp/rpt-{taskname}-{role}.md, inter-agent SendMessage}
 </context>
 
 <task>
@@ -26,7 +26,7 @@ Use this template for tasks requiring multiple coordinated agents.
 
 <requirements>
 1. **Per-agent deliverables**: {Each agent has clearly defined output}
-2. **Handoff protocol**: {How work passes between agents}
+2. **Handoff protocol**: {How work passes between agents — typically artifact files + TaskList status transitions}
 3. **Conflict resolution**: {How disagreements or conflicts are resolved}
 </requirements>
 
@@ -45,9 +45,9 @@ Use this template for tasks requiring multiple coordinated agents.
 </task_decomposition>
 
 <coordination>
-- Handoff protocol: {how agents pass work}
-- Shared memory keys: {what to store/retrieve}
-- Sync points: {when agents must coordinate}
+- Handoff protocol: {artifact file each upstream agent writes, which downstream agents read}
+- Shared artifacts: {file paths — usually /tmp/rpt-{taskname}-{role}.md per agent, plus /tmp/rpt-{taskname}-final.md for synthesis}
+- Sync points: {TaskList status transitions or explicit SendMessage}
 - Conflict resolution: {how to handle disagreements}
 </coordination>
 
@@ -61,7 +61,7 @@ Use this template for tasks requiring multiple coordinated agents.
 </constraints>
 
 <output_format>
-{Per-agent output paths, synthesis format, coordination log}
+{Per-agent artifact paths (e.g. /tmp/rpt-{taskname}-{role}.md), synthesis path (/tmp/rpt-{taskname}-final.md), coordination log}
 </output_format>
 
 <success_criteria>
@@ -87,14 +87,14 @@ Use this template for tasks requiring multiple coordinated agents.
 **Generated:**
 ```xml
 <role>
-Swarm coordinator specializing in full-stack refactoring, GraphQL migration, and multi-agent orchestration with Claude Flow.
+Swarm coordinator specializing in full-stack refactoring, GraphQL migration, and multi-agent orchestration via reprompter Option B (native TeamCreate + Agent).
 </role>
 
 <context>
-- Orchestration: Claude Flow V3 with hierarchical-mesh topology
+- Orchestration: reprompter Option B — TeamCreate + per-agent Agent(team_name=...) spawn; shared TaskList at ~/.claude/tasks/rpt-graphql-migration/
 - Current state: REST API with 15 endpoints
 - Target state: GraphQL API with equivalent functionality
-- Memory system: Claude Flow memory with HNSW indexing
+- Coordination surface: per-agent artifact files at /tmp/rpt-graphql-migration-{role}.md + SendMessage for cross-agent signalling
 </context>
 
 <task>
@@ -106,8 +106,8 @@ Full-stack migration spanning 3 domains (backend, frontend, tests) — too compl
 </motivation>
 
 <requirements>
-1. **Per-agent deliverables**: Each agent produces reviewed, tested code in their domain
-2. **Handoff protocol**: Schema stored in shared memory before implementation begins
+1. **Per-agent deliverables**: Each agent produces reviewed, tested code in their domain, plus a summary artifact at /tmp/rpt-graphql-migration-{role}.md
+2. **Handoff protocol**: Schema artifact must be written before backend/frontend implementation starts
 3. **Conflict resolution**: Architect has final say on schema; reviewer decides implementation disputes
 </requirements>
 
@@ -130,26 +130,27 @@ Full-stack migration spanning 3 domains (backend, frontend, tests) — too compl
 </task_decomposition>
 
 <coordination>
-- Handoff protocol:
-  - architect → backend-coder: Schema stored in memory key "graphql-schema"
-  - architect → frontend-coder: Query definitions in "graphql-queries"
-  - backend-coder → tester: Resolver completion signals via "backend-ready"
-  - frontend-coder → tester: Component completion via "frontend-ready"
+- Handoff protocol (file artifacts + TaskList, not shared memory):
+  - architect → backend-coder + frontend-coder: /tmp/rpt-graphql-migration-schema.md (types + resolver stubs + client queries)
+  - backend-coder → tester: /tmp/rpt-graphql-migration-backend.md + TaskUpdate status=completed on "Backend Implementation"
+  - frontend-coder → tester: /tmp/rpt-graphql-migration-frontend.md + TaskUpdate status=completed on "Frontend Migration"
 
-- Shared memory keys:
-  - "graphql-schema": Type definitions and schema
-  - "graphql-queries": Client-side query templates
-  - "migration-status": Progress tracking
-  - "blocking-issues": Issues requiring coordination
+- Shared artifacts:
+  - /tmp/rpt-graphql-migration-schema.md: Type definitions + resolver stubs + client query templates
+  - /tmp/rpt-graphql-migration-backend.md: Resolver implementations + notes
+  - /tmp/rpt-graphql-migration-frontend.md: Client migration summary
+  - /tmp/rpt-graphql-migration-tests.md: Test coverage report
+  - /tmp/rpt-graphql-migration-review.md: Reviewer notes per component
+  - /tmp/rpt-graphql-migration-final.md: Synthesis (written by team lead after all agents complete)
 
 - Sync points:
-  - After schema design (all agents review)
-  - After backend implementation (frontend can start)
-  - Before final merge (all tests must pass)
+  - After schema design: backend-coder + frontend-coder unblocked via TaskList
+  - After backend implementation: tester unblocked for resolver tests
+  - Before final merge: reviewer task must be completed
 
 - Conflict resolution:
-  - Schema disagreements: architect has final say
-  - Implementation approach: discuss in memory, reviewer decides
+  - Schema disagreements: SendMessage to architect, await reply
+  - Implementation approach: reviewer decides (SendMessage with review notes)
 </coordination>
 
 <constraints>
@@ -162,9 +163,9 @@ Full-stack migration spanning 3 domains (backend, frontend, tests) — too compl
 </constraints>
 
 <output_format>
-1. Per-agent output in separate directories (backend/, frontend/, tests/)
-2. Synthesis document: migration-summary.md with all changes
-3. Coordination log: swarm-coordination.log with handoffs and decisions
+1. Per-agent artifact files at /tmp/rpt-graphql-migration-{role}.md (one per agent)
+2. Synthesis at /tmp/rpt-graphql-migration-final.md — all changes merged + per-role summaries
+3. TaskList history as the coordination log
 </output_format>
 
 <success_criteria>
@@ -176,21 +177,36 @@ Full-stack migration spanning 3 domains (backend, frontend, tests) — too compl
 </success_criteria>
 ```
 
-## Integration with Claude Flow
+## Integration with reprompter
 
-When using this template with Claude Flow, spawn agents like:
+The template above defines the **prompt structure**. Execution happens via SKILL.md Mode 2 (Repromptverse). Pick the option that matches your runtime:
 
-```javascript
-// Initialize swarm
-mcp__claude-flow__swarm_init({ topology: "hierarchical-mesh", maxAgents: 5 })
+| Option | Surface | When to use |
+|--------|---------|-------------|
+| A | `tmux` + `claude --model opus` | Agents fully independent, visible terminal panes wanted |
+| B | `TeamCreate` + `Agent(team_name=...)` + `SendMessage` | Native Claude Code teams; agents need to message each other |
+| C | `sessions_spawn` | OpenClaw runtime |
+| D | Codex parallel sessions | Codex runtime |
+| E | Sequential (any LLM) | No parallel infrastructure available |
 
-// Spawn agents concurrently
-Task("Schema Design", "[architect prompt]", "architecture")
-Task("Backend GraphQL", "[backend prompt]", "coder")
-Task("Frontend Migration", "[frontend prompt]", "coder")
-Task("Test Coverage", "[tester prompt]", "tester")
-Task("Code Review", "[reviewer prompt]", "reviewer")
+Option B runtime sketch (full version in SKILL.md `#### Option B: TeamCreate`):
 
-// Store coordination context
-mcp__claude-flow__memory_usage({ action: "store", namespace: "swarm", key: "swarm-objective", value: "[objective]" })
+```text
+TeamCreate(team_name="rpt-graphql-migration", description="REST→GraphQL swarm")
+
+TaskCreate(subject="Schema Design", description="...")
+TaskCreate(subject="Backend GraphQL", description="...")
+TaskCreate(subject="Frontend Migration", description="...")
+TaskCreate(subject="Test Coverage", description="...")
+TaskCreate(subject="Code Review", description="...")
+
+Agent(description="Schema architect", subagent_type="general-purpose",
+      team_name="rpt-graphql-migration", name="architect", model="opus",
+      prompt="<architect prompt from this template>",
+      run_in_background=true)
+# ... one Agent per role (backend-coder, frontend-coder, tester, reviewer)
+
+# poll TaskList until every task completes, then:
+SendMessage(to="*", message={"type": "shutdown_request"})
+TeamDelete()
 ```
