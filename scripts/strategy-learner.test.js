@@ -9,6 +9,7 @@ const os = require("node:os");
 const { createOutcomeStore } = require("./outcome-collector");
 const { fingerprint } = require("./recipe-fingerprint");
 const {
+  getRecommendation,
   recommendStrategy,
   bestRecipeForDomain,
   applyFlywheelBias,
@@ -233,6 +234,183 @@ describe("strategy-learner", () => {
       assert.strictEqual(result.hasData, true);
       assert.ok(result.recommendation);
       assert.ok(result.recommendation.score >= 7.0);
+    });
+  });
+
+  describe("getRecommendation()", () => {
+    it("returns null for cold start", () => {
+      const store = tmpStore();
+      stores.push(store);
+      const result = getRecommendation({ taskType: "fix_bug", store });
+      assert.strictEqual(result, null);
+    });
+
+    it("returns null when task type has fewer than minimum samples", () => {
+      const store = tmpStore();
+      stores.push(store);
+      store.writeOutcome(
+        makeOutcome(
+          { templateId: "fix_bug", capabilityTier: "default", domain: "", contextLayers: 1, patterns: [] },
+          {},
+          { effectivenessScore: 8.0 }
+        )
+      );
+      store.writeOutcome(
+        makeOutcome(
+          { templateId: "write_code", capabilityTier: "default", domain: "", contextLayers: 1, patterns: [] },
+          {},
+          { effectivenessScore: 9.0 }
+        )
+      );
+
+      const result = getRecommendation({ taskType: "fix_bug", store });
+      assert.strictEqual(result, null);
+    });
+
+    it("returns the best recipe for a task type", () => {
+      const store = tmpStore();
+      stores.push(store);
+
+      for (let i = 0; i < 3; i++) {
+        store.writeOutcome(
+          makeOutcome(
+            { templateId: "fix_bug", capabilityTier: "default", domain: "", contextLayers: 1, patterns: [] },
+            {},
+            { effectivenessScore: 9.0 }
+          )
+        );
+      }
+
+      for (let i = 0; i < 3; i++) {
+        store.writeOutcome(
+          makeOutcome(
+            {
+              templateId: "fix_bug",
+              capabilityTier: "default",
+              domain: "security",
+              contextLayers: 2,
+              patterns: ["self-critique-checkpoint"],
+            },
+            {},
+            { effectivenessScore: 7.0 }
+          )
+        );
+      }
+
+      const result = getRecommendation({ taskType: "fix_bug", store });
+      assert.ok(result, "should return a recommendation");
+      assert.strictEqual(result.confidence, "low");
+      assert.strictEqual(result.sampleCount, 3);
+      assert.strictEqual(result.recipe.vector.templateId, "fix_bug");
+      assert.deepStrictEqual(result.recipe.vector.patterns, []);
+    });
+
+    it("uses promptShape to refine which recipe wins", () => {
+      const store = tmpStore();
+      stores.push(store);
+
+      for (let i = 0; i < 3; i++) {
+        store.writeOutcome(
+          makeOutcome(
+            {
+              templateId: "fix_bug",
+              capabilityTier: "reasoning_high",
+              domain: "security",
+              contextLayers: 1,
+              patterns: ["constraint-first-framing"],
+              qualityScore: 9.0,
+            },
+            {},
+            { effectivenessScore: 9.0 }
+          )
+        );
+      }
+
+      for (let i = 0; i < 3; i++) {
+        store.writeOutcome(
+          makeOutcome(
+            {
+              templateId: "fix_bug",
+              capabilityTier: "default",
+              domain: "ops",
+              contextLayers: 4,
+              patterns: ["delta-retry-scaffold"],
+              qualityScore: 5.0,
+            },
+            {},
+            { effectivenessScore: 7.5 }
+          )
+        );
+      }
+
+      const baseline = getRecommendation({ taskType: "fix_bug", store });
+      assert.ok(baseline, "baseline recommendation should exist");
+      assert.strictEqual(baseline.recipe.vector.domain, "security");
+
+      const refined = getRecommendation({
+        taskType: "fix_bug",
+        store,
+        promptShape: {
+          capabilityTier: "default",
+          domain: "ops",
+          contextLayers: 4,
+          patterns: ["delta-retry-scaffold"],
+          qualityScore: 5.0,
+        },
+      });
+
+      assert.ok(refined, "refined recommendation should exist");
+      assert.strictEqual(refined.recipe.vector.domain, "ops");
+      assert.deepStrictEqual(refined.recipe.vector.patterns, ["delta-retry-scaffold"]);
+    });
+
+    it("considers role-bearing and role-less outcomes together for task-type queries", () => {
+      const store = tmpStore();
+      stores.push(store);
+
+      for (let i = 0; i < 3; i++) {
+        store.writeOutcome(
+          makeOutcome(
+            {
+              templateId: "fix_bug",
+              domain: "",
+              capabilityTier: "default",
+              contextLayers: 1,
+              patterns: [],
+              qualityScore: 7.0,
+            },
+            {},
+            { effectivenessScore: 7.0 }
+          )
+        );
+      }
+
+      for (let i = 0; i < 3; i++) {
+        store.writeOutcome(
+          makeOutcome(
+            {
+              templateId: "fix_bug",
+              domain: "schema",
+              capabilityTier: "default",
+              contextLayers: 1,
+              patterns: [],
+              qualityScore: 8.5,
+            },
+            {},
+            { effectivenessScore: 8.5 }
+          )
+        );
+      }
+
+      const result = getRecommendation({ taskType: "fix_bug", store });
+      assert.ok(result, "should return a recommendation");
+      assert.strictEqual(result.recipe.vector.templateId, "fix_bug");
+      assert.strictEqual(
+        result.recipe.vector.domain,
+        "schema",
+        "taskType queries currently return the best-scoring role bucket when role-bearing data exists"
+      );
+      assert.strictEqual(result.sampleCount, 3);
     });
   });
 

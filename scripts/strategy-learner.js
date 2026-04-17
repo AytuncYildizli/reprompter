@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 "use strict";
 
-const { recipeSimilarity } = require("./recipe-fingerprint");
+const fs = require("node:fs");
+const { recipeSimilarity, quantizeBucket } = require("./recipe-fingerprint");
 const { createOutcomeStore } = require("./outcome-collector");
 
 const MIN_SAMPLES = 2;
@@ -155,6 +156,76 @@ function recommendStrategy(targetVector, options = {}) {
   };
 }
 
+function normalizeTaskType(taskType) {
+  return String(taskType || "").trim().toLowerCase();
+}
+
+function buildPromptShapeVector(taskType, promptShape = {}) {
+  return {
+    templateId: normalizeTaskType(taskType),
+    patterns: Array.isArray(promptShape.patterns)
+      ? promptShape.patterns.map((pattern) => String(pattern || "").trim().toLowerCase()).filter(Boolean)
+      : [],
+    capabilityTier: String(promptShape.capabilityTier || "default").trim().toLowerCase(),
+    domain: String(promptShape.domain || "").trim().toLowerCase(),
+    contextLayers: Number.isFinite(promptShape.contextLayers) ? Number(promptShape.contextLayers) : 1,
+    qualityBucket: quantizeBucket(
+      Number.isFinite(promptShape.qualityScore) ? promptShape.qualityScore : 7
+    ),
+  };
+}
+
+function getRecommendation(options = {}) {
+  const taskType = normalizeTaskType(options.taskType);
+  if (!taskType) {
+    throw new Error("getRecommendation: taskType is required");
+  }
+
+  const store = options.store || createOutcomeStore({ rootDir: options.rootDir });
+  const outcomes = store.readOutcomes({ limit: options.limit || 200 });
+  const taskMatches = outcomes.filter(
+    (outcome) => outcome.recipe && outcome.recipe.vector && outcome.recipe.vector.templateId === taskType
+  );
+
+  if (taskMatches.length < MIN_SAMPLES) {
+    return null;
+  }
+
+  let candidateOutcomes = taskMatches;
+  const hasPromptShape = options.promptShape && Object.keys(options.promptShape).length > 0;
+  if (hasPromptShape) {
+    const targetVector = buildPromptShapeVector(taskType, options.promptShape);
+    candidateOutcomes = findSimilarRecipes(
+      targetVector,
+      taskMatches,
+      options.similarityThreshold || SIMILARITY_THRESHOLD
+    );
+  }
+
+  if (candidateOutcomes.length < MIN_SAMPLES) {
+    return null;
+  }
+
+  const now = Date.now();
+  const best = Object.values(groupByRecipeHash(candidateOutcomes))
+    .map((group) => ({
+      ...group,
+      ...scoreRecipeGroup(group, now),
+    }))
+    .filter((group) => group.sampleCount >= MIN_SAMPLES)
+    .sort((a, b) => b.score - a.score)[0];
+
+  if (!best) {
+    return null;
+  }
+
+  return {
+    recipe: best.recipe,
+    confidence: best.confidence,
+    sampleCount: best.sampleCount,
+  };
+}
+
 function formatRecommendation(group) {
   const readable = group.recipe && group.recipe.readable
     ? group.recipe.readable
@@ -301,6 +372,7 @@ function applyFlywheelBias(bias, currentPatternIds = [], options = {}) {
 }
 
 module.exports = {
+  getRecommendation,
   recommendStrategy,
   bestRecipeForDomain,
   applyFlywheelBias,
@@ -311,7 +383,63 @@ module.exports = {
   timeDecay,
 };
 
+function parseCliArgs(argv) {
+  const args = { positional: [] };
+  for (let i = 0; i < argv.length; i++) {
+    const token = argv[i];
+    if (token === "--query") {
+      args.query = true;
+      continue;
+    }
+    if (token === "--task-type") {
+      args.taskType = argv[i + 1];
+      i++;
+      continue;
+    }
+    if (token === "--root-dir") {
+      args.rootDir = argv[i + 1];
+      i++;
+      continue;
+    }
+    if (token === "--prompt-shape") {
+      args.promptShape = argv[i + 1];
+      i++;
+      continue;
+    }
+    args.positional.push(token);
+  }
+  return args;
+}
+
+function readPromptShape(raw) {
+  if (!raw) return undefined;
+  if (raw.trim().startsWith("{")) {
+    return JSON.parse(raw);
+  }
+  return JSON.parse(fs.readFileSync(raw, "utf8"));
+}
+
 if (require.main === module) {
-  const report = buildFlywheelReport();
-  process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+  const args = parseCliArgs(process.argv.slice(2));
+  if (args.query) {
+    const taskType = args.taskType || args.positional[0];
+    if (!taskType) {
+      process.stderr.write("strategy-learner: --query requires a task type (use --task-type <slug> or pass it positionally)\n");
+      process.exit(1);
+    }
+    try {
+      const recommendation = getRecommendation({
+        taskType,
+        rootDir: args.rootDir,
+        promptShape: readPromptShape(args.promptShape),
+      });
+      process.stdout.write(`${JSON.stringify(recommendation, null, 2)}\n`);
+    } catch (error) {
+      process.stderr.write(`strategy-learner: ${error.message}\n`);
+      process.exit(1);
+    }
+  } else {
+    const report = buildFlywheelReport({ rootDir: args.rootDir });
+    process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+  }
 }
