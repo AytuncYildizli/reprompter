@@ -72,6 +72,7 @@ Keys are `snake_case`. Top-level shape:
   "prompt_text": "...full generated prompt that was actually run...",
   "task_type": "fix_bug",
   "mode": "single",
+  "role": "architect",
   "success_criteria": [ { "id": "...", "...": "..." } ],
   "output_text": "...full output string from the model...",
   "verification_results": {
@@ -82,6 +83,8 @@ Keys are `snake_case`. Top-level shape:
 }
 ```
 
+> `role` is **optional** and typically only set for `mode="repromptverse"` records, so the flywheel bridge can route distinct agent roles into distinct recipe fingerprint buckets. Omit it for `mode="single"` records (no role).
+
 ### Field contract
 
 | Field                  | Type            | Notes                                                                                       |
@@ -91,7 +94,8 @@ Keys are `snake_case`. Top-level shape:
 | `prompt_fingerprint`   | string          | `sha256:` prefix + hex digest of `prompt_text` bytes (UTF-8). Lets us dedupe identical runs. |
 | `prompt_text`          | string          | The full generated prompt that was run — *not* the user's rough input.                      |
 | `task_type`            | string          | One of the slugs from SKILL.md's task-type table (e.g. `fix_bug`, `write_code`, `explain`). |
-| `mode`                 | string          | `"single"` for v1. Reserved values for later: `"multi"`, `"reverse"`.                       |
+| `mode`                 | string          | `"single"`, `"repromptverse"`, or `"reverse"`.                                              |
+| `role`                 | string \| absent | Optional. Agent name for Repromptverse records (e.g. `"architect"`, `"backend-coder"`). Routes into the flywheel bridge as the recipe `domain`, so distinct roles on the same `task_type` produce distinct recipe hashes and the strategy learner can tell them apart. Omit for `mode="single"`. |
 | `success_criteria`     | array of object | Same list as embedded in the prompt, normalised to JSON (see below).                        |
 | `output_text`          | string          | Full model output. Do not truncate.                                                         |
 | `verification_results` | object          | Map of `criterion.id → "pass" | "fail" | "skipped"`. Missing keys imply `"skipped"`.        |

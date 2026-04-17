@@ -33,7 +33,7 @@ const isoSecForFilename = (d) => isoSec(d).replace(/:/g, '-');
 
 function recordOutcome({
   promptText, outputText, criteria, taskType,
-  mode = 'single', notes = '', outcomesDir, now,
+  mode = 'single', role, notes = '', outcomesDir, now,
 } = {}) {
   if (typeof promptText !== 'string' || promptText.length === 0) {
     throw new Error('recordOutcome: promptText is required (non-empty string)');
@@ -47,14 +47,41 @@ function recordOutcome({
   if (typeof taskType !== 'string' || taskType.length === 0) {
     throw new Error('recordOutcome: taskType is required (non-empty string)');
   }
+  if (role !== undefined && (typeof role !== 'string' || role.length === 0)) {
+    throw new Error('recordOutcome: role, if provided, must be a non-empty string');
+  }
 
   const dir = outcomesDir || path.join(process.cwd(), '.reprompter', 'outcomes');
   fs.mkdirSync(dir, { recursive: true });
 
   const when = now instanceof Date ? now : new Date();
   const fingerprintHex = sha256Hex(promptText);
-  const filename = `${isoSecForFilename(when)}-${fingerprintHex.slice(0, 8)}.json`;
-  const filepath = path.join(dir, filename);
+  const baseName = `${isoSecForFilename(when)}-${fingerprintHex.slice(0, 8)}`;
+
+  // Pick a filename that doesn't already exist. Two runs of the same
+  // prompt within the same second would collide on (timestamp, short-fp);
+  // we fall through to -2, -3, ... rather than silently overwriting an
+  // earlier record (codex flagged on #33).
+  let filepath;
+  let suffix = 0;
+  // Safety cap — 10_000 identical-second collisions is well beyond any
+  // realistic workload and keeps the loop bounded.
+  for (; suffix < 10000; suffix++) {
+    const name = suffix === 0 ? `${baseName}.json` : `${baseName}-${suffix + 1}.json`;
+    const candidate = path.join(dir, name);
+    try {
+      // wx = create only; throws EEXIST if present.
+      const fd = fs.openSync(candidate, 'wx');
+      fs.closeSync(fd);
+      filepath = candidate;
+      break;
+    } catch (e) {
+      if (e.code !== 'EEXIST') throw e;
+    }
+  }
+  if (!filepath) {
+    throw new Error(`recordOutcome: could not allocate unique filename under ${dir} (baseName=${baseName})`);
+  }
 
   const record = {
     schema_version: 1,
@@ -69,6 +96,7 @@ function recordOutcome({
     score: null,
     notes,
   };
+  if (role !== undefined) record.role = role;
 
   fs.writeFileSync(filepath, JSON.stringify(record, null, 2) + '\n', 'utf8');
   return filepath;
@@ -116,6 +144,7 @@ function runCli(argv) {
     promptText, outputText, criteria,
     taskType: args['task-type'],
     mode: args.mode || 'single',
+    role: args.role,
     notes: args.notes || '',
     outcomesDir: args['outcomes-dir'],
   });
@@ -159,6 +188,47 @@ function runSelfTest() {
   assert.ok(path.basename(written).startsWith('2026-04-17T14-23-09Z-'));
 
   assert.throws(() => recordOutcome({ outputText: 'x', criteria: [], taskType: 'x' }));
+
+  // Collision handling (codex #33): two identical runs within the same
+  // second must produce two distinct files, not silently overwrite.
+  const colDir = fs.mkdtempSync(path.join(os.tmpdir(), 'outcome-record-col-'));
+  const colArgs = {
+    promptText: '<role>x</role><task>collision</task>',
+    outputText: 'ok',
+    criteria: [{ id: 'c1', description: 'x', verification_method: 'manual' }],
+    taskType: 'fix_bug',
+    outcomesDir: colDir,
+    now: new Date('2026-04-17T14:23:09Z'),
+  };
+  const first = recordOutcome(colArgs);
+  const second = recordOutcome(colArgs);
+  const third = recordOutcome(colArgs);
+  assert.notStrictEqual(first, second, 'second run must not reuse first run filename');
+  assert.notStrictEqual(second, third, 'third run must not reuse second run filename');
+  assert.ok(/-2\.json$/.test(second), `second should carry -2 suffix, got ${path.basename(second)}`);
+  assert.ok(/-3\.json$/.test(third), `third should carry -3 suffix, got ${path.basename(third)}`);
+  fs.rmSync(colDir, { recursive: true, force: true });
+
+  // Role handling (codex #36): role, when provided, is stamped on the
+  // record so downstream ingest can use it as a domain for fingerprinting.
+  const roleDir = fs.mkdtempSync(path.join(os.tmpdir(), 'outcome-record-role-'));
+  const roleFile = recordOutcome({
+    promptText: '<role>architect</role>',
+    outputText: 'schema out',
+    criteria: [],
+    taskType: 'architecture',
+    mode: 'repromptverse',
+    role: 'architect',
+    outcomesDir: roleDir,
+  });
+  const roleRecord = JSON.parse(fs.readFileSync(roleFile, 'utf8'));
+  assert.strictEqual(roleRecord.role, 'architect');
+  assert.strictEqual(roleRecord.mode, 'repromptverse');
+  assert.throws(
+    () => recordOutcome({ ...colArgs, role: '', outcomesDir: roleDir }),
+    /role, if provided, must be a non-empty string/
+  );
+  fs.rmSync(roleDir, { recursive: true, force: true });
 
   fs.rmSync(tmp, { recursive: true, force: true });
   process.stdout.write('outcome-record self-test: ok\n');

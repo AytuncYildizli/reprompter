@@ -433,7 +433,7 @@ For EACH agent:
 
 Write all to `/tmp/rpt-agent-prompts-{taskname}.md`
 
-**Flywheel hook (per-agent):** after Phase 3 execution, each agent's artifact at `/tmp/rpt-{taskname}-{agent-domain}.md` can be recorded separately with `scripts/outcome-record.js` (one record per agent, same task taxonomy, `mode="repromptverse"`) and scored with `scripts/evaluate-outcome.js`. This turns a multi-agent run into N flywheel outcomes instead of one, giving the strategy learner finer-grained signal about which agent roles consistently win vs struggle.
+**Flywheel hook (per-agent):** after Phase 3 execution, each agent's artifact at `/tmp/rpt-{taskname}-{agent-domain}.md` can be recorded separately with `scripts/outcome-record.js --role <agent-name>` (one record per agent, `mode="repromptverse"`, and `--role` set to the teammate's name so the flywheel bridge uses it as the `domain` when building the recipe fingerprint). Score each record with `scripts/evaluate-outcome.js`. Without `--role`, all agents on the same `task_type` collapse into the same recipe bucket and the strategy learner can't tell which roles consistently win vs struggle — so always pass it for Repromptverse records.
 
 #### Reprompt quality scorecard (mandatory)
 
@@ -719,15 +719,17 @@ Phase 4: INJECT — seed flywheel with pre-graded exemplar outcome (optional, ~2
 ### ⚠️ MUST GENERATE AFTER ANALYSIS
 
 After analysis completes, IMMEDIATELY:
-1. Generate the full reverse-engineered prompt
-2. Show the Extraction Card (see below)
-3. Show the generated prompt in XML format
-4. Show quality score
-5. Ask: "Save to flywheel? / Execute with this prompt? / Copy?"
+1. Extract `<success_criteria>` from the exemplar (see "Criteria extraction from exemplars" below — 3–6 criteria anchored to observable features of the exemplar)
+2. Generate the full reverse-engineered prompt, embedding the extracted `<success_criteria>` block
+3. Show the Extraction Card (see below)
+4. Show the generated prompt in XML format
+5. Show quality score
+6. Ask: "Save to flywheel? / Execute with this prompt? / Copy?"
 
 ```
 ❌ WRONG: Analyze exemplar → stop
-✅ RIGHT: Analyze exemplar → generate prompt → show Extraction Card → show score → offer actions
+❌ WRONG: Analyze exemplar → generate prompt → stop (skipping criteria extraction)
+✅ RIGHT: Analyze exemplar → extract criteria → generate prompt with criteria → show Extraction Card → show score → offer actions
 ```
 
 ### Extraction Card (transparency layer)
