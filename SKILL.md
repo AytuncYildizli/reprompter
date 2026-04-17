@@ -54,10 +54,31 @@ Definition — **2+ systems** means at least two distinct technical domains that
    - Accept examples: "fix login bug", "write API tests", "improve this prompt"
 3. **Quick Mode gate** — under 20 words, single action, no complexity indicators → generate immediately
 4. **Smart Interview** — use `AskUserQuestion` with clickable options (2-5 questions max)
-5. **Generate + Score** — apply template, show before/after quality metrics. The generated prompt MUST include a `<success_criteria schema_version="1">` block with 3-6 `<criterion>` entries. Each criterion has `id` (kebab-case slug, unique in block), `verification_method` (`rule` | `llm_judge` | `manual`), a one-sentence `<description>`, and — depending on method — an inline `<rule type="regex|predicate">` or `<judge_prompt>` (neither for `manual`). Schema of record: `references/outcome-schema.md`.
-6. **Single-pass evaluator** — run self-eval rubric and do one delta rewrite if score < 7
+5. **Flywheel bias check (optional, read-only)** — if `REPROMPTER_FLYWHEEL_BIAS=1` is set in the environment, consult past outcomes before choosing a template. See "Flywheel bias injection" below.
+6. **Generate + Score** — apply template, show before/after quality metrics. The generated prompt MUST include a `<success_criteria schema_version="1">` block with 3-6 `<criterion>` entries. Each criterion has `id` (kebab-case slug, unique in block), `verification_method` (`rule` | `llm_judge` | `manual`), a one-sentence `<description>`, and — depending on method — an inline `<rule type="regex|predicate">` or `<judge_prompt>` (neither for `manual`). Schema of record: `references/outcome-schema.md`.
+7. **Single-pass evaluator** — run self-eval rubric and do one delta rewrite if score < 7
 
 **Why criteria are emitted:** so every prompt carries its own testable assertions; outcome records produced by `scripts/outcome-record.js` (added in the same PR) join criteria to results for flywheel learning.
+
+#### Flywheel bias injection (v3 read-path)
+
+Default: off. Enable explicitly with `REPROMPTER_FLYWHEEL_BIAS=1` so runs with and without bias can be compared apples-to-apples until it earns the default.
+
+When the flag is set, between the interview and the template pick:
+
+1. Run `npm run flywheel:query -- --task-type <slug>` where `<slug>` is the task type identified from the interview (e.g. `fix_bug`, `write_code`).
+2. Read the command's stdout. It's either `null` (cold start / low N) or a single JSON object with `recipe`, `confidence`, `sampleCount`.
+3. **Only bias on `confidence ∈ {"medium", "high"}` AND `sampleCount >= 3`.** Low-confidence recommendations add noise without signal; treat them as cold start.
+4. When biasing:
+   - Prefer `recipe.vector.templateId` over the default intent-routed template.
+   - Adopt `recipe.vector.patterns` alongside anything you would have picked from `references/patterns/`.
+   - Match `recipe.vector.capabilityTier` in your reasoning about downstream execution.
+5. Announce the decision in one line before the generate step so the user sees what happened:
+   > Flywheel: preferring `<template>` + `[patterns]` based on N past runs (score X/10, <confidence> confidence)
+   Or, if no bias applied:
+   > Flywheel: no bias (cold start / low confidence)
+6. The bias changes **which template/patterns you start from.** The rest of the pipeline (interview content, generated prompt's XML structure, criteria emission) is unchanged. The flywheel never rewrites Claude's output.
+7. Attribution (v3 part 3, separate PR): once the outcome record schema gains `applied_recommendation`, stamp the chosen recipe hash + confidence + sample count onto the record for later A/B analysis.
 
 ### ⚠️ MUST GENERATE AFTER INTERVIEW
 
@@ -417,6 +438,8 @@ Total: {N} findings | {accepted}/{total} accepted | {retry_count} retries
 | **Total** | **~400-1000** | **0.5-2% of typical 50K-200K run** |
 
 ### Phase 2: Repromptverse prompt pack (~2 minutes)
+
+**Flywheel bias check (optional, read-only):** Same rules as Mode 1 (see "Flywheel bias injection" in Mode 1). When `REPROMPTER_FLYWHEEL_BIAS=1`, run `npm run flywheel:query -- --task-type <team-task-slug>` once for the overall team task before per-agent adaptation. If `confidence ∈ {"medium", "high"}` with `sampleCount >= 3`, prefer the recommended `templateId`/`patterns` as the team-wide starting point; each agent still picks its own role-specific template on top. Announce the bias decision once at the start of Phase 2, not per agent, to keep the output readable. Per-role bias queries are a v3 follow-up once enough role-stamped records exist.
 
 For EACH agent:
 1. Pick the best-matching template from `references/` (or use base XML structure)
@@ -935,7 +958,8 @@ Repromptverse runtime supports deterministic toggles for rollout and troubleshoo
 - `REPROMPTER_STRICT_EVAL=0|1` — disable/enable strict artifact evaluator defaults
 - `REPROMPTER_PATTERN_LIBRARY=0|1` — disable/enable pattern selector activation
 - `REPROMPTER_TELEMETRY=0|1` — disable/enable runtime telemetry emission for observability reports
-- `REPROMPTER_FLYWHEEL=0|1` — disable/enable Prompt Flywheel outcome learning (v9.0+)
+- `REPROMPTER_FLYWHEEL=0|1` — disable/enable Prompt Flywheel outcome learning (v9.0+). Controls whether outcome records are **written** to `.reprompter/flywheel/outcomes.ndjson` after a run.
+- `REPROMPTER_FLYWHEEL_BIAS=0|1` — disable/enable Prompt Flywheel bias injection at generation time (v3 read-path). Default **off**. When on, Mode 1 and Mode 2 consult `npm run flywheel:query` for a recommendation before picking a template and apply the bias only when confidence is medium/high with `sampleCount >= 3`. See "Flywheel bias injection" under Mode 1 for the full decision rule.
 
 ### Telemetry and observability
 Every Repromptverse run should emit stage-level telemetry events with `runId`, `taskId`, stage name, status, latency, and provider/model where applicable.
