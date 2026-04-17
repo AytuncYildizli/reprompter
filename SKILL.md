@@ -443,9 +443,27 @@ Raw prompt scored {raw}/10. After reprompting, each agent prompt scores {min}-{m
 
 ### Phase 3: Execute
 
-Phase 3 has platform-specific execution methods. Pick the one that matches your environment. The reprompted prompts from Phase 2 work with any method.
+Phase 3 has platform-specific execution methods. The reprompted prompts from Phase 2 work with any method — you just need to pick which one to run. In most runs you should not ask the user; auto-pick below and announce the decision so they can redirect if they want.
 
 **Status Line (all platforms):** During polling, show compact agent status with each cycle. See Agent Cards section for format.
+
+#### Runtime auto-pick (default behaviour — do this first)
+
+If the user explicitly named an option in their request (e.g. "use tmux", "run it sequentially", "via sessions_spawn"), honour that and skip the detection. Otherwise run the decision tree below top-to-bottom and use the first option whose capability is available.
+
+| Order | Capability check | If true, use |
+|-------|-----------------|--------------|
+| 1 | `TeamCreate` tool is listed in your current toolset | **Option B** — native Claude Code teams; teammates can message each other; no tmux init or send-keys timing risk |
+| 2 | `sessions_spawn` tool is listed in your current toolset | **Option C** — OpenClaw |
+| 3 | `bash -c 'command -v tmux && command -v claude'` exits 0 | **Option A** — tmux + child `claude --model opus`, visible panes |
+| 4 | Running inside Codex (parallel sessions available) | **Option D** |
+| 5 | None of the above | **Option E** — sequential fallback (works with any LLM) |
+
+After picking, announce it in one short line before starting Phase 3 work, so the user can redirect:
+
+> Auto-picked **Option B** (TeamCreate + Agent) — `TeamCreate` is available in this runtime. Override by saying "use Option A" (tmux) or "use Option E" (sequential).
+
+Why B is first: it's the only option where teammates can `SendMessage` each other and share a `TaskList` in-process. Option A is picked only when B isn't available — it still works end-to-end but loses cross-agent messaging and adds the tmux init + send-keys timing surface.
 
 #### Option A: tmux (Claude Code)
 
