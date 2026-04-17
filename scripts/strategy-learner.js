@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 "use strict";
 
-const { recipeSimilarity } = require("./recipe-fingerprint");
+const fs = require("node:fs");
+const { recipeSimilarity, quantizeBucket } = require("./recipe-fingerprint");
 const { createOutcomeStore } = require("./outcome-collector");
 
 const MIN_SAMPLES = 2;
@@ -155,6 +156,150 @@ function recommendStrategy(targetVector, options = {}) {
   };
 }
 
+function normalizeTaskType(taskType) {
+  return String(taskType || "").trim().toLowerCase();
+}
+
+// Build a prompt-shape "target" for similarity comparison. Returns the
+// vector plus a `specified` Set listing which fields the caller
+// actually provided, so the partial-similarity function can treat
+// unspecified fields as wildcards instead of hardcoded defaults
+// (codex PR #39 P2).
+function buildPromptShapeVector(taskType, promptShape = {}) {
+  const specified = new Set(["templateId"]); // always set by taskType
+  if (promptShape.patterns !== undefined && promptShape.patterns !== null) specified.add("patterns");
+  if (promptShape.capabilityTier !== undefined && promptShape.capabilityTier !== null) specified.add("capabilityTier");
+  if (promptShape.domain !== undefined && promptShape.domain !== null) specified.add("domain");
+  if (Number.isFinite(promptShape.contextLayers)) specified.add("contextLayers");
+  if (Number.isFinite(promptShape.qualityScore)) specified.add("qualityBucket");
+
+  const vector = {
+    templateId: normalizeTaskType(taskType),
+    patterns: Array.isArray(promptShape.patterns)
+      ? promptShape.patterns.map((pattern) => String(pattern || "").trim().toLowerCase()).filter(Boolean)
+      : [],
+    capabilityTier: String(promptShape.capabilityTier || "default").trim().toLowerCase(),
+    domain: String(promptShape.domain || "").trim().toLowerCase(),
+    contextLayers: Number.isFinite(promptShape.contextLayers) ? Number(promptShape.contextLayers) : 1,
+    qualityBucket: quantizeBucket(
+      Number.isFinite(promptShape.qualityScore) ? promptShape.qualityScore : 7
+    ),
+  };
+
+  return { vector, specified };
+}
+
+// Similarity over only the explicitly-specified fields of the target
+// vector. Unspecified fields are treated as wildcards (contribute
+// nothing to the denominator). If the caller specified only taskType,
+// every outcome matching that taskType gets similarity 1.0 — refinement
+// becomes a no-op, matching the natural meaning of "no shape hint".
+function promptShapeSimilarity(target, other, specified) {
+  let matches = 0;
+  let total = 0;
+  if (specified.has("templateId")) {
+    total++;
+    if (target.templateId === other.templateId) matches++;
+  }
+  if (specified.has("domain")) {
+    total++;
+    if (target.domain === other.domain) matches++;
+  }
+  if (specified.has("capabilityTier")) {
+    total++;
+    if (target.capabilityTier === other.capabilityTier) matches++;
+  }
+  if (specified.has("qualityBucket")) {
+    total++;
+    if (target.qualityBucket === other.qualityBucket) matches++;
+  }
+  if (specified.has("contextLayers")) {
+    total++;
+    if (Math.abs(target.contextLayers - other.contextLayers) <= 1) matches++;
+  }
+  if (specified.has("patterns")) {
+    const setA = new Set(target.patterns);
+    const setB = new Set(other.patterns);
+    const union = new Set([...setA, ...setB]);
+    if (union.size > 0) {
+      total++;
+      const intersection = [...setA].filter((p) => setB.has(p));
+      matches += intersection.length / union.size;
+    }
+  }
+  return total > 0 ? Number((matches / total).toFixed(4)) : 1;
+}
+
+// Upper bound on how many task-matching outcomes we'll consider for a
+// single recommendation. Set well above any realistic per-taskType
+// volume so we don't have to worry about windowing edge cases.
+const GET_RECOMMENDATION_DEFAULT_LIMIT = 1000;
+
+function getRecommendation(options = {}) {
+  const taskType = normalizeTaskType(options.taskType);
+  if (!taskType) {
+    throw new Error("getRecommendation: taskType is required");
+  }
+
+  // Codex PR #39 P1: read the whole store, then filter by taskType.
+  // The previous implementation applied the read-limit BEFORE the
+  // taskType filter, so a store dominated by other task types could
+  // drop all matching outcomes and return null despite historical
+  // data. Filtering first keeps recommendations stable as the store
+  // grows.
+  const store = options.store || createOutcomeStore({ rootDir: options.rootDir });
+  const outcomes = store.readOutcomes({ limit: Number.MAX_SAFE_INTEGER });
+  const allTaskMatches = outcomes.filter(
+    (outcome) => outcome.recipe && outcome.recipe.vector && outcome.recipe.vector.templateId === taskType
+  );
+
+  // Apply the caller's limit to the task-matching slice specifically,
+  // defaulting to GET_RECOMMENDATION_DEFAULT_LIMIT. Most recent first
+  // (existing readOutcomes semantics).
+  const taskLimit = Number.isFinite(options.limit) && options.limit > 0
+    ? options.limit
+    : GET_RECOMMENDATION_DEFAULT_LIMIT;
+  const taskMatches = allTaskMatches.slice(-taskLimit);
+
+  if (taskMatches.length < MIN_SAMPLES) {
+    return null;
+  }
+
+  let candidateOutcomes = taskMatches;
+  const hasPromptShape = options.promptShape && Object.keys(options.promptShape).length > 0;
+  if (hasPromptShape) {
+    const { vector: targetVector, specified } = buildPromptShapeVector(taskType, options.promptShape);
+    const threshold = options.similarityThreshold || SIMILARITY_THRESHOLD;
+    candidateOutcomes = taskMatches.filter((outcome) => {
+      if (!outcome.recipe || !outcome.recipe.vector) return false;
+      return promptShapeSimilarity(targetVector, outcome.recipe.vector, specified) >= threshold;
+    });
+  }
+
+  if (candidateOutcomes.length < MIN_SAMPLES) {
+    return null;
+  }
+
+  const now = Date.now();
+  const best = Object.values(groupByRecipeHash(candidateOutcomes))
+    .map((group) => ({
+      ...group,
+      ...scoreRecipeGroup(group, now),
+    }))
+    .filter((group) => group.sampleCount >= MIN_SAMPLES)
+    .sort((a, b) => b.score - a.score)[0];
+
+  if (!best) {
+    return null;
+  }
+
+  return {
+    recipe: best.recipe,
+    confidence: best.confidence,
+    sampleCount: best.sampleCount,
+  };
+}
+
 function formatRecommendation(group) {
   const readable = group.recipe && group.recipe.readable
     ? group.recipe.readable
@@ -301,6 +446,7 @@ function applyFlywheelBias(bias, currentPatternIds = [], options = {}) {
 }
 
 module.exports = {
+  getRecommendation,
   recommendStrategy,
   bestRecipeForDomain,
   applyFlywheelBias,
@@ -311,7 +457,63 @@ module.exports = {
   timeDecay,
 };
 
+function parseCliArgs(argv) {
+  const args = { positional: [] };
+  for (let i = 0; i < argv.length; i++) {
+    const token = argv[i];
+    if (token === "--query") {
+      args.query = true;
+      continue;
+    }
+    if (token === "--task-type") {
+      args.taskType = argv[i + 1];
+      i++;
+      continue;
+    }
+    if (token === "--root-dir") {
+      args.rootDir = argv[i + 1];
+      i++;
+      continue;
+    }
+    if (token === "--prompt-shape") {
+      args.promptShape = argv[i + 1];
+      i++;
+      continue;
+    }
+    args.positional.push(token);
+  }
+  return args;
+}
+
+function readPromptShape(raw) {
+  if (!raw) return undefined;
+  if (raw.trim().startsWith("{")) {
+    return JSON.parse(raw);
+  }
+  return JSON.parse(fs.readFileSync(raw, "utf8"));
+}
+
 if (require.main === module) {
-  const report = buildFlywheelReport();
-  process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+  const args = parseCliArgs(process.argv.slice(2));
+  if (args.query) {
+    const taskType = args.taskType || args.positional[0];
+    if (!taskType) {
+      process.stderr.write("strategy-learner: --query requires a task type (use --task-type <slug> or pass it positionally)\n");
+      process.exit(1);
+    }
+    try {
+      const recommendation = getRecommendation({
+        taskType,
+        rootDir: args.rootDir,
+        promptShape: readPromptShape(args.promptShape),
+      });
+      process.stdout.write(`${JSON.stringify(recommendation, null, 2)}\n`);
+    } catch (error) {
+      process.stderr.write(`strategy-learner: ${error.message}\n`);
+      process.exit(1);
+    }
+  } else {
+    const report = buildFlywheelReport({ rootDir: args.rootDir });
+    process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+  }
 }

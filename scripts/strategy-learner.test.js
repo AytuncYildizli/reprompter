@@ -9,6 +9,7 @@ const os = require("node:os");
 const { createOutcomeStore } = require("./outcome-collector");
 const { fingerprint } = require("./recipe-fingerprint");
 const {
+  getRecommendation,
   recommendStrategy,
   bestRecipeForDomain,
   applyFlywheelBias,
@@ -233,6 +234,278 @@ describe("strategy-learner", () => {
       assert.strictEqual(result.hasData, true);
       assert.ok(result.recommendation);
       assert.ok(result.recommendation.score >= 7.0);
+    });
+  });
+
+  describe("getRecommendation()", () => {
+    it("returns null for cold start", () => {
+      const store = tmpStore();
+      stores.push(store);
+      const result = getRecommendation({ taskType: "fix_bug", store });
+      assert.strictEqual(result, null);
+    });
+
+    it("returns null when task type has fewer than minimum samples", () => {
+      const store = tmpStore();
+      stores.push(store);
+      store.writeOutcome(
+        makeOutcome(
+          { templateId: "fix_bug", capabilityTier: "default", domain: "", contextLayers: 1, patterns: [] },
+          {},
+          { effectivenessScore: 8.0 }
+        )
+      );
+      store.writeOutcome(
+        makeOutcome(
+          { templateId: "write_code", capabilityTier: "default", domain: "", contextLayers: 1, patterns: [] },
+          {},
+          { effectivenessScore: 9.0 }
+        )
+      );
+
+      const result = getRecommendation({ taskType: "fix_bug", store });
+      assert.strictEqual(result, null);
+    });
+
+    it("returns the best recipe for a task type", () => {
+      const store = tmpStore();
+      stores.push(store);
+
+      for (let i = 0; i < 3; i++) {
+        store.writeOutcome(
+          makeOutcome(
+            { templateId: "fix_bug", capabilityTier: "default", domain: "", contextLayers: 1, patterns: [] },
+            {},
+            { effectivenessScore: 9.0 }
+          )
+        );
+      }
+
+      for (let i = 0; i < 3; i++) {
+        store.writeOutcome(
+          makeOutcome(
+            {
+              templateId: "fix_bug",
+              capabilityTier: "default",
+              domain: "security",
+              contextLayers: 2,
+              patterns: ["self-critique-checkpoint"],
+            },
+            {},
+            { effectivenessScore: 7.0 }
+          )
+        );
+      }
+
+      const result = getRecommendation({ taskType: "fix_bug", store });
+      assert.ok(result, "should return a recommendation");
+      assert.strictEqual(result.confidence, "low");
+      assert.strictEqual(result.sampleCount, 3);
+      assert.strictEqual(result.recipe.vector.templateId, "fix_bug");
+      assert.deepStrictEqual(result.recipe.vector.patterns, []);
+    });
+
+    it("uses promptShape to refine which recipe wins", () => {
+      const store = tmpStore();
+      stores.push(store);
+
+      for (let i = 0; i < 3; i++) {
+        store.writeOutcome(
+          makeOutcome(
+            {
+              templateId: "fix_bug",
+              capabilityTier: "reasoning_high",
+              domain: "security",
+              contextLayers: 1,
+              patterns: ["constraint-first-framing"],
+              qualityScore: 9.0,
+            },
+            {},
+            { effectivenessScore: 9.0 }
+          )
+        );
+      }
+
+      for (let i = 0; i < 3; i++) {
+        store.writeOutcome(
+          makeOutcome(
+            {
+              templateId: "fix_bug",
+              capabilityTier: "default",
+              domain: "ops",
+              contextLayers: 4,
+              patterns: ["delta-retry-scaffold"],
+              qualityScore: 5.0,
+            },
+            {},
+            { effectivenessScore: 7.5 }
+          )
+        );
+      }
+
+      const baseline = getRecommendation({ taskType: "fix_bug", store });
+      assert.ok(baseline, "baseline recommendation should exist");
+      assert.strictEqual(baseline.recipe.vector.domain, "security");
+
+      const refined = getRecommendation({
+        taskType: "fix_bug",
+        store,
+        promptShape: {
+          capabilityTier: "default",
+          domain: "ops",
+          contextLayers: 4,
+          patterns: ["delta-retry-scaffold"],
+          qualityScore: 5.0,
+        },
+      });
+
+      assert.ok(refined, "refined recommendation should exist");
+      assert.strictEqual(refined.recipe.vector.domain, "ops");
+      assert.deepStrictEqual(refined.recipe.vector.patterns, ["delta-retry-scaffold"]);
+    });
+
+    it("considers role-bearing and role-less outcomes together for task-type queries", () => {
+      const store = tmpStore();
+      stores.push(store);
+
+      for (let i = 0; i < 3; i++) {
+        store.writeOutcome(
+          makeOutcome(
+            {
+              templateId: "fix_bug",
+              domain: "",
+              capabilityTier: "default",
+              contextLayers: 1,
+              patterns: [],
+              qualityScore: 7.0,
+            },
+            {},
+            { effectivenessScore: 7.0 }
+          )
+        );
+      }
+
+      for (let i = 0; i < 3; i++) {
+        store.writeOutcome(
+          makeOutcome(
+            {
+              templateId: "fix_bug",
+              domain: "schema",
+              capabilityTier: "default",
+              contextLayers: 1,
+              patterns: [],
+              qualityScore: 8.5,
+            },
+            {},
+            { effectivenessScore: 8.5 }
+          )
+        );
+      }
+
+      const result = getRecommendation({ taskType: "fix_bug", store });
+      assert.ok(result, "should return a recommendation");
+      assert.strictEqual(result.recipe.vector.templateId, "fix_bug");
+      assert.strictEqual(
+        result.recipe.vector.domain,
+        "schema",
+        "taskType queries currently return the best-scoring role bucket when role-bearing data exists"
+      );
+      assert.strictEqual(result.sampleCount, 3);
+    });
+
+    it("survives a store dominated by unrelated task types (codex PR #39 P1)", () => {
+      // Write 250 outcomes for an unrelated task type, then exactly
+      // MIN_SAMPLES outcomes for "fix_bug". The old implementation
+      // applied a 200-row read limit BEFORE the templateId filter, so
+      // the fix_bug outcomes fell off the window and the call returned
+      // null despite the matching data being there. Now the filter
+      // runs first and the matching slice is preserved.
+      const store = tmpStore();
+      stores.push(store);
+
+      for (let i = 0; i < 250; i++) {
+        store.writeOutcome(
+          makeOutcome(
+            { templateId: "other_task", capabilityTier: "default", domain: "", contextLayers: 1, patterns: [] },
+            {},
+            { effectivenessScore: 6.0 }
+          )
+        );
+      }
+
+      for (let i = 0; i < 3; i++) {
+        store.writeOutcome(
+          makeOutcome(
+            { templateId: "fix_bug", capabilityTier: "default", domain: "", contextLayers: 1, patterns: [] },
+            {},
+            { effectivenessScore: 8.5 }
+          )
+        );
+      }
+
+      const result = getRecommendation({ taskType: "fix_bug", store });
+      assert.ok(result, "must find the fix_bug data despite 250 unrelated outcomes on top");
+      assert.strictEqual(result.recipe.vector.templateId, "fix_bug");
+      assert.strictEqual(result.sampleCount, 3);
+    });
+
+    it("treats missing promptShape fields as wildcards (codex PR #39 P2)", () => {
+      // Seed two distinct recipes that both match taskType but differ
+      // on every other dimension. A partial promptShape with only one
+      // field specified should refine, not strictly filter — outcomes
+      // that don't share the unspecified defaults must still be
+      // reachable.
+      const store = tmpStore();
+      stores.push(store);
+
+      for (let i = 0; i < 3; i++) {
+        store.writeOutcome(
+          makeOutcome(
+            {
+              templateId: "fix_bug",
+              capabilityTier: "reasoning_high",
+              domain: "security",
+              contextLayers: 4,
+              patterns: ["constraint-first-framing"],
+              qualityScore: 9.0,
+            },
+            {},
+            { effectivenessScore: 9.0 }
+          )
+        );
+      }
+
+      for (let i = 0; i < 3; i++) {
+        store.writeOutcome(
+          makeOutcome(
+            {
+              templateId: "fix_bug",
+              capabilityTier: "reasoning_low",
+              domain: "ops",
+              contextLayers: 1,
+              patterns: ["delta-retry-scaffold"],
+              qualityScore: 6.0,
+            },
+            {},
+            { effectivenessScore: 7.0 }
+          )
+        );
+      }
+
+      // Only domain specified. Previously every other field was backfilled
+      // with hardcoded defaults ("default" tier, 1 context layer,
+      // "good" bucket), driving similarity below threshold and returning
+      // null. With the wildcard fix, it now refines correctly to the
+      // security bucket.
+      const refined = getRecommendation({
+        taskType: "fix_bug",
+        store,
+        promptShape: { domain: "security" },
+      });
+
+      assert.ok(refined, "partial promptShape must refine, not strictly filter");
+      assert.strictEqual(refined.recipe.vector.domain, "security");
+      assert.strictEqual(refined.sampleCount, 3);
     });
   });
 
