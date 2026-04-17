@@ -336,11 +336,20 @@ function v1RecordToFlywheelOutcome(v1Record) {
   const contextLayers = (promptText.match(/<context\b/gi) || []).length;
   const score = Number.isFinite(v1Record.score) ? v1Record.score : 0;
 
+  // Codex #36: distinct agent roles need distinct recipe buckets or the
+  // strategy learner can't tell which roles consistently win. Route the
+  // v1 record's optional `role` field into the fingerprint's `domain`
+  // slot (mode=repromptverse runs will set it; mode=single runs leave
+  // it empty, matching prior behaviour).
+  const role = typeof v1Record.role === "string" && v1Record.role.length > 0
+    ? v1Record.role
+    : "";
+
   const recipe = fingerprint({
     templateId: String(v1Record.task_type || "unknown"),
     patterns: [],
     capabilityTier: "default",
-    domain: "",
+    domain: role,
     contextLayers,
     qualityScore: score,
   });
@@ -360,6 +369,13 @@ function v1RecordToFlywheelOutcome(v1Record) {
   };
 }
 
+// Build a dedup key for a candidate outcome. Same (runId, timestamp)
+// pair = already-ingested; skip. Uses both so that multiple runs of the
+// same prompt at different moments each land in the store.
+function outcomeDedupKey(outcome) {
+  return `${outcome.runId || ""}|${outcome.timestamp || ""}`;
+}
+
 function ingestOutcomeRecord(v1Record, options = {}) {
   const outcome = v1RecordToFlywheelOutcome(v1Record);
   const store = createOutcomeStore({
@@ -373,17 +389,38 @@ function ingestOutcomeRecord(v1Record, options = {}) {
 function ingestDirectory(dir, options = {}) {
   const targetDir = dir || defaultV1RecordsDir(options.rootDir || process.cwd());
   if (!fs.existsSync(targetDir)) {
-    return { ingested: 0, skipped: 0, errors: [], dir: targetDir };
+    return { ingested: 0, skipped: 0, duplicates: 0, errors: [], dir: targetDir };
   }
 
+  // Codex #35 P2: sort deterministically so the trim-to-max retention
+  // policy keeps the newest outcomes regardless of filesystem iteration
+  // order. Our v1 filename format is <ISO-timestamp>-<fp>.json, so
+  // lexicographic sort = chronological sort.
   const files = fs
     .readdirSync(targetDir)
     .filter((f) => f.endsWith(".json"))
+    .sort()
     .map((f) => path.join(targetDir, f));
+
+  // Codex #35 P1: re-running flywheel:ingest used to append every
+  // record again, inflating weights. Read the existing store once and
+  // skip records whose (runId, timestamp) combination is already
+  // there.
+  const store = createOutcomeStore({
+    rootDir: options.rootDir,
+    dirPath: options.dirPath,
+    filePath: options.filePath,
+  });
+  const existing = store.readOutcomes({ limit: Number.MAX_SAFE_INTEGER });
+  const seen = new Set();
+  for (const prior of existing) {
+    seen.add(outcomeDedupKey(prior));
+  }
 
   const errors = [];
   let ingested = 0;
   let skipped = 0;
+  let duplicates = 0;
 
   for (const f of files) {
     try {
@@ -398,7 +435,15 @@ function ingestDirectory(dir, options = {}) {
         errors.push({ file: path.basename(f), reason: "missing prompt_fingerprint (not a v1 record)" });
         continue;
       }
-      ingestOutcomeRecord(v1, options);
+
+      const candidate = v1RecordToFlywheelOutcome(v1);
+      const key = outcomeDedupKey(candidate);
+      if (seen.has(key)) {
+        duplicates++;
+        continue;
+      }
+      store.writeOutcome(candidate);
+      seen.add(key);
       ingested++;
     } catch (e) {
       skipped++;
@@ -406,7 +451,7 @@ function ingestDirectory(dir, options = {}) {
     }
   }
 
-  return { ingested, skipped, errors, dir: targetDir };
+  return { ingested, skipped, duplicates, errors, dir: targetDir };
 }
 
 module.exports = {
@@ -419,6 +464,7 @@ module.exports = {
   collectGitSignals,
   injectExemplar,
   v1RecordToFlywheelOutcome,
+  outcomeDedupKey,
   ingestOutcomeRecord,
   ingestDirectory,
 };

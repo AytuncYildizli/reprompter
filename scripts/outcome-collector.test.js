@@ -14,6 +14,7 @@ const {
   collectGitSignals,
   injectExemplar,
   v1RecordToFlywheelOutcome,
+  outcomeDedupKey,
   ingestOutcomeRecord,
   ingestDirectory,
 } = require("./outcome-collector");
@@ -476,6 +477,100 @@ describe("outcome-collector", () => {
       assert.equal(result.ingested, 0);
       assert.equal(result.skipped, 0);
       assert.deepEqual(result.errors, []);
+    });
+
+    it("role field routes into recipe.domain for distinct fingerprints (codex #36)", () => {
+      const base = sampleV1();
+      const architect = v1RecordToFlywheelOutcome({ ...base, role: "architect" });
+      const coder = v1RecordToFlywheelOutcome({ ...base, role: "backend-coder" });
+      const none = v1RecordToFlywheelOutcome({ ...base, role: undefined });
+
+      assert.equal(architect.recipe.vector.domain, "architect");
+      assert.equal(coder.recipe.vector.domain, "backend-coder");
+      assert.equal(none.recipe.vector.domain, "");
+      assert.notEqual(
+        architect.recipe.hash,
+        coder.recipe.hash,
+        "different roles on the same task must produce different recipe hashes"
+      );
+      assert.notEqual(
+        architect.recipe.hash,
+        none.recipe.hash,
+        "role-bearing records must not collapse into the role-less bucket"
+      );
+    });
+
+    it("ingestDirectory is idempotent — re-running skips already-seen records (codex #35 P1)", () => {
+      const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "rpt-ingest-idem-"));
+      const sourceDir = path.join(rootDir, ".reprompter", "outcomes");
+      fs.mkdirSync(sourceDir, { recursive: true });
+      const v1a = sampleV1({ prompt_fingerprint: "sha256:aaaa", timestamp: "2026-04-17T00:00:00Z" });
+      const v1b = sampleV1({ prompt_fingerprint: "sha256:bbbb", timestamp: "2026-04-17T00:00:01Z" });
+      fs.writeFileSync(path.join(sourceDir, "a.json"), JSON.stringify(v1a));
+      fs.writeFileSync(path.join(sourceDir, "b.json"), JSON.stringify(v1b));
+
+      try {
+        const first = ingestDirectory(sourceDir, { rootDir });
+        assert.equal(first.ingested, 2);
+        assert.equal(first.duplicates, 0);
+
+        const second = ingestDirectory(sourceDir, { rootDir });
+        assert.equal(second.ingested, 0, "second run should ingest zero — no new records");
+        assert.equal(second.duplicates, 2, "second run should report both as duplicates");
+
+        // Store must still contain exactly two entries.
+        const store = createOutcomeStore({ rootDir, dirPath: path.join(rootDir, ".reprompter", "flywheel") });
+        const all = store.readOutcomes({ limit: Number.MAX_SAFE_INTEGER });
+        assert.equal(all.length, 2, "NDJSON must still hold exactly 2 records after re-ingest");
+      } finally {
+        fs.rmSync(rootDir, { recursive: true, force: true });
+      }
+    });
+
+    it("ingestDirectory processes files in deterministic chronological order (codex #35 P2)", () => {
+      const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "rpt-ingest-sort-"));
+      const sourceDir = path.join(rootDir, ".reprompter", "outcomes");
+      fs.mkdirSync(sourceDir, { recursive: true });
+
+      // Write in a pseudo-random order that the fs may replay.
+      const fingerprints = ["sha256:cccc", "sha256:aaaa", "sha256:bbbb"];
+      const timestamps = [
+        "2026-04-17T00:00:03Z",
+        "2026-04-17T00:00:01Z",
+        "2026-04-17T00:00:02Z",
+      ];
+      fingerprints.forEach((fp, i) => {
+        fs.writeFileSync(
+          path.join(sourceDir, `2026-04-17T00-00-0${i + 1}Z-${fp.slice(-4)}.json`),
+          JSON.stringify(sampleV1({ prompt_fingerprint: fp, timestamp: timestamps[i] }))
+        );
+      });
+
+      try {
+        const result = ingestDirectory(sourceDir, { rootDir });
+        assert.equal(result.ingested, 3);
+
+        const store = createOutcomeStore({ rootDir, dirPath: path.join(rootDir, ".reprompter", "flywheel") });
+        const all = store.readOutcomes({ limit: Number.MAX_SAFE_INTEGER });
+        // Filenames sort lexicographically — which matches chronological
+        // here — so the NDJSON entries should appear in order of
+        // filename prefix (0000-01, -02, -03).
+        assert.equal(all.length, 3);
+        assert.equal(all[0].runId, "sha256:cccc"); // 0000-01 prefix
+        assert.equal(all[1].runId, "sha256:aaaa"); // 0000-02 prefix
+        assert.equal(all[2].runId, "sha256:bbbb"); // 0000-03 prefix
+      } finally {
+        fs.rmSync(rootDir, { recursive: true, force: true });
+      }
+    });
+
+    it("outcomeDedupKey combines runId and timestamp", () => {
+      assert.equal(
+        outcomeDedupKey({ runId: "sha256:x", timestamp: "2026-04-17T00:00:00Z" }),
+        "sha256:x|2026-04-17T00:00:00Z"
+      );
+      // Missing fields yield a stable (though weak) key — don't crash.
+      assert.equal(outcomeDedupKey({}), "|");
     });
   });
 });

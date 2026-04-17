@@ -87,12 +87,6 @@ function evalPredicate(pred, outputText) {
 
 // ---------- Per-criterion evaluator ----------
 
-function splitShellArgs(s) {
-  // minimal split: groups of non-space or double-quoted strings, quotes stripped.
-  const tokens = s.match(/(?:[^\s"]+|"[^"]*")+/g) || [];
-  return tokens.map((t) => t.replace(/(?:^"|"$)/g, ''));
-}
-
 function evaluateCriterion(criterion, outputText, { judgeCmd, verbose } = {}) {
   const method = criterion.verification_method;
 
@@ -101,6 +95,17 @@ function evaluateCriterion(criterion, outputText, { judgeCmd, verbose } = {}) {
   if (method === 'rule') {
     const rule = criterion.rule || {};
     if (rule.type === 'regex') {
+      // Codex #34: `new RegExp(undefined, 's')` quietly builds a regex
+      // that matches any output, silently scoring every malformed rule
+      // criterion as pass. Reject non-string / empty bodies outright.
+      if (typeof rule.body !== 'string' || rule.body.length === 0) {
+        if (verbose) {
+          process.stderr.write(
+            `  [${criterion.id}] rule regex missing/empty rule.body — skipped\n`
+          );
+        }
+        return 'skipped';
+      }
       try {
         const re = new RegExp(rule.body, 's');
         return re.test(outputText) ? 'pass' : 'fail';
@@ -135,12 +140,21 @@ function evaluateCriterion(criterion, outputText, { judgeCmd, verbose } = {}) {
       `${prompt}\n\n---\nOutput to evaluate:\n\n${outputText}\n\n---\n` +
       `Reply with exactly one word on the first line: pass or fail. No other text.\n`;
     try {
-      const parts = splitShellArgs(judgeCmd);
-      if (parts.length === 0) throw new Error('empty judge-cmd');
-      const result = spawnSync(parts[0], parts.slice(1), {
+      // Codex #34: the prior hand-rolled tokenizer only understood
+      // double quotes, so common forms like `sh -c 'echo pass; cat'` or
+      // pipelines like `foo | grep -q ok` fell apart. Delegate quoting
+      // to the system shell via shell:true — handles single/double
+      // quotes, pipes, redirects, and subshells the way every unix
+      // engineer already expects. judgeCmd is user-supplied CLI input,
+      // not attacker-controlled.
+      if (typeof judgeCmd !== 'string' || judgeCmd.trim().length === 0) {
+        throw new Error('empty judge-cmd');
+      }
+      const result = spawnSync(judgeCmd, {
         input: stdin,
         encoding: 'utf8',
         timeout: 120000,
+        shell: true,
       });
       if (result.error) throw result.error;
       if (result.status !== 0) {
