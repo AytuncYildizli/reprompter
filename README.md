@@ -8,9 +8,9 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-11.0.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-12.0.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-169%20passing-2da44e)](#testing)
+[![Tests](https://img.shields.io/badge/tests-205%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 
 RePrompter is a prompt engineering skill for AI coding agents. It takes rough, low-quality prompts and transforms them into structured, high-scoring prompts that produce dramatically better results. Works with Claude Code, OpenClaw, Codex, or any LLM that accepts structured prompts.
@@ -183,7 +183,9 @@ Exemplar output → EXTRACT structure → ANALYZE task type + domain + tone
 
 ## Key Features
 
-**Prompt Flywheel** - Every prompt carries a recipe fingerprint. After execution, outcomes are captured and linked back. Future runs query historical data and recommend the best-performing strategy. All data local.
+**Closed-Loop Flywheel (v12)** - The loop is now end-to-end. Every prompt emits a `<success_criteria>` block of testable assertions. After execution, `scripts/outcome-record.js` writes a structured record joining prompt + criteria + output; `scripts/evaluate-outcome.js` scores it against the criteria (regex / predicate / llm_judge / manual). Records feed into a local flywheel via `npm run flywheel:ingest`. At generation time, `REPROMPTER_FLYWHEEL_BIAS=1` makes the skill consult past outcomes and bias toward historically winning recipes. `npm run flywheel:ab` compares bias-on vs bias-off effectiveness so you can *prove* whether the bias is helping. All data local.
+
+**Prompt Flywheel Recipe Fingerprinting** - Every prompt carries a deterministic recipe fingerprint (template + patterns + capability tier + domain + context layers + quality bucket). Strategy learner groups outcomes by fingerprint so recommendations are grounded in repeated evidence, not one-off runs.
 
 **Agent Cards** - Plan Cards (before execution), Status Line (during), Result Cards (after). Full transparency into what agents will do, are doing, and found.
 
@@ -198,7 +200,7 @@ Exemplar output → EXTRACT structure → ANALYZE task type + domain + tone
 ## Testing
 
 ```bash
-npm run check    # 169 tests + 4 benchmarks
+npm run check    # 205 tests + 4 benchmarks
 npm test         # individual: npm run test:reverse-engineer
 ```
 
@@ -206,8 +208,8 @@ npm test         # individual: npm run test:reverse-engineer
 |-------|------:|
 | Intent router | 21 |
 | Reverse engineer | 43 |
-| Outcome collector | 30 |
-| Strategy learner | 24 |
+| Outcome collector | 43 |
+| Strategy learner | 36 |
 | Recipe fingerprint | 14 |
 | Repromptverse runtime | 9 |
 | Capability policy | 7 |

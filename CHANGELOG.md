@@ -1,5 +1,70 @@
 # RePrompter Changelog
 
+## v12.0.0 (2026-04-17) — Closed-loop Flywheel
+
+### Headline
+
+Reprompter is no longer an open-loop prompt rewriter. Every generated prompt now emits testable success criteria, every run can be recorded and scored, every outcome feeds a local flywheel, and the skill can consult that flywheel at generation time to bias template / pattern choices toward historical winners — with an A/B report (`npm run flywheel:ab`) that *proves* whether the bias helps. All data local; no telemetry.
+
+This release also recovers Repromptverse under opus 4.7 (which enforces tool schemas strictly where 4.6 was lenient), ships a tool-drift linter as long-term regression insurance, and hardens the Repromptverse runtime selection path.
+
+### Added — closed-loop flywheel (v2+v3 rollout, PRs #33–#35 + #39–#41)
+
+- **v1 outcome-record schema** (`references/outcome-schema.md`). Canonical JSON shape at `.reprompter/outcomes/<ts>-<fp>.json` with `success_criteria`, `verification_results`, `score`, and optional `role` (Repromptverse agent identity) / `applied_recommendation` (flywheel attribution) fields.
+- **`scripts/outcome-record.js`** — zero-dep node CLI + library for writing outcome records. Accepts `--prompt`, `--output`, `--criteria`, `--task-type`, `--mode`, `--role`, `--applied-recommendation`, `--notes`. Fingerprint-based filename with collision-safe `-2.json` / `-3.json` retry. Includes `--self-test`.
+- **`scripts/evaluate-outcome.js`** — scores records against their criteria. Four methods: `rule`/`regex`, `rule`/`predicate` (tiny DSL: `len(output_text) OP N`, `contains("...")`, `not contains("...")`), `llm_judge` (via user-supplied `--judge-cmd`), `manual` (always skipped). Score = `round(passed / (passed + failed) * 10)`, skipped excluded. Includes `--self-test`.
+- **v1 → NDJSON flywheel bridge** (`scripts/outcome-collector.js::ingestDirectory` + `v1RecordToFlywheelOutcome`). Translates records into the existing flywheel shape, preserves `role`→`recipe.domain` routing so per-agent Repromptverse records don't collapse into one bucket, preserves `applied_recommendation` as first-class attribution, dedupes re-runs by `runId|timestamp`, sorts filenames deterministically. Wired as `npm run flywheel:ingest`.
+- **Read-path query API** (`scripts/strategy-learner.js::getRecommendation`). Returns `{recipe, confidence, sampleCount}` or `null` on cold start / low confidence. Optional `promptShape` refinement treats missing fields as wildcards (not strict-matches). Wired as `npm run flywheel:query`.
+- **Bias injection behind a flag.** New env var `REPROMPTER_FLYWHEEL_BIAS=0|1` (default **off**). When on, Mode 1 step 5 and Mode 2 Phase 2 consult `getRecommendation()` and bias `templateId`/`patterns`/`capabilityTier` toward historical winners when confidence is medium/high with `sampleCount >= 3`. The skill announces the decision in one line so the bias is never silent.
+- **Attribution via `applied_recommendation`** field on outcome records. When bias is applied the record carries `{recipe_hash, confidence, sample_count, applied_at}`; when bias is not applied the field is **absent** — absence is the control-group signal for A/B analysis.
+- **A/B report** (`scripts/strategy-learner.js::buildAbReport`). Splits outcomes by attribution presence, reports `{count, mean, median}` per group plus `delta_mean_effectiveness`. Flags groups below 5 samples so readers don't over-read noise. Wired as `npm run flywheel:ab`.
+- **`<success_criteria>` emission across all three modes.** Mode 1 step 5 now requires a `<success_criteria schema_version="1">` block with 3–6 `<criterion>` entries (`id`, `verification_method` ∈ `rule` / `llm_judge` / `manual`, `description`, and `<rule>` or `<judge_prompt>` per method). Mode 2 Phase 2 requires per-agent criteria scoped to each teammate's artifact. Mode 3 extracts criteria from the exemplar across three layers (structural / content / style) and embeds them in the generated reverse prompt.
+
+### Added — infrastructure + opus-4.7 compatibility
+
+- **Tool-drift linter** (`scripts/validate-tool-refs.js`, PRs #28–#29 + #32). Node script that scans SKILL.md and references for every obsolete tool shape we've shipped a fix for: pre-2.1 `Task(subagent_type=...)` spawn, pre-2.1 `SendMessage(type=/recipient=)`, broadcast-with-structured-message, Claude Flow references, hardcoded `claude-*-<major>-<minor>` model pins. Multi-line regex support. Wired as `npm run validate:tool-refs` and chained into `npm run check`.
+- **Auto-pick runtime** (Repromptverse Phase 3, PR #30). Decision tree detects which of Options A–E is available in the current environment (`TeamCreate` + `Agent` + `SendMessage` + `TeamDelete` toolset → Option B; `sessions_spawn` → C; `tmux` + `claude` ≥ 2.1 → A; Codex → D; else E) and picks automatically. Explicit user intent short-circuits.
+- **Tool-schema guard** (Repromptverse Phase 3, PR #31). Pre-invocation self-check paragraph, known-pitfall list (captured from 4.6→4.7 drift), and canonical signatures for every tool Option B depends on — so the skill is self-authoritative.
+
+### Changed
+
+- Mode 1 Process list grew from 6 to 7 steps — "Flywheel bias check" inserted between the interview and the generate step.
+- Mode 2 Phase 2 per-agent adaptation checklist requires structured criteria (same shape as Mode 1) for every teammate's prompt. Bullet-list scaffolding in `references/*-template.md` is acceptable starting point but the generated per-agent prompt must upgrade to the structured form.
+- Mode 3 Process grew from 7 to 8 steps — "Extract criteria" runs between Analyze and Generate; MUST-GENERATE-AFTER-ANALYSIS checklist updated to match (PR #37).
+- `references/swarm-template.md` realigned from Claude Flow (third-party MCP) to reprompter's own Options A–E orchestration (PR #26). Example rewritten to coordinate via artifact files + `TaskList` status instead of Claude Flow memory keys.
+- `scripts/validate-templates.sh` accepts a list of non-template exceptions (`EXCEPTION_TEMPLATES`). Now skips both `outcome-schema.md` and `team-brief-template.md`.
+
+### Fixed — opus 4.7 strictness recovery
+
+- `Task(subagent_type=...)` spawn → `Agent(...)` (PR #23). Claude Code 2.1 split the legacy `Task` spawn primitive into `Agent` + `TaskCreate`/`TaskUpdate`/`TaskList`; 4.6 inferred the rename, 4.7 rejects.
+- `SendMessage(type=, recipient=)` → `SendMessage(to=, message=)` (PR #25). Pre-2.1 kwargs don't exist on the current tool.
+- Broadcast shutdown `SendMessage(to="*", message={structured})` → per-agent `SendMessage(to="<name>", message={...})` (PR #27). Broadcast form accepts plain strings only.
+
+### Fixed — codex review rounds
+
+- **On v2 rollout (PR #38, roundup):** filename collision handling (outcome-record.js), shell quoting for `--judge-cmd` (evaluate-outcome.js), regex body validation (evaluate-outcome.js), idempotent re-ingest (outcome-collector.js), deterministic sort order (outcome-collector.js), agent-identity via `role` → `fingerprint.domain` (outcome-collector.js + outcome-record.js + SKILL.md), Mode 3 MUST-GENERATE checklist updated.
+- **On v3 read-path (in-branch to #39):** filter-before-limit on queries so task-type recommendations don't vanish as the store grows, partial `promptShape` fields treated as wildcards instead of strict-match defaults.
+
+### Infra / wiring
+
+- New npm scripts: `validate:tool-refs`, `flywheel:query`, `flywheel:ingest`, `flywheel:ab`.
+- New env flag: `REPROMPTER_FLYWHEEL_BIAS=0|1` (consultation; default off). Complements existing `REPROMPTER_FLYWHEEL=0|1` (writing; default on).
+
+### Tests
+
+- **205 tests total** (was 169).
+- outcome-collector: 30 → 43. strategy-learner: 24 → 36.
+- Two new self-tests: `node scripts/outcome-record.js --self-test`, `node scripts/evaluate-outcome.js --self-test`.
+
+### What's next (deliberately out of scope)
+
+- Default-on flip of `REPROMPTER_FLYWHEEL_BIAS`. Wait for `flywheel:ab` to show a consistent positive `delta_mean_effectiveness` across multiple task types with ≥5 samples per group.
+- Per-role bias queries for Repromptverse teams once role-stamped records accumulate.
+- Visualizations / dashboards on top of `flywheel:ab` output.
+- Community / telemetry pooling — the loop stays local-first.
+
+---
+
 ## v11.0.0 (2026-03-30) — Reverse Reprompter
 
 ### Added
