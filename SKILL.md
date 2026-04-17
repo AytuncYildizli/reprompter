@@ -54,8 +54,10 @@ Definition — **2+ systems** means at least two distinct technical domains that
    - Accept examples: "fix login bug", "write API tests", "improve this prompt"
 3. **Quick Mode gate** — under 20 words, single action, no complexity indicators → generate immediately
 4. **Smart Interview** — use `AskUserQuestion` with clickable options (2-5 questions max)
-5. **Generate + Score** — apply template, show before/after quality metrics
+5. **Generate + Score** — apply template, show before/after quality metrics. The generated prompt MUST include a `<success_criteria schema_version="1">` block with 3-6 `<criterion>` entries. Each criterion has `id` (kebab-case slug, unique in block), `verification_method` (`rule` | `llm_judge` | `manual`), a one-sentence `<description>`, and — depending on method — an inline `<rule type="regex|predicate">` or `<judge_prompt>` (neither for `manual`). Schema of record: `references/outcome-schema.md`.
 6. **Single-pass evaluator** — run self-eval rubric and do one delta rewrite if score < 7
+
+**Why criteria are emitted:** so every prompt carries its own testable assertions; outcome records produced by `scripts/outcome-record.js` (added in the same PR) join criteria to results for flywheel learning.
 
 ### ⚠️ MUST GENERATE AFTER INTERVIEW
 
@@ -201,11 +203,22 @@ Exception: `team-brief-template.md` uses Markdown format for orchestration brief
 
 <output_format>{Expected format, structure, length}</output_format>
 
-<success_criteria>
-- {Testable condition 1}
-- {Measurable outcome 2}
+<success_criteria schema_version="1">
+  <criterion id="no-regression" verification_method="rule">
+    <description>Output does not reintroduce the original error signature.</description>
+    <rule type="regex"><![CDATA[^(?!.*TypeError: cannot read property 'id' of undefined).*$]]></rule>
+  </criterion>
+  <criterion id="guards-null-user" verification_method="llm_judge">
+    <description>Fix guards against the null-user edge case from the bug report.</description>
+    <judge_prompt><![CDATA[Does the diff check that `user` is non-null before reading `user.id`? Reply pass or fail.]]></judge_prompt>
+  </criterion>
+  <criterion id="regression-test-added" verification_method="manual">
+    <description>At least one regression test covers the previously failing scenario.</description>
+  </criterion>
 </success_criteria>
 ```
+
+(The Base XML `<success_criteria>` example above matches the v1 schema in `references/outcome-schema.md`; real generated prompts should adapt the `id`s, descriptions, and rules to the task at hand.)
 
 ### Project context detection
 
