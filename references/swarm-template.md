@@ -206,7 +206,13 @@ Agent(description="Schema architect", subagent_type="general-purpose",
       run_in_background=true)
 # ... one Agent per role (backend-coder, frontend-coder, tester, reviewer)
 
-# poll TaskList until every task completes, then:
-SendMessage(to="*", message={"type": "shutdown_request"})
+# poll TaskList until every task completes, then shut down each teammate
+# by name (broadcast to="*" rejects structured messages) and wait for
+# each shutdown_response before calling TeamDelete().
+SendMessage(to="architect", message={"type": "shutdown_request"})
+SendMessage(to="backend-coder", message={"type": "shutdown_request"})
+SendMessage(to="frontend-coder", message={"type": "shutdown_request"})
+SendMessage(to="tester", message={"type": "shutdown_request"})
+SendMessage(to="reviewer", message={"type": "shutdown_request"})
 TeamDelete()
 ```

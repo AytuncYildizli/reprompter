@@ -5,6 +5,7 @@
   "description": "Prompt engineering skill for Claude Code, OpenClaw, and Codex",
   "scripts": {
     "validate:templates": "bash scripts/validate-templates.sh",
+    "validate:tool-refs": "bash scripts/validate-tool-refs.sh",
     "test:intent-router": "node --test scripts/intent-router.test.js",
     "test:capability-policy": "node --test scripts/capability-policy.test.js",
     "test:context-builder": "node --test scripts/context-builder.test.js",
@@ -26,7 +27,7 @@
     "benchmark:flywheel": "node scripts/run-flywheel-benchmark.js",
     "telemetry:report": "node scripts/run-observability-report.js",
     "flywheel:report": "node scripts/strategy-learner.js",
-    "check": "npm run validate:templates && npm run test:intent-router && npm run test:capability-policy && npm run test:context-builder && npm run test:artifact-evaluator && npm run test:pattern-selector && npm run test:runtime-adapter && npm run test:repromptverse-runtime && npm run test:telemetry-schema && npm run test:telemetry-store && npm run test:observability-report && npm run test:recipe-fingerprint && npm run test:outcome-collector && npm run test:strategy-learner && npm run test:reverse-engineer && npm run test:flywheel-e2e && npm run benchmark:swarms && npm run benchmark:provider && npm run benchmark:realworld && npm run benchmark:flywheel"
+    "check": "npm run validate:templates && npm run validate:tool-refs && npm run test:intent-router && npm run test:capability-policy && npm run test:context-builder && npm run test:artifact-evaluator && npm run test:pattern-selector && npm run test:runtime-adapter && npm run test:repromptverse-runtime && npm run test:telemetry-schema && npm run test:telemetry-store && npm run test:observability-report && npm run test:recipe-fingerprint && npm run test:outcome-collector && npm run test:strategy-learner && npm run test:reverse-engineer && npm run test:flywheel-e2e && npm run benchmark:swarms && npm run benchmark:provider && npm run benchmark:realworld && npm run benchmark:flywheel"
   },
   "repository": {
     "type": "git",
