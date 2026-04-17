@@ -13,7 +13,12 @@ REQUIRED_TAGS=(
 )
 
 TEMPLATE_DIR="references"
-EXCEPTION_TEMPLATE="team-brief-template.md"
+# Files in references/ that are NOT prompt templates and should be skipped
+# by this validator. Keep alphabetical.
+EXCEPTION_TEMPLATES=(
+  "outcome-schema.md"    # schema spec for flywheel outcome capture, not a prompt template
+  "team-brief-template.md"  # Markdown-only by design
+)
 
 if [[ ! -d "$TEMPLATE_DIR" ]]; then
   echo "ERROR: Template directory not found: $TEMPLATE_DIR"
@@ -22,8 +27,18 @@ fi
 
 echo "Validating templates in $TEMPLATE_DIR"
 echo "Required tags: ${REQUIRED_TAGS[*]}"
-echo "Skipping explicit Markdown exception: $EXCEPTION_TEMPLATE"
+echo "Skipping non-template exceptions: ${EXCEPTION_TEMPLATES[*]}"
 echo
+
+is_exception() {
+  local name="$1"
+  for except in "${EXCEPTION_TEMPLATES[@]}"; do
+    if [[ "$name" == "$except" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
 
 shopt -s nullglob
 templates=("$TEMPLATE_DIR"/*.md)
@@ -41,8 +56,8 @@ failed=0
 for template in "${templates[@]}"; do
   name="$(basename "$template")"
 
-  if [[ "$name" == "$EXCEPTION_TEMPLATE" ]]; then
-    echo "SKIP  $name (Markdown exception)"
+  if is_exception "$name"; then
+    echo "SKIP  $name (exception)"
     continue
   fi
 
@@ -66,10 +81,11 @@ for template in "${templates[@]}"; do
 done
 
 echo
+skipped=${#EXCEPTION_TEMPLATES[@]}
 if [[ "$failed" -eq 0 ]]; then
-  echo "All $passed templates passed validation (checked: $checked, skipped: 1)."
+  echo "All $passed templates passed validation (checked: $checked, skipped: $skipped)."
   exit 0
 else
-  echo "$failed template(s) failed validation (checked: $checked, passed: $passed, skipped: 1)."
+  echo "$failed template(s) failed validation (checked: $checked, passed: $passed, skipped: $skipped)."
   exit 1
 fi
