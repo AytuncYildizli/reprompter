@@ -73,6 +73,12 @@ Keys are `snake_case`. Top-level shape:
   "task_type": "fix_bug",
   "mode": "single",
   "role": "architect",
+  "applied_recommendation": {
+    "recipe_hash": "095d1038eb374856",
+    "confidence": "high",
+    "sample_count": 12,
+    "applied_at": "prompt_gen"
+  },
   "success_criteria": [ { "id": "...", "...": "..." } ],
   "output_text": "...full output string from the model...",
   "verification_results": {
@@ -85,6 +91,8 @@ Keys are `snake_case`. Top-level shape:
 
 > `role` is **optional** and typically only set for `mode="repromptverse"` records, so the flywheel bridge can route distinct agent roles into distinct recipe fingerprint buckets. Omit it for `mode="single"` records (no role).
 
+> `applied_recommendation` is **optional** and present only when the run consulted the flywheel at generation time (`REPROMPTER_FLYWHEEL_BIAS=1`) AND a recommendation was actually applied. Omit entirely when `REPROMPTER_FLYWHEEL_BIAS=0` or when the query returned `null` / low-confidence. Fields inside it are all required when the object is present.
+
 ### Field contract
 
 | Field                  | Type            | Notes                                                                                       |
@@ -96,6 +104,7 @@ Keys are `snake_case`. Top-level shape:
 | `task_type`            | string          | One of the slugs from SKILL.md's task-type table (e.g. `fix_bug`, `write_code`, `explain`). |
 | `mode`                 | string          | `"single"`, `"repromptverse"`, or `"reverse"`.                                              |
 | `role`                 | string \| absent | Optional. Agent name for Repromptverse records (e.g. `"architect"`, `"backend-coder"`). Routes into the flywheel bridge as the recipe `domain`, so distinct roles on the same `task_type` produce distinct recipe hashes and the strategy learner can tell them apart. Omit for `mode="single"`. |
+| `applied_recommendation` | object \| absent | Optional. Present only when the run consulted the flywheel at generation time AND a recommendation was applied. Contains `recipe_hash` (string, the recipe fingerprint that was applied), `confidence` (`"low"` / `"medium"` / `"high"`), `sample_count` (integer, historical runs supporting the recommendation), `applied_at` (string, lifecycle phase where the bias was injected — typically `"prompt_gen"` for Mode 1, `"phase_2"` for Mode 2 team-wide bias). Downstream A/B analysis (`npm run flywheel:ab`) groups outcomes by whether this field is present to compare bias-on vs bias-off effectiveness. |
 | `success_criteria`     | array of object | Same list as embedded in the prompt, normalised to JSON (see below).                        |
 | `output_text`          | string          | Full model output. Do not truncate.                                                         |
 | `verification_results` | object          | Map of `criterion.id → "pass" | "fail" | "skipped"`. Missing keys imply `"skipped"`.        |

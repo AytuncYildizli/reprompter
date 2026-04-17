@@ -31,9 +31,34 @@ const isoSec = (d) => d.toISOString().replace(/\.\d{3}Z$/, 'Z');
 // Colons are invalid on some filesystems; swap for hyphens in filenames.
 const isoSecForFilename = (d) => isoSec(d).replace(/:/g, '-');
 
+// Validate the optional applied_recommendation attribution block. All
+// four fields are required when the object is present so downstream A/B
+// reporting has a complete attribution. Returns a normalized object or
+// undefined.
+function normalizeAppliedRecommendation(input) {
+  if (input === undefined || input === null) return undefined;
+  if (typeof input !== 'object' || Array.isArray(input)) {
+    throw new Error('recordOutcome: appliedRecommendation must be an object when provided');
+  }
+  const { recipe_hash, confidence, sample_count, applied_at } = input;
+  if (typeof recipe_hash !== 'string' || recipe_hash.length === 0) {
+    throw new Error('recordOutcome: appliedRecommendation.recipe_hash is required (non-empty string)');
+  }
+  if (confidence !== 'low' && confidence !== 'medium' && confidence !== 'high') {
+    throw new Error('recordOutcome: appliedRecommendation.confidence must be "low" | "medium" | "high"');
+  }
+  if (!Number.isFinite(sample_count) || sample_count < 0 || !Number.isInteger(sample_count)) {
+    throw new Error('recordOutcome: appliedRecommendation.sample_count must be a non-negative integer');
+  }
+  if (typeof applied_at !== 'string' || applied_at.length === 0) {
+    throw new Error('recordOutcome: appliedRecommendation.applied_at is required (non-empty string)');
+  }
+  return { recipe_hash, confidence, sample_count, applied_at };
+}
+
 function recordOutcome({
   promptText, outputText, criteria, taskType,
-  mode = 'single', role, notes = '', outcomesDir, now,
+  mode = 'single', role, appliedRecommendation, notes = '', outcomesDir, now,
 } = {}) {
   if (typeof promptText !== 'string' || promptText.length === 0) {
     throw new Error('recordOutcome: promptText is required (non-empty string)');
@@ -50,6 +75,7 @@ function recordOutcome({
   if (role !== undefined && (typeof role !== 'string' || role.length === 0)) {
     throw new Error('recordOutcome: role, if provided, must be a non-empty string');
   }
+  const normalizedApplied = normalizeAppliedRecommendation(appliedRecommendation);
 
   const dir = outcomesDir || path.join(process.cwd(), '.reprompter', 'outcomes');
   fs.mkdirSync(dir, { recursive: true });
@@ -97,6 +123,7 @@ function recordOutcome({
     notes,
   };
   if (role !== undefined) record.role = role;
+  if (normalizedApplied !== undefined) record.applied_recommendation = normalizedApplied;
 
   fs.writeFileSync(filepath, JSON.stringify(record, null, 2) + '\n', 'utf8');
   return filepath;
@@ -140,11 +167,33 @@ function runCli(argv) {
   try { criteria = JSON.parse(readFileOrDie(args.criteria, '--criteria')); }
   catch (e) { throw new Error(`--criteria must be a JSON array of criterion objects (${e.message})`); }
 
+  // --applied-recommendation accepts either an inline JSON string or a
+  // path to a JSON file. Omit it entirely (or pass "null") for bias-off
+  // runs so the resulting record has no applied_recommendation field.
+  let appliedRecommendation;
+  const appliedFlag = args['applied-recommendation'];
+  if (appliedFlag !== undefined && appliedFlag !== true && appliedFlag !== 'null') {
+    let raw;
+    if (typeof appliedFlag === 'string' && appliedFlag.trim().startsWith('{')) {
+      raw = appliedFlag;
+    } else if (typeof appliedFlag === 'string') {
+      raw = readFileOrDie(appliedFlag, '--applied-recommendation');
+    } else {
+      throw new Error('--applied-recommendation must be an inline JSON object or a path to a JSON file');
+    }
+    try {
+      appliedRecommendation = JSON.parse(raw);
+    } catch (e) {
+      throw new Error(`--applied-recommendation must be valid JSON (${e.message})`);
+    }
+  }
+
   const written = recordOutcome({
     promptText, outputText, criteria,
     taskType: args['task-type'],
     mode: args.mode || 'single',
     role: args.role,
+    appliedRecommendation,
     notes: args.notes || '',
     outcomesDir: args['outcomes-dir'],
   });
@@ -230,11 +279,69 @@ function runSelfTest() {
   );
   fs.rmSync(roleDir, { recursive: true, force: true });
 
+  // applied_recommendation (v3 part 3): stamped when present, absent
+  // on bias-off runs, rejected when malformed.
+  const attrDir = fs.mkdtempSync(path.join(os.tmpdir(), 'outcome-record-attr-'));
+  const attr = {
+    recipe_hash: 'abc123',
+    confidence: 'high',
+    sample_count: 12,
+    applied_at: 'prompt_gen',
+  };
+  const biasOn = recordOutcome({
+    promptText: '<role>biased</role>',
+    outputText: 'ok',
+    criteria: [],
+    taskType: 'fix_bug',
+    appliedRecommendation: attr,
+    outcomesDir: attrDir,
+  });
+  const biasOnRecord = JSON.parse(fs.readFileSync(biasOn, 'utf8'));
+  assert.deepStrictEqual(biasOnRecord.applied_recommendation, attr);
+
+  const biasOff = recordOutcome({
+    promptText: '<role>no bias</role>',
+    outputText: 'ok',
+    criteria: [],
+    taskType: 'fix_bug',
+    outcomesDir: attrDir,
+  });
+  const biasOffRecord = JSON.parse(fs.readFileSync(biasOff, 'utf8'));
+  assert.strictEqual(
+    Object.prototype.hasOwnProperty.call(biasOffRecord, 'applied_recommendation'),
+    false,
+    'bias-off records must NOT carry applied_recommendation (absence is the bias-off signal)'
+  );
+
+  // Validation errors on each field.
+  for (const [bad, pattern] of [
+    [{ ...attr, recipe_hash: '' }, /recipe_hash is required/],
+    [{ ...attr, confidence: 'meh' }, /confidence must be/],
+    [{ ...attr, sample_count: -1 }, /sample_count must be a non-negative integer/],
+    [{ ...attr, sample_count: 1.5 }, /sample_count must be a non-negative integer/],
+    [{ ...attr, applied_at: '' }, /applied_at is required/],
+    ['not an object', /must be an object/],
+  ]) {
+    assert.throws(
+      () => recordOutcome({
+        promptText: '<role>x</role>',
+        outputText: 'x',
+        criteria: [],
+        taskType: 'x',
+        appliedRecommendation: bad,
+        outcomesDir: attrDir,
+      }),
+      pattern,
+      `expected rejection for ${JSON.stringify(bad)}`
+    );
+  }
+  fs.rmSync(attrDir, { recursive: true, force: true });
+
   fs.rmSync(tmp, { recursive: true, force: true });
   process.stdout.write('outcome-record self-test: ok\n');
 }
 
-module.exports = { recordOutcome };
+module.exports = { recordOutcome, normalizeAppliedRecommendation };
 
 if (require.main === module) {
   try { runCli(process.argv.slice(2)); }

@@ -344,6 +344,84 @@ function buildFlywheelReport(options = {}) {
   };
 }
 
+// v3 part 3: A/B report. Splits outcomes into bias-on (records that
+// carry applied_recommendation) vs bias-off (records without it) and
+// compares mean / median effectiveness. Lets maintainers decide
+// whether to flip REPROMPTER_FLYWHEEL_BIAS on by default.
+//
+// Absence of applied_recommendation is the control-group signal —
+// never interpret a record without that field as "bias was disabled";
+// interpret it as "bias was not applied", which includes flag-off runs
+// AND flag-on runs where the query returned null or low confidence.
+const MIN_AB_SAMPLES_PER_GROUP = 5;
+
+function basicStats(values) {
+  if (values.length === 0) {
+    return { count: 0, mean: null, median: null };
+  }
+  const sorted = [...values].sort((a, b) => a - b);
+  const sum = sorted.reduce((a, b) => a + b, 0);
+  const mean = sum / sorted.length;
+  const mid = Math.floor(sorted.length / 2);
+  const median = sorted.length % 2 === 0
+    ? (sorted[mid - 1] + sorted[mid]) / 2
+    : sorted[mid];
+  return {
+    count: sorted.length,
+    mean: Number(mean.toFixed(2)),
+    median: Number(median.toFixed(2)),
+  };
+}
+
+function buildAbReport(options = {}) {
+  const store = options.store || createOutcomeStore({ rootDir: options.rootDir });
+  const outcomes = store.readOutcomes({ limit: options.limit || Number.MAX_SAFE_INTEGER });
+  const taskType = options.taskType ? normalizeTaskType(options.taskType) : null;
+
+  const scoped = taskType
+    ? outcomes.filter((o) => o.recipe && o.recipe.vector && o.recipe.vector.templateId === taskType)
+    : outcomes;
+
+  const withBias = [];
+  const withoutBias = [];
+  for (const o of scoped) {
+    const score = Number(o.effectivenessScore);
+    if (!Number.isFinite(score)) continue;
+    if (o.applied_recommendation && typeof o.applied_recommendation === "object") {
+      withBias.push(score);
+    } else {
+      withoutBias.push(score);
+    }
+  }
+
+  const withStats = basicStats(withBias);
+  const withoutStats = basicStats(withoutBias);
+  const delta = withStats.mean !== null && withoutStats.mean !== null
+    ? Number((withStats.mean - withoutStats.mean).toFixed(2))
+    : null;
+
+  const notes = [];
+  if (withStats.count < MIN_AB_SAMPLES_PER_GROUP) {
+    notes.push(`with_bias group has only ${withStats.count} samples — below the ${MIN_AB_SAMPLES_PER_GROUP}-sample bar for a trustworthy read.`);
+  }
+  if (withoutStats.count < MIN_AB_SAMPLES_PER_GROUP) {
+    notes.push(`without_bias group has only ${withoutStats.count} samples — below the ${MIN_AB_SAMPLES_PER_GROUP}-sample bar for a trustworthy read.`);
+  }
+  if (delta === null) {
+    notes.push("delta is null — one or both groups are empty.");
+  }
+
+  return {
+    task_type: taskType,
+    total_outcomes: scoped.length,
+    with_bias: withStats,
+    without_bias: withoutStats,
+    delta_mean_effectiveness: delta,
+    min_samples_for_confidence: MIN_AB_SAMPLES_PER_GROUP,
+    notes,
+  };
+}
+
 function bestRecipeForDomain(domain, options = {}) {
   const store = options.store || createOutcomeStore({ rootDir: options.rootDir });
   const outcomes = store.readOutcomes({
@@ -451,6 +529,7 @@ module.exports = {
   bestRecipeForDomain,
   applyFlywheelBias,
   buildFlywheelReport,
+  buildAbReport,
   findSimilarRecipes,
   groupByRecipeHash,
   scoreRecipeGroup,
@@ -461,25 +540,11 @@ function parseCliArgs(argv) {
   const args = { positional: [] };
   for (let i = 0; i < argv.length; i++) {
     const token = argv[i];
-    if (token === "--query") {
-      args.query = true;
-      continue;
-    }
-    if (token === "--task-type") {
-      args.taskType = argv[i + 1];
-      i++;
-      continue;
-    }
-    if (token === "--root-dir") {
-      args.rootDir = argv[i + 1];
-      i++;
-      continue;
-    }
-    if (token === "--prompt-shape") {
-      args.promptShape = argv[i + 1];
-      i++;
-      continue;
-    }
+    if (token === "--query") { args.query = true; continue; }
+    if (token === "--ab") { args.ab = true; continue; }
+    if (token === "--task-type") { args.taskType = argv[i + 1]; i++; continue; }
+    if (token === "--root-dir") { args.rootDir = argv[i + 1]; i++; continue; }
+    if (token === "--prompt-shape") { args.promptShape = argv[i + 1]; i++; continue; }
     args.positional.push(token);
   }
   return args;
@@ -508,6 +573,17 @@ if (require.main === module) {
         promptShape: readPromptShape(args.promptShape),
       });
       process.stdout.write(`${JSON.stringify(recommendation, null, 2)}\n`);
+    } catch (error) {
+      process.stderr.write(`strategy-learner: ${error.message}\n`);
+      process.exit(1);
+    }
+  } else if (args.ab) {
+    try {
+      const report = buildAbReport({
+        rootDir: args.rootDir,
+        taskType: args.taskType,
+      });
+      process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
     } catch (error) {
       process.stderr.write(`strategy-learner: ${error.message}\n`);
       process.exit(1);
