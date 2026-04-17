@@ -711,9 +711,10 @@ Phase 4: INJECT — seed flywheel with pre-graded exemplar outcome (optional, ~2
    - "What do you love about this output?" (with options: Structure / Depth / Tone / Coverage / Everything)
    - "What context produced it?" (with options: Code review / Architecture / API work / Research / Other) — skip if task type is detectable with high confidence
 4. **Analyze** — extract structure, classify type, detect domain and tone
-5. **Generate** — produce full XML prompt using reverse template + best-fit task template
-6. **Score** — show quality dimensions of the generated prompt
-7. **Flywheel injection** — offer to save as pre-graded exemplar outcome
+5. **Extract criteria** — derive a v1 `<success_criteria schema_version="1">` block from the exemplar's observable features (see "Criteria extraction from exemplars" below). The exemplar *is* the target, so the criteria encode "future outputs should match this exemplar's distinguishing properties."
+6. **Generate** — produce full XML prompt using reverse template + best-fit task template; embed the extracted `<success_criteria>` block.
+7. **Score** — show quality dimensions of the generated prompt
+8. **Flywheel injection** — offer to save as pre-graded exemplar outcome
 
 ### ⚠️ MUST GENERATE AFTER ANALYSIS
 
@@ -746,6 +747,34 @@ Rendered after analysis, before the generated prompt. Use this exact format:
 
 Template match: `{template-id}` | Flywheel injection: {ready/skipped}
 ```
+
+### Criteria extraction from exemplars
+
+Reverse Reprompter converts the exemplar into criteria by examining three layers of its structure and encoding the distinguishing features as v1 `<criterion>` entries. Aim for 3–6 total, mix of methods.
+
+**Structural layer** (produces `rule` / `predicate` criteria):
+
+- Section/header count: `len(output_text) > N` bounded by the exemplar's length ±20%
+- Presence of specific section names the exemplar uses (e.g. "## Summary", "## Trade-offs") → `rule` / `regex` matching those headers
+- Minimum number of bulleted items, code blocks, or table rows if the exemplar has them → predicate
+
+**Content layer** (produces `rule` / `regex` or `llm_judge` criteria):
+
+- Required domain terminology that the exemplar uses distinctively (e.g. "CVE-", "SLO", "RFC 7231") → `rule` / `regex`
+- Presence of quantitative claims (numbers + units) when the exemplar has them → regex like `\d+\s*(ms|MB|%|seconds)`
+- Judgement calls that can't be regex-checked (e.g. "argues from concrete evidence") → `llm_judge` with a judge_prompt that references the exemplar's reasoning style
+
+**Style layer** (produces `llm_judge` or `manual` criteria):
+
+- Tone match to exemplar → `llm_judge` with an explicit "matches the tone of this reference passage: {first 200 chars}" prompt
+- Voice (active vs passive, first-person vs third-person) → `llm_judge` or `manual`
+- Citation style or formatting conventions unique to the exemplar → `manual`
+
+Rules of thumb:
+
+- **No more than 2 `llm_judge` criteria per reverse prompt** — they're expensive to evaluate and easy to over-rely on. Prefer `rule` when the exemplar exposes an observable pattern.
+- **At least one `manual` criterion for any deeply stylistic property** — those are the ones humans actually care about on review and shouldn't be auto-approved.
+- **Anchor criteria to exemplar-specific features**, not generic ones. "Output uses headers" is useless; "Output has exactly the sections Summary / Trade-offs / Recommendation in that order" is useful.
 
 ### Exemplar types supported
 
