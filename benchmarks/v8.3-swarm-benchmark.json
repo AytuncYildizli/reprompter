@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-15T15:02:51.019Z",
+  "generatedAt": "2026-03-29T21:35:32.549Z",
   "fixtureCount": 9,
   "passCount": 9,
   "accuracy": 100,
@@ -162,7 +162,7 @@
     {
       "profile": "repromptverse",
       "template": "references/repromptverse-template.md",
-      "approxTokens": 757,
+      "approxTokens": 843,
       "contractCoverage": 100,
       "proxyQuality": 8
     }
