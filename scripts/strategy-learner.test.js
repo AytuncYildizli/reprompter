@@ -412,6 +412,101 @@ describe("strategy-learner", () => {
       );
       assert.strictEqual(result.sampleCount, 3);
     });
+
+    it("survives a store dominated by unrelated task types (codex PR #39 P1)", () => {
+      // Write 250 outcomes for an unrelated task type, then exactly
+      // MIN_SAMPLES outcomes for "fix_bug". The old implementation
+      // applied a 200-row read limit BEFORE the templateId filter, so
+      // the fix_bug outcomes fell off the window and the call returned
+      // null despite the matching data being there. Now the filter
+      // runs first and the matching slice is preserved.
+      const store = tmpStore();
+      stores.push(store);
+
+      for (let i = 0; i < 250; i++) {
+        store.writeOutcome(
+          makeOutcome(
+            { templateId: "other_task", capabilityTier: "default", domain: "", contextLayers: 1, patterns: [] },
+            {},
+            { effectivenessScore: 6.0 }
+          )
+        );
+      }
+
+      for (let i = 0; i < 3; i++) {
+        store.writeOutcome(
+          makeOutcome(
+            { templateId: "fix_bug", capabilityTier: "default", domain: "", contextLayers: 1, patterns: [] },
+            {},
+            { effectivenessScore: 8.5 }
+          )
+        );
+      }
+
+      const result = getRecommendation({ taskType: "fix_bug", store });
+      assert.ok(result, "must find the fix_bug data despite 250 unrelated outcomes on top");
+      assert.strictEqual(result.recipe.vector.templateId, "fix_bug");
+      assert.strictEqual(result.sampleCount, 3);
+    });
+
+    it("treats missing promptShape fields as wildcards (codex PR #39 P2)", () => {
+      // Seed two distinct recipes that both match taskType but differ
+      // on every other dimension. A partial promptShape with only one
+      // field specified should refine, not strictly filter — outcomes
+      // that don't share the unspecified defaults must still be
+      // reachable.
+      const store = tmpStore();
+      stores.push(store);
+
+      for (let i = 0; i < 3; i++) {
+        store.writeOutcome(
+          makeOutcome(
+            {
+              templateId: "fix_bug",
+              capabilityTier: "reasoning_high",
+              domain: "security",
+              contextLayers: 4,
+              patterns: ["constraint-first-framing"],
+              qualityScore: 9.0,
+            },
+            {},
+            { effectivenessScore: 9.0 }
+          )
+        );
+      }
+
+      for (let i = 0; i < 3; i++) {
+        store.writeOutcome(
+          makeOutcome(
+            {
+              templateId: "fix_bug",
+              capabilityTier: "reasoning_low",
+              domain: "ops",
+              contextLayers: 1,
+              patterns: ["delta-retry-scaffold"],
+              qualityScore: 6.0,
+            },
+            {},
+            { effectivenessScore: 7.0 }
+          )
+        );
+      }
+
+      // Only domain specified. Previously every other field was backfilled
+      // with hardcoded defaults ("default" tier, 1 context layer,
+      // "good" bucket), driving similarity below threshold and returning
+      // null. With the wildcard fix, it now refines correctly to the
+      // security bucket.
+      const refined = getRecommendation({
+        taskType: "fix_bug",
+        store,
+        promptShape: { domain: "security" },
+      });
+
+      assert.ok(refined, "partial promptShape must refine, not strictly filter");
+      assert.strictEqual(refined.recipe.vector.domain, "security");
+      assert.strictEqual(refined.sampleCount, 3);
+    });
   });
 
   describe("bestRecipeForDomain()", () => {

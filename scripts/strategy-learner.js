@@ -160,8 +160,20 @@ function normalizeTaskType(taskType) {
   return String(taskType || "").trim().toLowerCase();
 }
 
+// Build a prompt-shape "target" for similarity comparison. Returns the
+// vector plus a `specified` Set listing which fields the caller
+// actually provided, so the partial-similarity function can treat
+// unspecified fields as wildcards instead of hardcoded defaults
+// (codex PR #39 P2).
 function buildPromptShapeVector(taskType, promptShape = {}) {
-  return {
+  const specified = new Set(["templateId"]); // always set by taskType
+  if (promptShape.patterns !== undefined && promptShape.patterns !== null) specified.add("patterns");
+  if (promptShape.capabilityTier !== undefined && promptShape.capabilityTier !== null) specified.add("capabilityTier");
+  if (promptShape.domain !== undefined && promptShape.domain !== null) specified.add("domain");
+  if (Number.isFinite(promptShape.contextLayers)) specified.add("contextLayers");
+  if (Number.isFinite(promptShape.qualityScore)) specified.add("qualityBucket");
+
+  const vector = {
     templateId: normalizeTaskType(taskType),
     patterns: Array.isArray(promptShape.patterns)
       ? promptShape.patterns.map((pattern) => String(pattern || "").trim().toLowerCase()).filter(Boolean)
@@ -173,7 +185,55 @@ function buildPromptShapeVector(taskType, promptShape = {}) {
       Number.isFinite(promptShape.qualityScore) ? promptShape.qualityScore : 7
     ),
   };
+
+  return { vector, specified };
 }
+
+// Similarity over only the explicitly-specified fields of the target
+// vector. Unspecified fields are treated as wildcards (contribute
+// nothing to the denominator). If the caller specified only taskType,
+// every outcome matching that taskType gets similarity 1.0 — refinement
+// becomes a no-op, matching the natural meaning of "no shape hint".
+function promptShapeSimilarity(target, other, specified) {
+  let matches = 0;
+  let total = 0;
+  if (specified.has("templateId")) {
+    total++;
+    if (target.templateId === other.templateId) matches++;
+  }
+  if (specified.has("domain")) {
+    total++;
+    if (target.domain === other.domain) matches++;
+  }
+  if (specified.has("capabilityTier")) {
+    total++;
+    if (target.capabilityTier === other.capabilityTier) matches++;
+  }
+  if (specified.has("qualityBucket")) {
+    total++;
+    if (target.qualityBucket === other.qualityBucket) matches++;
+  }
+  if (specified.has("contextLayers")) {
+    total++;
+    if (Math.abs(target.contextLayers - other.contextLayers) <= 1) matches++;
+  }
+  if (specified.has("patterns")) {
+    const setA = new Set(target.patterns);
+    const setB = new Set(other.patterns);
+    const union = new Set([...setA, ...setB]);
+    if (union.size > 0) {
+      total++;
+      const intersection = [...setA].filter((p) => setB.has(p));
+      matches += intersection.length / union.size;
+    }
+  }
+  return total > 0 ? Number((matches / total).toFixed(4)) : 1;
+}
+
+// Upper bound on how many task-matching outcomes we'll consider for a
+// single recommendation. Set well above any realistic per-taskType
+// volume so we don't have to worry about windowing edge cases.
+const GET_RECOMMENDATION_DEFAULT_LIMIT = 1000;
 
 function getRecommendation(options = {}) {
   const taskType = normalizeTaskType(options.taskType);
@@ -181,11 +241,25 @@ function getRecommendation(options = {}) {
     throw new Error("getRecommendation: taskType is required");
   }
 
+  // Codex PR #39 P1: read the whole store, then filter by taskType.
+  // The previous implementation applied the read-limit BEFORE the
+  // taskType filter, so a store dominated by other task types could
+  // drop all matching outcomes and return null despite historical
+  // data. Filtering first keeps recommendations stable as the store
+  // grows.
   const store = options.store || createOutcomeStore({ rootDir: options.rootDir });
-  const outcomes = store.readOutcomes({ limit: options.limit || 200 });
-  const taskMatches = outcomes.filter(
+  const outcomes = store.readOutcomes({ limit: Number.MAX_SAFE_INTEGER });
+  const allTaskMatches = outcomes.filter(
     (outcome) => outcome.recipe && outcome.recipe.vector && outcome.recipe.vector.templateId === taskType
   );
+
+  // Apply the caller's limit to the task-matching slice specifically,
+  // defaulting to GET_RECOMMENDATION_DEFAULT_LIMIT. Most recent first
+  // (existing readOutcomes semantics).
+  const taskLimit = Number.isFinite(options.limit) && options.limit > 0
+    ? options.limit
+    : GET_RECOMMENDATION_DEFAULT_LIMIT;
+  const taskMatches = allTaskMatches.slice(-taskLimit);
 
   if (taskMatches.length < MIN_SAMPLES) {
     return null;
@@ -194,12 +268,12 @@ function getRecommendation(options = {}) {
   let candidateOutcomes = taskMatches;
   const hasPromptShape = options.promptShape && Object.keys(options.promptShape).length > 0;
   if (hasPromptShape) {
-    const targetVector = buildPromptShapeVector(taskType, options.promptShape);
-    candidateOutcomes = findSimilarRecipes(
-      targetVector,
-      taskMatches,
-      options.similarityThreshold || SIMILARITY_THRESHOLD
-    );
+    const { vector: targetVector, specified } = buildPromptShapeVector(taskType, options.promptShape);
+    const threshold = options.similarityThreshold || SIMILARITY_THRESHOLD;
+    candidateOutcomes = taskMatches.filter((outcome) => {
+      if (!outcome.recipe || !outcome.recipe.vector) return false;
+      return promptShapeSimilarity(targetVector, outcome.recipe.vector, specified) >= threshold;
+    });
   }
 
   if (candidateOutcomes.length < MIN_SAMPLES) {
