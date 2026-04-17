@@ -545,13 +545,18 @@ TeamCreate(team_name="rpt-{taskname}", description="Repromptverse: {task summary
 TaskCreate(subject="Agent 1 task", description="Full reprompted prompt from Phase 2")
 TaskCreate(subject="Agent 2 task", description="Full reprompted prompt from Phase 2")
 
-# 3. Spawn teammates (MUST specify model=opus)
-Task(subagent_type="general-purpose", team_name="rpt-{taskname}", name="agent-1", model="opus",
-     prompt="You are {role} on the rpt-{taskname} team. Your task is Task #1. [full prompt]",
-     run_in_background=true)
-Task(subagent_type="general-purpose", team_name="rpt-{taskname}", name="agent-2", model="opus",
-     prompt="You are {role} on the rpt-{taskname} team. Your task is Task #2. [full prompt]",
-     run_in_background=true)
+# 3. Spawn teammates with the Agent tool (MUST specify model=opus)
+#    Note: In Claude Code ≥2.1, the tool is `Agent`. The old `Task` name referred
+#    to the same spawn primitive but no longer exists as a callable tool. Using
+#    `Task(...)` here causes the model to either fail the call or skip the spawn.
+Agent(description="Agent 1 on rpt-{taskname}", subagent_type="general-purpose",
+      team_name="rpt-{taskname}", name="agent-1", model="opus",
+      prompt="You are {role} on the rpt-{taskname} team. Your task is Task #1. [full prompt]",
+      run_in_background=true)
+Agent(description="Agent 2 on rpt-{taskname}", subagent_type="general-purpose",
+      team_name="rpt-{taskname}", name="agent-2", model="opus",
+      prompt="You are {role} on the rpt-{taskname} team. Your task is Task #2. [full prompt]",
+      run_in_background=true)
 
 # 4. Wait for teammates to complete — show Status Line per poll cycle
 # Status Line: Agents: ✅ N/T ⏳ N/T 🔄 N/T (derived from TaskList status)
