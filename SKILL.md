@@ -78,7 +78,7 @@ When the flag is set, between the interview and the template pick:
    Or, if no bias applied:
    > Flywheel: no bias (cold start / low confidence)
 6. The bias changes **which template/patterns you start from.** The rest of the pipeline (interview content, generated prompt's XML structure, criteria emission) is unchanged. The flywheel never rewrites Claude's output.
-7. Attribution (v3 part 3, separate PR): once the outcome record schema gains `applied_recommendation`, stamp the chosen recipe hash + confidence + sample count onto the record for later A/B analysis.
+7. **Attribution (v3 part 3).** When bias is applied, remember the chosen recipe's `hash`, `confidence`, and `sampleCount` until the outcome is recorded for this run. Then stamp them onto the record via `scripts/outcome-record.js --applied-recommendation '{"recipe_hash":"<hash>","confidence":"<low|medium|high>","sample_count":<N>,"applied_at":"prompt_gen"}'`. Use `applied_at="phase_2"` for Repromptverse team-wide bias. **If no bias was applied (flag off, query returned null, or low confidence) OMIT the flag entirely** — the *absence* of `applied_recommendation` on a record is what marks it as the bias-off control group for `npm run flywheel:ab` analysis. Never stamp a zero/placeholder block; absence is the signal.
 
 ### ⚠️ MUST GENERATE AFTER INTERVIEW
 
@@ -991,6 +991,15 @@ When the flywheel has enough historical data to influence a recommendation, the 
 **Privacy:** All flywheel data is local (`.reprompter/flywheel/`). Never reference specific past prompts, tasks, or user content in flywheel messages — only aggregate statistics (run count, score, confidence level).
 
 **All data is stored locally.** Nothing is transmitted anywhere. Storage: `.reprompter/flywheel/outcomes.ndjson`.
+
+#### Bias-on vs bias-off A/B contract (v3 part 3)
+
+The attribution mechanism (records carrying `applied_recommendation`) and the flag (`REPROMPTER_FLYWHEEL_BIAS=0|1`) exist so that bias can be measured, not just described. The contract:
+
+- **Bias-on record** = an outcome whose run consulted the flywheel AND applied a recommendation. The record MUST carry `applied_recommendation = { recipe_hash, confidence, sample_count, applied_at }`.
+- **Bias-off record** = every other outcome: `REPROMPTER_FLYWHEEL_BIAS=0` runs, flag-on runs where the query returned `null`, and flag-on runs where the query returned low-confidence (below the medium/high threshold). These records MUST NOT carry `applied_recommendation` at all. **Absence is the control-group signal.** Never stamp a null/placeholder block "to be tidy" — that collapses the A/B partition.
+
+Read the A/B report with `npm run flywheel:ab` (optionally `-- --task-type <slug>` to scope). It returns `{ with_bias: {count, mean, median}, without_bias: {count, mean, median}, delta_mean_effectiveness, notes }`. Notes flag low-sample groups (<5 per side) so you don't over-read noise. A positive `delta_mean_effectiveness` means bias-on outcomes averaged higher than bias-off outcomes for this task type; negative means the opposite. Only consider flipping `REPROMPTER_FLYWHEEL_BIAS` to default-on after both groups pass the 5-sample bar and the delta is consistent across multiple task types.
 
 **How it works:**
 1. **Fingerprint** — At `plan_ready`, the recipe vector (template + patterns + tier + domain + layers + quality bucket) is hashed into a 16-char fingerprint

@@ -101,6 +101,20 @@ function createOutcomeStore(options = {}) {
   };
 }
 
+// Silently drop malformed applied_recommendation blocks rather than
+// throwing — ingestion paths should be permissive about historical
+// records that predate this field. recordOutcome's normalizer is the
+// strict entry point; this is the read-side safety net.
+function sanitizeAppliedRecommendation(raw) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const { recipe_hash, confidence, sample_count, applied_at } = raw;
+  if (typeof recipe_hash !== "string" || recipe_hash.length === 0) return null;
+  if (confidence !== "low" && confidence !== "medium" && confidence !== "high") return null;
+  if (!Number.isFinite(sample_count) || sample_count < 0 || !Number.isInteger(sample_count)) return null;
+  if (typeof applied_at !== "string" || applied_at.length === 0) return null;
+  return { recipe_hash, confidence, sample_count, applied_at };
+}
+
 function validateOutcome(input = {}) {
   const errors = [];
 
@@ -127,6 +141,15 @@ function validateOutcome(input = {}) {
       ? input.effectivenessScore
       : computeEffectiveness(input.signals || {}),
   };
+
+  // v3 part 3: preserve applied_recommendation attribution through
+  // the bridge. Absence of this field is the bias-off signal for
+  // `npm run flywheel:ab` — so we intentionally do NOT insert a
+  // null/empty placeholder when the input lacks it.
+  const applied = sanitizeAppliedRecommendation(input.applied_recommendation);
+  if (applied) {
+    outcome.applied_recommendation = applied;
+  }
 
   return { valid: errors.length === 0, errors, outcome };
 }
@@ -360,13 +383,21 @@ function v1RecordToFlywheelOutcome(v1Record) {
     signals.artifactPass = v1Record.score >= 7;
   }
 
-  return {
+  const outcome = {
     timestamp: v1Record.timestamp || new Date().toISOString(),
     runId: v1Record.prompt_fingerprint,
     taskId: String(v1Record.task_type || "unknown"),
     recipe,
     signals,
   };
+
+  // v3 part 3: carry applied_recommendation attribution forward.
+  const applied = sanitizeAppliedRecommendation(v1Record.applied_recommendation);
+  if (applied) {
+    outcome.applied_recommendation = applied;
+  }
+
+  return outcome;
 }
 
 // Build a dedup key for a candidate outcome. Same (runId, timestamp)
@@ -464,6 +495,7 @@ module.exports = {
   collectGitSignals,
   injectExemplar,
   v1RecordToFlywheelOutcome,
+  sanitizeAppliedRecommendation,
   outcomeDedupKey,
   ingestOutcomeRecord,
   ingestDirectory,

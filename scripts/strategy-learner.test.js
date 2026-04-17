@@ -14,6 +14,7 @@ const {
   bestRecipeForDomain,
   applyFlywheelBias,
   buildFlywheelReport,
+  buildAbReport,
   findSimilarRecipes,
   groupByRecipeHash,
   scoreRecipeGroup,
@@ -506,6 +507,128 @@ describe("strategy-learner", () => {
       assert.ok(refined, "partial promptShape must refine, not strictly filter");
       assert.strictEqual(refined.recipe.vector.domain, "security");
       assert.strictEqual(refined.sampleCount, 3);
+    });
+  });
+
+  describe("buildAbReport() (v3 part 3)", () => {
+    const withBiasAttr = () => ({
+      applied_recommendation: {
+        recipe_hash: "abc123",
+        confidence: "high",
+        sample_count: 8,
+        applied_at: "prompt_gen",
+      },
+    });
+
+    it("returns empty groups with explanatory notes for an empty store", () => {
+      const store = tmpStore();
+      stores.push(store);
+      const report = buildAbReport({ store });
+      assert.equal(report.total_outcomes, 0);
+      assert.equal(report.with_bias.count, 0);
+      assert.equal(report.without_bias.count, 0);
+      assert.equal(report.delta_mean_effectiveness, null);
+      assert.ok(report.notes.some((n) => /delta is null/i.test(n)));
+    });
+
+    it("splits outcomes by presence of applied_recommendation", () => {
+      const store = tmpStore();
+      stores.push(store);
+      // 6 bias-on at mean 9.0
+      for (let i = 0; i < 6; i++) {
+        store.writeOutcome({
+          ...makeOutcome({}, {}, { effectivenessScore: 9.0 }),
+          ...withBiasAttr(),
+        });
+      }
+      // 6 bias-off at mean 7.0
+      for (let i = 0; i < 6; i++) {
+        store.writeOutcome(makeOutcome({}, {}, { effectivenessScore: 7.0 }));
+      }
+
+      const report = buildAbReport({ store });
+      assert.equal(report.with_bias.count, 6);
+      assert.equal(report.without_bias.count, 6);
+      assert.equal(report.with_bias.mean, 9.0);
+      assert.equal(report.without_bias.mean, 7.0);
+      assert.equal(report.delta_mean_effectiveness, 2.0);
+      // Both groups above the 5-sample bar → no low-sample notes.
+      assert.ok(!report.notes.some((n) => /below the 5-sample bar/.test(n)));
+    });
+
+    it("flags low-sample groups in notes without refusing to compute", () => {
+      const store = tmpStore();
+      stores.push(store);
+      // 2 bias-on (below threshold)
+      for (let i = 0; i < 2; i++) {
+        store.writeOutcome({
+          ...makeOutcome({}, {}, { effectivenessScore: 8.0 }),
+          ...withBiasAttr(),
+        });
+      }
+      // 6 bias-off (above threshold)
+      for (let i = 0; i < 6; i++) {
+        store.writeOutcome(makeOutcome({}, {}, { effectivenessScore: 7.0 }));
+      }
+
+      const report = buildAbReport({ store });
+      assert.equal(report.with_bias.count, 2);
+      assert.equal(report.without_bias.count, 6);
+      assert.equal(report.delta_mean_effectiveness, 1.0);
+      // Low-sample note must mention the with_bias group specifically.
+      assert.ok(
+        report.notes.some((n) => /with_bias group has only 2 samples/.test(n)),
+        `expected low-sample note for with_bias, got: ${JSON.stringify(report.notes)}`
+      );
+    });
+
+    it("task_type filter scopes both groups to matching templateId", () => {
+      const store = tmpStore();
+      stores.push(store);
+      // 5 fix_bug bias-on at 9.0
+      for (let i = 0; i < 5; i++) {
+        store.writeOutcome({
+          ...makeOutcome({ templateId: "fix_bug" }, {}, { effectivenessScore: 9.0 }),
+          ...withBiasAttr(),
+        });
+      }
+      // 5 fix_bug bias-off at 7.0
+      for (let i = 0; i < 5; i++) {
+        store.writeOutcome(makeOutcome({ templateId: "fix_bug" }, {}, { effectivenessScore: 7.0 }));
+      }
+      // 20 other_task outcomes — must not leak into the fix_bug report.
+      for (let i = 0; i < 10; i++) {
+        store.writeOutcome({
+          ...makeOutcome({ templateId: "other_task" }, {}, { effectivenessScore: 1.0 }),
+          ...withBiasAttr(),
+        });
+        store.writeOutcome(makeOutcome({ templateId: "other_task" }, {}, { effectivenessScore: 1.0 }));
+      }
+
+      const report = buildAbReport({ store, taskType: "fix_bug" });
+      assert.equal(report.task_type, "fix_bug");
+      assert.equal(report.total_outcomes, 10);
+      assert.equal(report.with_bias.mean, 9.0);
+      assert.equal(report.without_bias.mean, 7.0);
+      assert.equal(report.delta_mean_effectiveness, 2.0);
+    });
+
+    it("records without applied_recommendation ALWAYS land in without_bias", () => {
+      const store = tmpStore();
+      stores.push(store);
+      // Seed 6 records with NO applied_recommendation attribute present.
+      for (let i = 0; i < 6; i++) {
+        const o = makeOutcome({}, {}, { effectivenessScore: 7.5 });
+        // Explicit sanity check: no attribution field.
+        assert.equal(
+          Object.prototype.hasOwnProperty.call(o, "applied_recommendation"),
+          false
+        );
+        store.writeOutcome(o);
+      }
+      const report = buildAbReport({ store });
+      assert.equal(report.with_bias.count, 0);
+      assert.equal(report.without_bias.count, 6);
     });
   });
 

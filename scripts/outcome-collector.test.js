@@ -572,5 +572,45 @@ describe("outcome-collector", () => {
       // Missing fields yield a stable (though weak) key — don't crash.
       assert.equal(outcomeDedupKey({}), "|");
     });
+
+    it("applied_recommendation survives the v1 → flywheel bridge (v3 part 3)", () => {
+      const attrBlock = {
+        recipe_hash: "abc123",
+        confidence: "high",
+        sample_count: 12,
+        applied_at: "prompt_gen",
+      };
+      const out = v1RecordToFlywheelOutcome({
+        ...sampleV1(),
+        applied_recommendation: attrBlock,
+      });
+      assert.deepEqual(out.applied_recommendation, attrBlock);
+    });
+
+    it("bias-off records (no applied_recommendation) do NOT gain a placeholder", () => {
+      // Absence is the signal for the control group in flywheel:ab.
+      // The bridge must not fabricate a null/empty block.
+      const out = v1RecordToFlywheelOutcome(sampleV1());
+      assert.equal(
+        Object.prototype.hasOwnProperty.call(out, "applied_recommendation"),
+        false
+      );
+    });
+
+    it("malformed applied_recommendation on the v1 record is dropped silently", () => {
+      // The record-side normalizer in outcome-record.js is strict. The
+      // collector's bridge is permissive so historical records can't
+      // break ingestion. Malformed blocks are stripped rather than
+      // thrown.
+      const bad = { recipe_hash: "abc", confidence: "maybe", sample_count: 12, applied_at: "x" };
+      const out = v1RecordToFlywheelOutcome({
+        ...sampleV1(),
+        applied_recommendation: bad,
+      });
+      assert.equal(
+        Object.prototype.hasOwnProperty.call(out, "applied_recommendation"),
+        false
+      );
+    });
   });
 });
