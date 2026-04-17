@@ -427,11 +427,13 @@ For EACH agent:
 - `<requirements>`: At least 5 specific, independently verifiable requirements
 - `<constraints>`: Scope boundary with other agents, read-only vs write, file/directory boundaries
 - `<output_format>`: Exact path `/tmp/rpt-{taskname}-{agent-domain}.md`, required sections
-- `<success_criteria>`: Minimum N findings, file:line references, no hallucinated paths
+- `<success_criteria>`: **MUST** use the v1 structured shape (same as Mode 1) — see `references/outcome-schema.md`. Include 3–6 `<criterion>` entries scoped to **this agent's artifact** (not the whole team's output). Each criterion has `id`, `verification_method` (`rule` | `llm_judge` | `manual`), a one-sentence `<description>`, and an inline `<rule>` or `<judge_prompt>` per the method. Bullet-list placeholders in the template files are acceptable scaffolding but the generated per-agent prompt **must** upgrade them to the structured form.
 
 **Score each prompt — target 8+/10.** If under 8, add more context/constraints.
 
 Write all to `/tmp/rpt-agent-prompts-{taskname}.md`
+
+**Flywheel hook (per-agent):** after Phase 3 execution, each agent's artifact at `/tmp/rpt-{taskname}-{agent-domain}.md` can be recorded separately with `scripts/outcome-record.js` (one record per agent, same task taxonomy, `mode="repromptverse"`) and scored with `scripts/evaluate-outcome.js`. This turns a multi-agent run into N flywheel outcomes instead of one, giving the strategy learner finer-grained signal about which agent roles consistently win vs struggle.
 
 #### Reprompt quality scorecard (mandatory)
 
