@@ -27,6 +27,7 @@
     "benchmark:flywheel": "node scripts/run-flywheel-benchmark.js",
     "telemetry:report": "node scripts/run-observability-report.js",
     "flywheel:report": "node scripts/strategy-learner.js",
+    "flywheel:ingest": "node scripts/outcome-collector.js --ingest-dir",
     "check": "npm run validate:templates && npm run validate:tool-refs && npm run test:intent-router && npm run test:capability-policy && npm run test:context-builder && npm run test:artifact-evaluator && npm run test:pattern-selector && npm run test:runtime-adapter && npm run test:repromptverse-runtime && npm run test:telemetry-schema && npm run test:telemetry-store && npm run test:observability-report && npm run test:recipe-fingerprint && npm run test:outcome-collector && npm run test:strategy-learner && npm run test:reverse-engineer && npm run test:flywheel-e2e && npm run benchmark:swarms && npm run benchmark:provider && npm run benchmark:realworld && npm run benchmark:flywheel"
   },
   "repository": {

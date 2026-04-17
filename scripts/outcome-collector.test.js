@@ -13,6 +13,9 @@ const {
   computeEffectiveness,
   collectGitSignals,
   injectExemplar,
+  v1RecordToFlywheelOutcome,
+  ingestOutcomeRecord,
+  ingestDirectory,
 } = require("./outcome-collector");
 const { fingerprint } = require("./recipe-fingerprint");
 
@@ -388,6 +391,91 @@ describe("outcome-collector", () => {
           process.env.REPROMPTER_FLYWHEEL = original;
         }
       }
+    });
+  });
+
+  describe("v1 record bridge", () => {
+    function sampleV1(overrides = {}) {
+      return {
+        schema_version: 1,
+        timestamp: "2026-04-17T00:00:00Z",
+        prompt_fingerprint: "sha256:deadbeef",
+        prompt_text: "<role>x</role>\n<context>ctx</context>\n<task>fix</task>",
+        task_type: "fix_bug",
+        mode: "single",
+        success_criteria: [],
+        output_text: "patched",
+        verification_results: { a: "pass", b: "fail", c: "skipped" },
+        score: 5,
+        notes: "",
+        ...overrides,
+      };
+    }
+
+    it("v1RecordToFlywheelOutcome maps fields to the flywheel shape", () => {
+      const out = v1RecordToFlywheelOutcome(sampleV1());
+      assert.equal(out.runId, "sha256:deadbeef");
+      assert.equal(out.taskId, "fix_bug");
+      assert.equal(out.recipe.vector.templateId, "fix_bug");
+      assert.equal(out.recipe.vector.contextLayers, 1);
+      assert.equal(out.signals.artifactScore, 5);
+      assert.equal(out.signals.artifactPass, false);
+      assert.equal(out.signals.source, "flywheel-ingest-v1");
+      assert.ok(out.recipe.hash, "recipe.hash must be set by fingerprint()");
+    });
+
+    it("v1RecordToFlywheelOutcome marks artifactPass true for score >= 7", () => {
+      const out = v1RecordToFlywheelOutcome(sampleV1({ score: 8 }));
+      assert.equal(out.signals.artifactPass, true);
+      assert.equal(out.signals.artifactScore, 8);
+    });
+
+    it("v1RecordToFlywheelOutcome throws on missing prompt_fingerprint", () => {
+      assert.throws(
+        () => v1RecordToFlywheelOutcome({ ...sampleV1(), prompt_fingerprint: undefined }),
+        /missing prompt_fingerprint/
+      );
+    });
+
+    it("ingestOutcomeRecord writes a valid outcome to the store", () => {
+      const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "rpt-ingest-test-"));
+      try {
+        const stored = ingestOutcomeRecord(sampleV1(), { rootDir });
+        assert.equal(stored.runId, "sha256:deadbeef");
+        assert.equal(stored.taskId, "fix_bug");
+        assert.ok(Number.isFinite(stored.effectivenessScore));
+      } finally {
+        fs.rmSync(rootDir, { recursive: true, force: true });
+      }
+    });
+
+    it("ingestDirectory processes every v1 record and reports errors", () => {
+      const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "rpt-ingest-dir-test-"));
+      const sourceDir = path.join(rootDir, ".reprompter", "outcomes");
+      fs.mkdirSync(sourceDir, { recursive: true });
+      fs.writeFileSync(path.join(sourceDir, "good.json"), JSON.stringify(sampleV1()));
+      fs.writeFileSync(path.join(sourceDir, "bad.json"), "{not json");
+      fs.writeFileSync(
+        path.join(sourceDir, "unknown-schema.json"),
+        JSON.stringify({ schema_version: 99, prompt_fingerprint: "sha256:x" })
+      );
+
+      try {
+        const result = ingestDirectory(sourceDir, { rootDir });
+        assert.equal(result.ingested, 1);
+        assert.equal(result.skipped, 2);
+        assert.equal(result.errors.length, 2);
+        assert.ok(result.errors.some((e) => /unsupported schema_version/.test(e.reason)));
+      } finally {
+        fs.rmSync(rootDir, { recursive: true, force: true });
+      }
+    });
+
+    it("ingestDirectory returns empty result when directory doesn't exist", () => {
+      const result = ingestDirectory("/nonexistent/dir/nope", { rootDir: "/tmp" });
+      assert.equal(result.ingested, 0);
+      assert.equal(result.skipped, 0);
+      assert.deepEqual(result.errors, []);
     });
   });
 });

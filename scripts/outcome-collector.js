@@ -4,6 +4,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
+const { fingerprint } = require("./recipe-fingerprint");
 
 function defaultOutcomeDir(rootDir = process.cwd()) {
   return path.join(rootDir, ".reprompter", "flywheel");
@@ -310,17 +311,126 @@ function sanitizeExemplarSignals(raw = {}) {
   return base;
 }
 
+// ---------------------------------------------------------------------
+// Bridge: v1 outcome records → flywheel outcomes
+//
+// Records produced by scripts/outcome-record.js (schema v1, one JSON per
+// run under .reprompter/outcomes/) have a different shape than the
+// flywheel's NDJSON store. Convert here so the existing
+// strategy-learner.js machinery can consume them unchanged.
+// ---------------------------------------------------------------------
+
+function defaultV1RecordsDir(rootDir = process.cwd()) {
+  return path.join(rootDir, ".reprompter", "outcomes");
+}
+
+function v1RecordToFlywheelOutcome(v1Record) {
+  if (!v1Record || typeof v1Record !== "object") {
+    throw new Error("v1RecordToFlywheelOutcome: record must be an object");
+  }
+  if (typeof v1Record.prompt_fingerprint !== "string") {
+    throw new Error("v1RecordToFlywheelOutcome: missing prompt_fingerprint");
+  }
+
+  const promptText = String(v1Record.prompt_text || "");
+  const contextLayers = (promptText.match(/<context\b/gi) || []).length;
+  const score = Number.isFinite(v1Record.score) ? v1Record.score : 0;
+
+  const recipe = fingerprint({
+    templateId: String(v1Record.task_type || "unknown"),
+    patterns: [],
+    capabilityTier: "default",
+    domain: "",
+    contextLayers,
+    qualityScore: score,
+  });
+
+  const signals = { source: "flywheel-ingest-v1" };
+  if (Number.isFinite(v1Record.score)) {
+    signals.artifactScore = v1Record.score;
+    signals.artifactPass = v1Record.score >= 7;
+  }
+
+  return {
+    timestamp: v1Record.timestamp || new Date().toISOString(),
+    runId: v1Record.prompt_fingerprint,
+    taskId: String(v1Record.task_type || "unknown"),
+    recipe,
+    signals,
+  };
+}
+
+function ingestOutcomeRecord(v1Record, options = {}) {
+  const outcome = v1RecordToFlywheelOutcome(v1Record);
+  const store = createOutcomeStore({
+    rootDir: options.rootDir,
+    dirPath: options.dirPath,
+    filePath: options.filePath,
+  });
+  return store.writeOutcome(outcome);
+}
+
+function ingestDirectory(dir, options = {}) {
+  const targetDir = dir || defaultV1RecordsDir(options.rootDir || process.cwd());
+  if (!fs.existsSync(targetDir)) {
+    return { ingested: 0, skipped: 0, errors: [], dir: targetDir };
+  }
+
+  const files = fs
+    .readdirSync(targetDir)
+    .filter((f) => f.endsWith(".json"))
+    .map((f) => path.join(targetDir, f));
+
+  const errors = [];
+  let ingested = 0;
+  let skipped = 0;
+
+  for (const f of files) {
+    try {
+      const v1 = JSON.parse(fs.readFileSync(f, "utf8"));
+      if (v1.schema_version !== undefined && v1.schema_version !== 1) {
+        skipped++;
+        errors.push({ file: path.basename(f), reason: `unsupported schema_version: ${v1.schema_version}` });
+        continue;
+      }
+      if (typeof v1.prompt_fingerprint !== "string") {
+        skipped++;
+        errors.push({ file: path.basename(f), reason: "missing prompt_fingerprint (not a v1 record)" });
+        continue;
+      }
+      ingestOutcomeRecord(v1, options);
+      ingested++;
+    } catch (e) {
+      skipped++;
+      errors.push({ file: path.basename(f), reason: e.message });
+    }
+  }
+
+  return { ingested, skipped, errors, dir: targetDir };
+}
+
 module.exports = {
   createOutcomeStore,
   defaultOutcomeDir,
+  defaultV1RecordsDir,
   validateOutcome,
   sanitizeSignals,
   computeEffectiveness,
   collectGitSignals,
   injectExemplar,
+  v1RecordToFlywheelOutcome,
+  ingestOutcomeRecord,
+  ingestDirectory,
 };
 
 if (require.main === module) {
+  const args = process.argv.slice(2);
+  if (args[0] === "--ingest-dir") {
+    const dir = args[1] || defaultV1RecordsDir();
+    const result = ingestDirectory(dir);
+    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+    process.exit(result.errors.length > 0 && result.ingested === 0 ? 1 : 0);
+  }
   const store = createOutcomeStore();
   process.stdout.write(`${JSON.stringify({ filePath: store.filePath }, null, 2)}\n`);
 }
