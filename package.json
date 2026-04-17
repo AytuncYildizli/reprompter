@@ -5,7 +5,7 @@
   "description": "Prompt engineering skill for Claude Code, OpenClaw, and Codex",
   "scripts": {
     "validate:templates": "bash scripts/validate-templates.sh",
-    "validate:tool-refs": "bash scripts/validate-tool-refs.sh",
+    "validate:tool-refs": "node scripts/validate-tool-refs.js",
     "test:intent-router": "node --test scripts/intent-router.test.js",
     "test:capability-policy": "node --test scripts/capability-policy.test.js",
     "test:context-builder": "node --test scripts/context-builder.test.js",
