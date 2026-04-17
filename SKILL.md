@@ -465,6 +465,42 @@ After picking, announce it in one short line before starting Phase 3 work, so th
 
 Why B is first: it's the only option where teammates can `SendMessage` each other and share a `TaskList` in-process. Option A is picked only when B isn't available — it still works end-to-end but loses cross-agent messaging and adds the tmux init + send-keys timing surface.
 
+#### Tool-schema guard (all options)
+
+Before invoking any tool named in Options A–E, verify it appears in your current toolset and that the call signature matches the schema Claude Code loaded for you. Opus 4.7 rejects calls against an unknown tool or a non-matching signature instead of inferring intent like 4.6 used to. If a named tool is unfamiliar, halt and report back rather than substituting a similar-looking one.
+
+Known pitfalls captured from 4.6 → 4.7 drift in this skill:
+
+- **`Task` → `Agent`.** The legacy spawn tool was named `Task` and took `subagent_type` as a keyword argument. It has been split into `Agent(...)` for spawn and `TaskCreate` / `TaskUpdate` / `TaskList` for todos. Any example still calling the old spawn name is broken under 4.7.
+- **`SendMessage` signature.** Current shape is `SendMessage(to=<name-or-"*">, message=<str-or-obj>)`. Legacy `type=` and `recipient=` kwargs do not exist on the current tool.
+- **Broadcast restriction.** `SendMessage(to="*", ...)` accepts **plain strings only.** Structured payloads such as `{"type": "shutdown_request"}` must be sent per-agent by name; the runtime rejects structured broadcasts.
+- **`TeamDelete` ordering.** `TeamDelete()` fails if any teammate is still active. Shutdown is async; in-process teammates need a turn yield to approve each `shutdown_request` before cleanup succeeds.
+- **`TeamCreate` precedence.** `Agent(team_name=...)` errors if that team was not created first. Always call `TeamCreate` before any `Agent` with a `team_name` argument.
+
+Canonical signatures Option B depends on (what `npm run validate:tool-refs` enforces — if you change one, update the linter's check set in `scripts/validate-tool-refs.js` in the same PR so the new shape doesn't silently rot):
+
+```text
+TeamCreate(team_name=<string>, description=<string>)
+
+TaskCreate(subject=<string>, description=<string>)
+
+Agent(
+  description=<string>,           # required
+  prompt=<string>,                 # required
+  subagent_type=<string>,          # optional, e.g. "general-purpose"
+  team_name=<string>,              # optional — requires prior TeamCreate
+  name=<string>,                   # optional — used as SendMessage target
+  model=<string>,                  # optional — "opus" / "sonnet" / "haiku"
+  run_in_background=<bool>,        # optional — default false
+)
+
+SendMessage(to=<name-or-"*">, message=<str-or-obj>)
+
+TeamDelete()
+```
+
+Never hardcode a specific model version string of the form `claude-<family>-<major>-<minor>` — use the bare alias (`opus`, `sonnet`, `haiku`) so the CLI resolves to the current latest automatically. The linter also enforces this.
+
 #### Option A: tmux (Claude Code)
 
 ```bash
