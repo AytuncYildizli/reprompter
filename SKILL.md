@@ -562,7 +562,12 @@ Agent(description="Agent 2 on rpt-{taskname}", subagent_type="general-purpose",
 # Status Line: Agents: ✅ N/T ⏳ N/T 🔄 N/T (derived from TaskList status)
 # 5. Compile synthesis from teammate reports
 # 6. Shutdown teammates and delete team
-SendMessage(type="shutdown_request", recipient="agent-1")
+#    Note: SendMessage signature is `to=<name>` + `message={"type": ...}` —
+#    `recipient=` and top-level `type=` are the pre-2.1 shape and will be
+#    rejected by the current tool schema. Broadcast (`to="*"`) fans the
+#    shutdown to every teammate at once; TeamDelete() errors if any teammate
+#    is still active, so always broadcast before deleting.
+SendMessage(to="*", message={"type": "shutdown_request"})
 TeamDelete()
 ```
 
