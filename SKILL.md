@@ -750,12 +750,11 @@ ls /tmp/rpt-{taskname}-*.prompt.md
 
 # 1. Launch each agent in the background. Workers must write their
 #    artifact to /tmp/rpt-{taskname}-{agent}.md, so they need write
-#    access to /tmp. --sandbox workspace-write permits this and keeps
-#    `codex exec`'s headless default of approval=never — safe for
-#    backgrounded `wait` fan-out. Prefer this over --full-auto, which
-#    is documented as a workspace-write + on-request preset and risks
-#    blocking a bg worker on approval. If you must use --full-auto,
-#    add -a never explicitly.
+#    access to /tmp. --sandbox workspace-write permits this. In
+#    `codex exec`, --full-auto is an alias for the same sandbox and
+#    approval stays at `never` either way (verified in codex 0.121.0
+#    source: exec/src/cli.rs + exec/src/lib.rs). Pick whichever flag
+#    reads cleaner in your scripts.
 #    Switch to --sandbox read-only ONLY if your workers are pure
 #    analysis that captures findings via --output-last-message instead
 #    of writing the .md artifact themselves (rename the .log to .md
