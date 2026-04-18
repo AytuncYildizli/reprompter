@@ -173,7 +173,10 @@ for pid in "${pids[@]}"; do
   wait "$pid" || status=1
 done
 exec 9>&-
-# Caller can read `$status` (non-zero = at least one worker failed).
+# Fail fast so downstream Phase 4 synthesis does not run on missing or
+# stale agent artifacts. Use `return` instead of `exit` if this block
+# lives inside a function.
+exit "$status"
 ```
 
 ### Status Line
