@@ -748,12 +748,16 @@ Shell-level parallelism works on any POSIX shell. `codex exec` is one-shot, so b
 #    Convention: /tmp/rpt-{taskname}-{agent}.prompt.md
 ls /tmp/rpt-{taskname}-*.prompt.md
 
-# 1. Launch each agent in the background. Pick --sandbox explicitly for
-#    your use case: `read-only` for audit workers, `workspace-write` (or
-#    the `--full-auto` alias) for agents that write fixes. `--ephemeral`
-#    skips on-disk session state; recommended for isolated parallel runs
-#    so backgrounded workers cannot restore each other's rollout files
-#    (historical reference: closed issue #11435, which motivated the flag).
+# 1. Launch each agent in the background. Workers must write their
+#    artifact to /tmp/rpt-{taskname}-{agent}.md, so they need write
+#    access to /tmp. Default to --full-auto (which selects
+#    --sandbox workspace-write; /tmp is writable under this mode).
+#    Switch to --sandbox read-only ONLY if your workers are pure
+#    analysis that captures their findings via --output-last-message
+#    instead of writing the .md artifact themselves (you would then
+#    rename the .log to .md after `wait`).
+#    `--ephemeral` skips on-disk session state; recommended for
+#    isolated parallel runs (historical reference: closed issue #11435).
 #    `codex exec` defaults approval policy to `never` in headless mode,
 #    so no extra approval flag is needed.
 MODEL="gpt-5.4"
@@ -761,7 +765,7 @@ for agent in planner critic synthesizer; do
   codex exec \
     --model "$MODEL" \
     --ephemeral \
-    --sandbox read-only \
+    --full-auto \
     --output-last-message "/tmp/rpt-{taskname}-${agent}.log" \
     "$(cat /tmp/rpt-{taskname}-${agent}.prompt.md)" \
     > "/tmp/rpt-{taskname}-${agent}.stdout" 2>&1 &
@@ -779,12 +783,13 @@ ls /tmp/rpt-{taskname}-*.md 2>/dev/null | grep -v '\.prompt\.md$'
 Status Line during execution: Codex CLI has no built-in TaskList. Derive status from artifact presence — crucially, **exclude the `.prompt.md` input files** or the counter will report "done" before any agent writes output:
 
 ```bash
-# Zero-match-safe loop — does not abort under `set -euo pipefail` when
-# no artifacts exist yet or only .prompt.md inputs are present.
+# Zero-match-safe, POSIX-compatible loop. Does not abort under
+# `set -euo pipefail` when no artifacts exist yet or only .prompt.md
+# inputs are present, and runs in dash (/bin/sh) as well as bash/zsh.
 done=0
 for f in /tmp/rpt-{taskname}-*.md; do
-  [[ -e "$f" ]] || continue         # glob returned literal (no matches)
-  [[ "$f" == *.prompt.md ]] && continue
+  [ -e "$f" ] || continue             # glob returned literal (no matches)
+  case "$f" in *.prompt.md) continue ;; esac
   done=$((done + 1))
 done
 total=3

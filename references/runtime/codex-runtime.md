@@ -87,11 +87,14 @@ the final report to /tmp/rpt-{taskname}-final.md.
 ### Invocation
 
 ```bash
-# Audit worker (read-only). Swap `--sandbox read-only` for `--full-auto`
-# when the worker should write fixes.
+# Default D2 worker. --full-auto (= --sandbox workspace-write) is required
+# whenever the worker writes its own artifact file. /tmp is writable under
+# workspace-write, so /tmp/rpt-* artifacts work. Use --sandbox read-only
+# only for pure analysis workers that capture findings via
+# --output-last-message instead of writing the .md artifact themselves.
 codex exec \
   --ephemeral \
-  --sandbox read-only \
+  --full-auto \
   --model "$MODEL" \
   --output-last-message "$LOG" \
   -C "$REPO" \
@@ -99,9 +102,10 @@ codex exec \
 ```
 
 - `--ephemeral` is recommended for parallel runs so backgrounded workers do not write rollout files that could be restored into each other (historical reference: closed issue #11435, which motivated the flag). Not strictly required on current Codex, but still the safe default for isolated fan-out.
-- `--sandbox` picks the access level. Use `read-only` for audits. Use `workspace-write` (or the `--full-auto` alias, which selects workspace-write automatically) for workers that apply fixes. Do **not** combine `--full-auto` with `--sandbox read-only`: `--full-auto` forces `workspace-write` and overrides the read-only claim.
+- `--full-auto` is a convenience alias for `--sandbox workspace-write`. Workers need write access to `/tmp` to produce the `/tmp/rpt-{taskname}-{agent}.md` artifact; workspace-write permits this, read-only does not. Do not combine `--full-auto` with `--sandbox read-only`: `--full-auto` forces `workspace-write` and silently overrides the read-only claim.
+- `--sandbox read-only` is safe only for pure-analysis workers that do not write artifact files. In that case, use `--output-last-message "$ARTIFACT.md"` to capture the final message directly to the artifact path (the CLI writes the file, not the sandboxed agent).
 - `codex exec` defaults approval policy to `never` in headless mode, so you do not need an explicit `-a` flag for backgrounded workers. The global `approval_policy` in `config.toml` applies to the interactive TUI.
-- `--output-last-message` captures the final assistant turn; useful when an artifact is missing post-mortem.
+- `--output-last-message` captures the final assistant turn; useful as a fallback artifact when the agent did not write its own file.
 - `$PROMPT_TEXT` is the full reprompted prompt from Phase 2. Pass via `"$(cat ...)"`; do not pipe via stdin (Codex treats stdin as a conversation continuation in some modes).
 
 ### Artifact contract (shared with `repromptverse-template.md`)
@@ -123,7 +127,7 @@ AGENTS=(methodology code stats narrative attack-surface claims)
 for agent in "${AGENTS[@]}"; do
   codex exec \
     --ephemeral \
-    --sandbox read-only \
+    --full-auto \
     --model "$MODEL" \
     --output-last-message "/tmp/rpt-${TASKNAME}-${agent}.log" \
     "$(cat /tmp/rpt-${TASKNAME}-${agent}.prompt.md)" \
@@ -154,7 +158,7 @@ for agent in "${AGENTS[@]}"; do
   read -u 9
   (
     trap 'echo >&9' EXIT
-    codex exec --ephemeral --sandbox read-only --model "$MODEL" \
+    codex exec --ephemeral --full-auto --model "$MODEL" \
       "$(cat "/tmp/rpt-${TASKNAME}-${agent}.prompt.md")" \
       > "/tmp/rpt-${TASKNAME}-${agent}.stdout" 2>&1
   ) &
@@ -177,14 +181,14 @@ exec 9>&-
 Codex CLI has no built-in TaskList. Derive status from artifact presence. **Exclude `.prompt.md` input files** — they share the `rpt-${TASKNAME}-*.md` glob with artifacts, and counting them falsely reports "done" before any agent has written output:
 
 ```bash
-# Zero-match-safe loop. Safe under `set -euo pipefail` even when no
-# artifacts exist yet or only .prompt.md inputs are present — both of
-# which would abort an `ls | grep | wc` pipeline (ls exits 2 on no
-# match; grep exits 1 on no output).
+# Zero-match-safe, POSIX-compatible loop. Safe under `set -euo pipefail`
+# even when no artifacts exist yet or only .prompt.md inputs are present
+# (both cases would abort an `ls | grep | wc` pipeline: ls exits 2 on no
+# match; grep exits 1 on no output). Also runs in dash (/bin/sh).
 done=0
 for f in /tmp/rpt-${TASKNAME}-*.md; do
-  [[ -e "$f" ]] || continue           # glob returned the literal pattern
-  [[ "$f" == *.prompt.md ]] && continue
+  [ -e "$f" ] || continue             # glob returned the literal pattern
+  case "$f" in *.prompt.md) continue ;; esac
   done=$((done + 1))
 done
 total=${#AGENTS[@]}
