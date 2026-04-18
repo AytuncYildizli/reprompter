@@ -130,7 +130,7 @@ done
 
 wait  # blocks until all backgrounded sessions finish
 # Verify each agent wrote its artifact (exclude .prompt.md inputs).
-find /tmp -maxdepth 1 -name "rpt-${TASKNAME}-*.md" ! -name '*.prompt.md' -print
+ls /tmp/rpt-${TASKNAME}-*.md 2>/dev/null | grep -v '\.prompt\.md$'
 ```
 
 ### Concurrency cap
@@ -164,10 +164,12 @@ wait
 Codex CLI has no built-in TaskList. Derive status from artifact presence. **Exclude `.prompt.md` input files** — they share the `rpt-${TASKNAME}-*.md` glob with artifacts, and counting them falsely reports "done" before any agent has written output:
 
 ```bash
-done=$(find /tmp -maxdepth 1 -name "rpt-${TASKNAME}-*.md" ! -name '*.prompt.md' 2>/dev/null | wc -l | tr -d ' ')
+done=$(ls /tmp/rpt-${TASKNAME}-*.md 2>/dev/null | grep -v '\.prompt\.md$' | wc -l | tr -d ' ')
 total=${#AGENTS[@]}
 echo "Agents: ✅ $done/$total  ⏳ $((total-done))/$total"
 ```
+
+Why `ls | grep` instead of `find`: on macOS `/tmp` is a symlink to `/private/tmp`, and `find /tmp -maxdepth 1` does not descend through the symlink without `-L`. Shell glob expansion resolves the path transparently and works on both Linux and macOS without a flag.
 
 ### Retries
 

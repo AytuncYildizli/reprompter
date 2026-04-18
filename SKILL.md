@@ -762,7 +762,7 @@ done
 wait
 
 # 3. Verify each agent wrote its artifact (exclude .prompt.md inputs).
-find /tmp -maxdepth 1 -name 'rpt-{taskname}-*.md' ! -name '*.prompt.md' -print
+ls /tmp/rpt-{taskname}-*.md 2>/dev/null | grep -v '\.prompt\.md$'
 
 # 4. Run Phase 4 evaluator loop.
 ```
@@ -770,7 +770,7 @@ find /tmp -maxdepth 1 -name 'rpt-{taskname}-*.md' ! -name '*.prompt.md' -print
 Status Line during execution: Codex CLI has no built-in TaskList. Derive status from artifact presence — crucially, **exclude the `.prompt.md` input files** or the counter will report "done" before any agent writes output:
 
 ```bash
-done=$(find /tmp -maxdepth 1 -name 'rpt-{taskname}-*.md' ! -name '*.prompt.md' 2>/dev/null | wc -l | tr -d ' ')
+done=$(ls /tmp/rpt-{taskname}-*.md 2>/dev/null | grep -v '\.prompt\.md$' | wc -l | tr -d ' ')
 total=3
 echo "Agents: ✅ $done/$total  ⏳ $((total-done))/$total"
 ```
