@@ -750,22 +750,24 @@ ls /tmp/rpt-{taskname}-*.prompt.md
 
 # 1. Launch each agent in the background. Workers must write their
 #    artifact to /tmp/rpt-{taskname}-{agent}.md, so they need write
-#    access to /tmp. Default to --full-auto (which selects
-#    --sandbox workspace-write; /tmp is writable under this mode).
+#    access to /tmp. Use --sandbox workspace-write directly; /tmp is
+#    writable under this mode. Do NOT use --full-auto here: it is an
+#    alias for --sandbox workspace-write -a on-request, and the
+#    on-request approval policy blocks backgrounded workers if a tool
+#    call needs escalation. With an explicit --sandbox flag, `codex exec`
+#    keeps its headless default of approval=never.
 #    Switch to --sandbox read-only ONLY if your workers are pure
-#    analysis that captures their findings via --output-last-message
-#    instead of writing the .md artifact themselves (you would then
-#    rename the .log to .md after `wait`).
+#    analysis that captures findings via --output-last-message instead
+#    of writing the .md artifact themselves (rename the .log to .md
+#    after `wait`).
 #    `--ephemeral` skips on-disk session state; recommended for
 #    isolated parallel runs (historical reference: closed issue #11435).
-#    `codex exec` defaults approval policy to `never` in headless mode,
-#    so no extra approval flag is needed.
 MODEL="gpt-5.4"
 for agent in planner critic synthesizer; do
   codex exec \
     --model "$MODEL" \
     --ephemeral \
-    --full-auto \
+    --sandbox workspace-write \
     --output-last-message "/tmp/rpt-{taskname}-${agent}.log" \
     "$(cat /tmp/rpt-{taskname}-${agent}.prompt.md)" \
     > "/tmp/rpt-{taskname}-${agent}.stdout" 2>&1 &

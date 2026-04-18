@@ -52,7 +52,7 @@ the artifact file, not a tool call.
 # Optional: mcp_servers, nickname_candidates
 ```
 
-**On `report_agent_job_result`:** This tool is registered for `spawn_agents_on_csv` batch workers (one worker per CSV row), not for ordinary prompt-spawned `spawn_agent` subagents. Do not instruct a standard D1 worker to call it — the tool may not be available in that role's tool set. If you need CSV fan-out, see the `spawn_agents_on_csv` section below and put the `report_agent_job_result` instruction in that role's TOML only.
+**On `report_agent_job_result`:** This tool is registered for `spawn_agents_on_csv` batch workers (one worker per CSV row), not for ordinary prompt-spawned `spawn_agent` subagents. Do not instruct a standard D1 worker to call it — the tool may not be available in that role's tool set. If you need CSV fan-out, define a separate CSV-worker role whose `developer_instructions` includes the `report_agent_job_result` call; see OpenAI Codex subagents docs for the `spawn_agents_on_csv` contract.
 
 ### Invocation (prompt-driven)
 
@@ -87,14 +87,14 @@ the final report to /tmp/rpt-{taskname}-final.md.
 ### Invocation
 
 ```bash
-# Default D2 worker. --full-auto (= --sandbox workspace-write) is required
-# whenever the worker writes its own artifact file. /tmp is writable under
-# workspace-write, so /tmp/rpt-* artifacts work. Use --sandbox read-only
-# only for pure analysis workers that capture findings via
-# --output-last-message instead of writing the .md artifact themselves.
+# Default D2 worker. --sandbox workspace-write is required whenever the
+# worker writes its own artifact file; /tmp is writable under this mode.
+# Use --sandbox read-only only for pure analysis workers that capture
+# findings via --output-last-message instead of writing the .md artifact
+# themselves.
 codex exec \
   --ephemeral \
-  --full-auto \
+  --sandbox workspace-write \
   --model "$MODEL" \
   --output-last-message "$LOG" \
   -C "$REPO" \
@@ -102,7 +102,7 @@ codex exec \
 ```
 
 - `--ephemeral` is recommended for parallel runs so backgrounded workers do not write rollout files that could be restored into each other (historical reference: closed issue #11435, which motivated the flag). Not strictly required on current Codex, but still the safe default for isolated fan-out.
-- `--full-auto` is a convenience alias for `--sandbox workspace-write`. Workers need write access to `/tmp` to produce the `/tmp/rpt-{taskname}-{agent}.md` artifact; workspace-write permits this, read-only does not. Do not combine `--full-auto` with `--sandbox read-only`: `--full-auto` forces `workspace-write` and silently overrides the read-only claim.
+- `--sandbox workspace-write` permits writes to the workspace and `/tmp`, which workers need to produce `/tmp/rpt-{taskname}-{agent}.md` artifacts. Do **not** replace this with `--full-auto` in backgrounded runs: `--full-auto` is an alias for `--sandbox workspace-write -a on-request`, and the `on-request` approval policy blocks a background worker when any tool call needs escalation (hanging the whole `wait`). With an explicit `--sandbox` flag and no `-a`, `codex exec` keeps its headless default of approval = `never`, which is what you want for parallel fan-out.
 - `--sandbox read-only` is safe only for pure-analysis workers that do not write artifact files. In that case, use `--output-last-message "$ARTIFACT.md"` to capture the final message directly to the artifact path (the CLI writes the file, not the sandboxed agent).
 - `codex exec` defaults approval policy to `never` in headless mode, so you do not need an explicit `-a` flag for backgrounded workers. The global `approval_policy` in `config.toml` applies to the interactive TUI.
 - `--output-last-message` captures the final assistant turn; useful as a fallback artifact when the agent did not write its own file.
@@ -127,7 +127,7 @@ AGENTS=(methodology code stats narrative attack-surface claims)
 for agent in "${AGENTS[@]}"; do
   codex exec \
     --ephemeral \
-    --full-auto \
+    --sandbox workspace-write \
     --model "$MODEL" \
     --output-last-message "/tmp/rpt-${TASKNAME}-${agent}.log" \
     "$(cat /tmp/rpt-${TASKNAME}-${agent}.prompt.md)" \
@@ -158,7 +158,7 @@ for agent in "${AGENTS[@]}"; do
   read -u 9
   (
     trap 'echo >&9' EXIT
-    codex exec --ephemeral --full-auto --model "$MODEL" \
+    codex exec --ephemeral --sandbox workspace-write --model "$MODEL" \
       "$(cat "/tmp/rpt-${TASKNAME}-${agent}.prompt.md")" \
       > "/tmp/rpt-${TASKNAME}-${agent}.stdout" 2>&1
   ) &
