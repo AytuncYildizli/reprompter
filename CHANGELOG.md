@@ -1,5 +1,61 @@
 # RePrompter Changelog
 
+## v12.1.0 (2026-04-18) — Codex CLI runtime contract + factual corrections
+
+### Headline
+
+Option D (Codex CLI runtime) is now a first-class Phase 3 path with a full runtime contract — not the five-bullet prose stub it had been. Native subagents via the `[agents]` config block (D1) and shell-level parallelism via `codex exec` backgrounding (D2) are both documented with runnable commands, verified against Codex 0.121.0 source. A SKILL.md frontmatter `description` that silently exceeded Codex's 1024-char load limit (skipping the entire skill in Codex CLI) was trimmed to 960 chars without losing any skill-selection trigger.
+
+Docs-only release. No runtime code changes.
+
+### Added — Codex CLI as a documented runtime (PR #43)
+
+- **`references/runtime/codex-runtime.md`** — new reference file covering D1 vs D2 picker logic, prerequisites, invocation, artifact contract, concurrency caps, status-line patterns, retries, and known gotchas (issues #11435, #14866, #15177 — all cross-linked). Parallels the implicit runtime contracts used by Options A/B.
+- **SKILL.md Option D expansion.** Replaced the five-bullet stub with a full D1 + D2 treatment:
+  - **D1 Native subagents:** `[features] multi_agent = true` + `[agents] max_threads = 6` + `~/.codex/agents/<name>.toml` role definitions + prompt-driven spawn. Includes a working orchestrator example that fans out one `rpt_audit_explorer` per audit dimension and synthesizes the result.
+  - **D2 Shell-level `codex exec`:** runnable bash block with `--ephemeral`, `--sandbox workspace-write`, `--output-last-message`, artifact verification, FS-polling status line, hang recovery, FIFO semaphore with failure propagation.
+  - Picker table (D1 vs D2 vs "neither, use Option B for cross-agent messaging").
+- **SKILL.md Settings section.** Added a Codex CLI subsection documenting `~/.codex/config.toml` with `[features]`, `[agents]`, and skill-defined `[reprompter]` keys. Clarified that Claude Code is optional when Codex is the target runtime.
+- **Frontmatter compatibility claim** rewritten from "parallel sessions if available" (hedged) to naming the actual mechanisms (native subagents or shell-level parallelism via `codex exec`).
+- **README.md compatibility table** aligned — removed the asterisk on Codex parallel and added a clarifier pointing to Option D plus the new reference file.
+
+### Fixed — factual corrections to the Codex runtime path (PR #44, 8 commits over 7 bot-review rounds)
+
+Every correction verified against openai/codex `rust-v0.121.0` source, `codex exec --help`, and the current status of each cited GitHub issue as of 2026-04-18.
+
+- **`--full-auto` semantics in `codex exec`.** Source check: `codex-rs/exec/src/cli.rs:50–52` defines `--full-auto` as "Convenience alias for low-friction sandboxed automatic execution (--sandbox workspace-write)". `codex-rs/exec/src/lib.rs:263` selects only the sandbox when `full_auto` is true; `lib.rs:374–376` sets approval policy unconditionally to `AskForApproval::Never` for headless mode. In exec mode, `--sandbox workspace-write` and `--full-auto` are functionally equivalent. The docs now recommend `--sandbox workspace-write` for readability and explain that both options work; no bogus warning about approval-policy side effects.
+- **`--sandbox read-only` artifact-write bug.** D2 workers write their `/tmp/rpt-{taskname}-{agent}.md` artifacts themselves, which requires `workspace-write`. `read-only` breaks the artifact contract. D2 examples and explanatory prose updated accordingly; `read-only` is documented only as an option for pure-analysis workers that capture findings via `--output-last-message` instead of writing their own file.
+- **`report_agent_job_result` scope.** Tool is registered for `spawn_agents_on_csv` batch workers, not for ordinary prompt-spawned `spawn_agent` subagents. Removed from the D1 custom-agent `developer_instructions` template in SKILL.md and `references/runtime/codex-runtime.md`; added a clarifying note directing CSV-job users to OpenAI's subagents docs.
+- **`[agents] max_threads` semantics.** `core/src/agent/registry.rs` `reserve_spawn_slot` returns `AgentLimitReached` when the open-thread count reaches the cap — normal `spawn_agent` calls past the limit fail, they do not queue. The "queues 2 and runs 6 concurrently" line was wrong; replaced with the actual failure mode and a pointer to `spawn_agents_on_csv` for true fan-out.
+- **Issue #11435 framing.** Issue is closed (cannot-reproduce after `exec` was reimplemented on the app server). `--ephemeral` is still the right default for isolated parallel runs, but reframed from "required to avoid corruption" to a historical motivation for the flag.
+- **Issue #15177 fix claim.** Issue is still open with no linked fix. Removed the "Fixed in 0.122.0-alpha" claim; now documents the current-state workaround (prefer the `default` role when model-override fidelity matters).
+- **`codex exec` approval default.** `codex-rs/exec/src/lib.rs:376` hardcodes `Some(AskForApproval::Never)` for headless mode. The `approval_policy` key in `config.toml` applies to the interactive TUI only. Settings table and `config.toml` comment corrected.
+- **`features.multi_agent` default.** Default-enabled in 0.121.0+ (`features/src/lib.rs`: `default_enabled: true`). Docs no longer imply users must set this explicitly to use Option D1.
+- **Native subagents ship date.** Reframed "shipped 2026-03-16" (imprecise) to "`multi_agent` feature flag stabilized in 0.115.0 on 2026-03-16" (matches `rust-v0.115.0` release notes: `#14622 Stabilize multi-agent feature flag`).
+- **Bash portability.** SKILL.md's `(portable, any POSIX shell)` claim on the D2 status loop conflicted with Bash-only `[[ ... ]]` tests. Rewrote the artifact counter as a POSIX-compatible loop using `[ -e "$f" ]` and `case`, and added the same hardening to `references/runtime/codex-runtime.md`. Zero-match safety: the loop does not abort under `set -euo pipefail` when no artifacts exist or only `.prompt.md` inputs are present — both cases previously aborted an `ls | grep | wc` pipeline.
+- **FIFO semaphore failure propagation.** The hard-cap example now collects PIDs, `wait`s on each explicitly, aggregates a `status` variable, closes fd 9 after the wait loop, and `exit "$status"` so downstream Phase 4 synthesis does not run on missing artifacts. `trap 'echo >&9' EXIT` inside the worker subshell guarantees the semaphore token is returned even when a worker exits non-zero under strict mode.
+- **Picker-table drift.** Added the missing `Cross-agent messaging required mid-run → Neither, use Option B` row to the lower SKILL.md picker table (previously only in the top table and the reference file).
+- **macOS CPU-count.** `nproc` alone misled readers on Darwin; the concurrency-cap note now shows both `nproc` (Linux) and `sysctl -n hw.ncpu` (macOS) in SKILL.md and the reference file.
+
+### Fixed — SKILL.md description exceeds Codex load limit (PR #45)
+
+- **Trimmed `description` frontmatter from 1217 to 960 characters** (64-char safety margin under Codex's 1024-character limit, enforced by `validate_len(&description, MAX_DESCRIPTION_LEN, "description")` in Codex 0.121.0). Before this, Codex silently skipped the skill with: `Skipped loading 1 skill(s) due to invalid SKILL.md files. ~/.codex/skills/reprompter/SKILL.md: invalid description: exceeds maximum length of 1024 characters`. Claude Code did not enforce the limit, so the bug was Codex-only and easy to miss.
+- Every Single / Repromptverse / Reverse-mode trigger keyword preserved. Removed only verbose phrasing and redundant aliases (`anything going to agent teams`, `multi-agent marketing`, `best practices`, per-mode score breakdown prose). No trigger was dropped.
+
+### Changed
+
+- `compatibility:` frontmatter claim names the actual mechanism used on each runtime instead of hedged "if available" language.
+- README.md compatibility table upgrades Codex `Multi-agent parallel` from `yes*` to `yes` with the footnote pointing to Option D.
+
+### Review notes
+
+- PR #44 went through **7 rounds of automated Codex bot review** plus a source-level cross-check at the `rust-v0.121.0` tag. Each round traded a narrower, more accurate claim for a broader, sloppier one — the final wording is grounded in cited source lines rather than memory-from-spec. The takeaway recorded in the commit messages: source-verify contested claims before prose lands in a docs-only PR.
+
+### What's next (deliberately out of scope)
+
+- TESTING.md scenarios for D1 (native subagent fan-out) and D2 (shell-level `codex exec` fan-out) were flagged as desirable but not included here; they fit better as a small follow-up PR so the review surface stays focused.
+- Codex-specific install one-liner in README (alongside the existing Claude Code `curl | tar` recipe) — same reason, follow-up.
+
 ## v12.0.0 (2026-04-17) — Closed-loop Flywheel
 
 ### Headline
