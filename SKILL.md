@@ -1,11 +1,11 @@
 ---
 name: reprompter
 description: |
-  Transform messy prompts into well-structured, effective prompts — single, multi-agent, or reverse-engineered from great outputs.
-  Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", rough text needing XML tags and best practices, "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "multi-agent marketing", "campaign swarm", "engineering swarm", "ops swarm", "research swarm", multi-agent tasks, audits, parallel work, anything going to agent teams, "reverse reprompt", "reprompt from example", "learn from this", "extract prompt from", "prompt dna", "prompt genome", reverse-engineering prompts from exemplar outputs.
-  Don't use when: simple Q&A, pure chat, immediate execution-only tasks. See "Don't Use When" section for details.
-  Outputs: Structured XML/Markdown prompt, quality score (before/after), optional team brief + per-agent sub-prompts, agent team output files, Agent Cards (plan/status/result), Extraction Card (reverse mode).
-  Success criteria: Single mode quality score ≥ 7/10; Repromptverse per-agent prompt quality score 8+/10; Reverse mode generated prompt score ≥ 7/10; all required sections present, actionable and specific.
+  Transform messy prompts into structured, effective prompts — single, multi-agent, or reverse-engineered from great outputs.
+  Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", rough text needing XML tags, "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "campaign swarm", "engineering swarm", "ops swarm", "research swarm", multi-agent tasks, audits, parallel work, "reverse reprompt", "reprompt from example", "learn from this", "extract prompt from", "prompt dna", "prompt genome", reverse-engineering prompts from exemplar outputs.
+  Don't use for simple Q&A, pure chat, or immediate execution-only tasks (see "Don't Use When" section).
+  Outputs: structured XML/Markdown prompt, before/after quality score, optional team brief + per-agent sub-prompts, Agent Cards, Extraction Card (reverse mode).
+  Target quality score: Single ≥ 7/10; Repromptverse per-agent ≥ 8/10; Reverse ≥ 7/10.
 compatibility: |
   Single mode works on Claude surfaces, OpenClaw, and Codex.
   Repromptverse mode supports Claude Code (TeamCreate or tmux), OpenClaw (sessions_spawn), and Codex CLI (native subagents in 0.121.0+ or shell-level parallelism via `codex exec` + background + wait, see Option D).
