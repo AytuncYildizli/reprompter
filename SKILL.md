@@ -8,8 +8,8 @@ description: |
   Success criteria: Single mode quality score ≥ 7/10; Repromptverse per-agent prompt quality score 8+/10; Reverse mode generated prompt score ≥ 7/10; all required sections present, actionable and specific.
 compatibility: |
   Single mode works on Claude surfaces, OpenClaw, and Codex.
-  Repromptverse mode supports Claude Code (tmux/TeamCreate), OpenClaw (sessions_spawn), and Codex (parallel sessions if available, sequential fallback otherwise).
-  Sequential fallback works with any LLM runtime.
+  Repromptverse mode supports Claude Code (TeamCreate or tmux), OpenClaw (sessions_spawn), and Codex CLI (native subagents in 0.121.0+ or shell-level parallelism via `codex exec` + background + wait, see Option D).
+  Sequential fallback (Option E) works with any LLM runtime.
 metadata:
   author: AytuncYildizli
   version: 12.0.0
@@ -683,16 +683,115 @@ sessions_spawn(task: "<per-agent prompt>", model: "opus", label: "rpt-{role}")
 ```
 Note: `sessions_spawn` is an OpenClaw-specific tool. Not available in standalone Claude Code.
 
-#### Option D: Codex parallel sessions (Codex runtime)
+#### Option D: Codex CLI
 
-When running in Codex:
-1. Create one session per agent role (or use native subagents if available).
-2. Send each session the corresponding prompt from `/tmp/rpt-agent-prompts-{taskname}.md`.
-3. Require each session to write exactly one artifact to `/tmp/rpt-{taskname}-{agent-domain}.md`.
-4. Poll for artifact completion every 15-30s with a hard cap (max 40 polls total).
-5. Run Phase 4 evaluator loop and merge to `/tmp/rpt-{taskname}-final.md`.
+Codex CLI 0.121.0+ offers two valid patterns for Repromptverse fan-out. Pick based on whether orchestration happens inside or outside the Codex session.
 
-If Codex parallel sessions are not available, immediately fall back to Option E.
+| Pattern | When to use | Mechanism |
+|---|---|---|
+| **D1: Native subagents** | In-session orchestration, shared context, single synthesis, per-agent TOML role definitions | `[agents]` config + prompt-driven spawn |
+| **D2: Shell-level `codex exec`** | External orchestration, per-agent model/profile, structured stdout/stderr logs, total isolation | `codex exec --ephemeral --full-auto ... &` + `wait` |
+
+See `references/runtime/codex-runtime.md` for the full runtime contract (invocation, artifacts, retries, known gotchas).
+
+**D1 — Native subagents (Codex 0.121.0+, shipped 2026-03-16)**
+
+Enable in `~/.codex/config.toml`:
+
+```toml
+[features]
+multi_agent = true
+
+[agents]
+max_threads = 6       # concurrent workers (default)
+max_depth = 1         # no sub-subagents by default
+job_max_runtime_seconds = 1800
+```
+
+Define each repromptverse role once as `~/.codex/agents/<name>.toml`:
+
+```toml
+name = "rpt_audit_explorer"
+description = "Read-only exploration for Repromptverse audit fan-out."
+model = "gpt-5.4"
+model_reasoning_effort = "high"
+sandbox_mode = "read-only"
+developer_instructions = """
+You are one of N parallel audit workers. Write your findings to the
+artifact path specified by the orchestrator. Cite file:line for every
+claim. Do not speculate. Call report_agent_job_result exactly once
+before going idle.
+"""
+```
+
+Subagents are prompt-driven in Codex (not flag-driven). The orchestrator prompt fans out in natural language:
+
+```
+Spawn one rpt_audit_explorer subagent per audit dimension
+(methodology, code, stats, narrative, attack-surface, claims).
+Each subagent writes to /tmp/rpt-{taskname}-{dimension}.md.
+After all six complete, read their artifacts and synthesize
+the final report to /tmp/rpt-{taskname}-final.md.
+```
+
+The `[agents] max_threads` cap is enforced natively — no FIFO semaphore needed. Known gotchas: issue #14866 (stuck "awaiting instruction"), #15177 (model override leak in child metadata).
+
+**D2 — Shell-level `codex exec` (portable, any version)**
+
+Shell-level parallelism works on any POSIX shell. `codex exec` is one-shot, so backgrounding each agent and waiting is the portable pattern:
+
+```bash
+# 0. Materialize per-agent prompt files (Phase 2 split).
+#    Convention: /tmp/rpt-{taskname}-{agent}.prompt.md
+ls /tmp/rpt-{taskname}-*.prompt.md
+
+# 1. Launch each agent in the background with --ephemeral (avoids
+#    issue #11435: shared session-restore corruption between parallel exec).
+MODEL="gpt-5.4"
+for agent in planner critic synthesizer; do
+  codex exec \
+    --model "$MODEL" \
+    --ephemeral \
+    --full-auto \
+    --output-last-message "/tmp/rpt-{taskname}-${agent}.log" \
+    "$(cat /tmp/rpt-{taskname}-${agent}.prompt.md)" \
+    > "/tmp/rpt-{taskname}-${agent}.stdout" 2>&1 &
+done
+
+# 2. Wait for all background sessions.
+wait
+
+# 3. Verify each agent wrote its artifact (exclude .prompt.md inputs).
+ls /tmp/rpt-{taskname}-*.md 2>/dev/null | grep -v '\.prompt\.md$'
+
+# 4. Run Phase 4 evaluator loop.
+```
+
+Status Line during execution: Codex CLI has no built-in TaskList. Derive status from artifact presence — crucially, **exclude the `.prompt.md` input files** or the counter will report "done" before any agent writes output:
+
+```bash
+done=$(ls /tmp/rpt-{taskname}-*.md 2>/dev/null | grep -v '\.prompt\.md$' | wc -l | tr -d ' ')
+total=3
+echo "Agents: ✅ $done/$total  ⏳ $((total-done))/$total"
+```
+
+**Retries:** Re-run `codex exec` for the failing agent with the delta prompt (Phase 4). Do NOT re-run the whole fleet.
+
+**Concurrency cap (D2):** Default to 4 or `nproc`, whichever is lower. More than 4 concurrent Codex sessions against the same account can hit rate limits.
+
+**If `wait` hangs (D2):** one agent stalled. Inspect `/tmp/rpt-{taskname}-*.stdout`, kill that PID, retry just that agent.
+
+**Single-session fallback:** if the environment doesn't allow backgrounding or subagents (sandboxed shells, notebook runners), use Option E — the reprompted prompts are plain text and run identically in one session, just slower.
+
+**When to pick D1 vs D2:**
+
+| Situation | Pick |
+|---|---|
+| Agents share context; one summary output expected | D1 |
+| Need per-agent log files or model/profile overrides | D2 |
+| Orchestrating from CI or shell script outside Codex | D2 |
+| You want fresh context per worker without re-ingesting the codebase | D1 |
+| Codex < 0.121.0 or `multi_agent` feature disabled | D2 |
 
 #### Option E: Sequential (any LLM)
 
@@ -1063,6 +1162,41 @@ In `~/.claude/settings.json`:
 | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` | `"1"` | Enables agent team spawning |
 | `teammateMode` | `"tmux"` / `"default"` | `tmux`: each teammate gets a visible split pane. `default`: teammates run in background |
 | `model` | `"opus"` / `"sonnet"` | Teammates default to Haiku. Always set `model: opus` explicitly in your prompt — do not rely on runtime defaults. |
+
+### Codex CLI
+
+Install the skill under `~/.codex/skills/reprompter/` (same structure as `~/.claude/skills/`). Codex reads config from `~/.codex/config.toml`:
+
+```toml
+# ~/.codex/config.toml
+model = "gpt-5.4"          # default model for agent runs
+approval_policy = "never"  # required for --full-auto (Option D2): skip interactive approvals
+
+[features]
+multi_agent = true         # enables native subagents (Option D1, Codex 0.121.0+)
+codex_hooks = false        # experimental; leave off unless you need hook events
+
+[agents]
+max_threads = 6            # concurrent subagent workers (default)
+max_depth = 1              # no sub-subagents by default
+job_max_runtime_seconds = 1800
+
+[reprompter]
+default_mode = "parallel"  # parallel | sequential — Phase 1 picks Option D vs E
+artifact_root = "/tmp"     # override if your runtime sandboxes /tmp
+```
+
+| Setting | Values | Effect |
+|---------|--------|--------|
+| `model` | any Codex-supported id | Default model when `--model` is omitted from `codex exec`. |
+| `approval_policy` | `"untrusted"` / `"on-request"` / `"never"` | `never` is required for Option D2 backgrounding (no interactive prompts). `on-request` is the Codex default and blocks backgrounded workers. |
+| `features.multi_agent` | `true` / `false` | Enables native subagents (Option D1). Shipped 2026-03-16. |
+| `agents.max_threads` | integer, default `6` | Concurrent subagent worker cap. |
+| `agents.max_depth` | integer, default `1` | Spawn nesting depth (1 = subagents only, no grandchildren). |
+| `reprompter.default_mode` | `"parallel"` / `"sequential"` | Skill-defined hint consumed by Phase 1. |
+| `reprompter.artifact_root` | absolute path | Override `/tmp` when needed. |
+
+If Codex CLI is the only runtime available, skip the Claude Code block above — Single and Repromptverse modes do not require Claude Code to be installed.
 
 ---
 
