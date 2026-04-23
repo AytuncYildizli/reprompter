@@ -18,28 +18,55 @@ concurrency:
 
 jobs:
   droid:
+    # Gate: the actor who triggered THIS event must be trusted + @droid must be in the relevant body
     if: |
       github.event.sender.type != 'Bot' &&
       (
-        github.event.issue.author_association == 'OWNER' ||
-        github.event.issue.author_association == 'MEMBER' ||
-        github.event.issue.author_association == 'COLLABORATOR' ||
-        github.event.comment.author_association == 'OWNER' ||
-        github.event.comment.author_association == 'MEMBER' ||
-        github.event.comment.author_association == 'COLLABORATOR' ||
-        github.event.review.author_association == 'OWNER' ||
-        github.event.review.author_association == 'MEMBER' ||
-        github.event.review.author_association == 'COLLABORATOR' ||
-        github.event.pull_request.author_association == 'OWNER' ||
-        github.event.pull_request.author_association == 'MEMBER' ||
-        github.event.pull_request.author_association == 'COLLABORATOR'
-      ) &&
-      (
-        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@droid')) ||
-        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@droid')) ||
-        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@droid')) ||
-        (github.event_name == 'issues' && (contains(github.event.issue.body, '@droid') || contains(github.event.issue.title, '@droid'))) ||
-        (github.event_name == 'pull_request' && (contains(github.event.pull_request.body, '@droid') || contains(github.event.pull_request.title, '@droid')))
+        (
+          github.event_name == 'issue_comment' &&
+          contains(github.event.comment.body, '@droid') &&
+          (
+            github.event.comment.author_association == 'OWNER' ||
+            github.event.comment.author_association == 'MEMBER' ||
+            github.event.comment.author_association == 'COLLABORATOR'
+          )
+        ) ||
+        (
+          github.event_name == 'pull_request_review_comment' &&
+          contains(github.event.comment.body, '@droid') &&
+          (
+            github.event.comment.author_association == 'OWNER' ||
+            github.event.comment.author_association == 'MEMBER' ||
+            github.event.comment.author_association == 'COLLABORATOR'
+          )
+        ) ||
+        (
+          github.event_name == 'pull_request_review' &&
+          contains(github.event.review.body, '@droid') &&
+          (
+            github.event.review.author_association == 'OWNER' ||
+            github.event.review.author_association == 'MEMBER' ||
+            github.event.review.author_association == 'COLLABORATOR'
+          )
+        ) ||
+        (
+          github.event_name == 'issues' &&
+          (contains(github.event.issue.body, '@droid') || contains(github.event.issue.title, '@droid')) &&
+          (
+            github.event.issue.author_association == 'OWNER' ||
+            github.event.issue.author_association == 'MEMBER' ||
+            github.event.issue.author_association == 'COLLABORATOR'
+          )
+        ) ||
+        (
+          github.event_name == 'pull_request' &&
+          (contains(github.event.pull_request.body, '@droid') || contains(github.event.pull_request.title, '@droid')) &&
+          (
+            github.event.pull_request.author_association == 'OWNER' ||
+            github.event.pull_request.author_association == 'MEMBER' ||
+            github.event.pull_request.author_association == 'COLLABORATOR'
+          )
+        )
       )
     runs-on: ubuntu-latest
     permissions:
