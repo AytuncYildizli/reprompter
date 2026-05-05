@@ -49,6 +49,13 @@ test("uses single mode without multi-agent trigger", () => {
   assert.equal(result.profile, "single");
 });
 
+test("keeps Codex /goal preflight prompts in single mode", () => {
+  const result = routeIntent("reprompt this for Codex /goal: make RePrompter better");
+  assert.equal(result.mode, "single");
+  assert.equal(result.profile, "single");
+  assert.equal(result.reason, "single-mode-intent");
+});
+
 test("forceMultiAgent allows domain routing even without explicit trigger phrase", () => {
   const result = routeIntent("launch growth seo content calendar", {
     forceMultiAgent: true,

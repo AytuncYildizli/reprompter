@@ -24,7 +24,7 @@ metadata:
 
 ## Four output lanes
 
-| Mode | Trigger | What happens |
+| Lane | Trigger | What happens |
 |------|---------|-------------|
 | **Single** | "reprompt this", "clean up this prompt" | Interview → structured prompt → score |
 | **Codex Goal** | "before /goal", "for /goal", "Codex /goal", "Codex goal prompt" | Codex-only: infer user intent → build expanded prompt → compress into exact `/goal <summary of expanded prompt>` command |
@@ -46,7 +46,7 @@ Definition — **2+ systems** means at least two distinct technical domains that
 
 ---
 
-## Codex `/goal` preflight
+## Lane: Codex `/goal` preflight
 
 When the user mentions Codex `/goal`, `before /goal`, `for /goal`, or asks to improve a Codex goal prompt, run RePrompter before the goal is submitted.
 
@@ -131,7 +131,7 @@ Then start a fresh Codex session so the slash-command surface reloads.
 
 ---
 
-## Mode 1: Single prompt
+## Lane: Single prompt
 
 ### Process
 
@@ -338,7 +338,7 @@ Auto-detect tech stack from current working directory ONLY:
 
 ---
 
-## Mode 2: Repromptverse (Agent Teams)
+## Lane: Repromptverse (Agent Teams)
 
 ### TL;DR
 
@@ -911,7 +911,7 @@ The reprompted prompts from Phase 2 are pure text. They work regardless of execu
 
 ---
 
-## Mode 3: Reverse Reprompter
+## Lane: Reverse Reprompter
 
 ### TL;DR
 
