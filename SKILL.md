@@ -1,31 +1,33 @@
 ---
 name: reprompter
 description: |
-  Transform messy prompts into structured, effective prompts — single, multi-agent, or reverse-engineered from great outputs.
-  Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", rough text needing XML tags, "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "campaign swarm", "engineering swarm", "ops swarm", "research swarm", multi-agent tasks, audits, parallel work, "reverse reprompt", "reprompt from example", "learn from this", "extract prompt from", "prompt dna", "prompt genome", reverse-engineering prompts from exemplar outputs.
-  Don't use for simple Q&A, pure chat, or immediate execution-only tasks (see "Don't Use When" section).
-  Outputs: structured XML/Markdown prompt, before/after quality score, optional team brief + per-agent sub-prompts, Agent Cards, Extraction Card (reverse mode).
-  Target quality score: Single ≥ 7/10; Repromptverse per-agent ≥ 8/10; Reverse ≥ 7/10.
+  Transform rough prompts into structured, high-scoring prompts for coding agents.
+  Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", "before /goal", "for /goal", "Codex /goal", "Codex goal prompt", "reprompter teams", "repromptverse", "smart run", "smart agents", "campaign swarm", "engineering swarm", "ops swarm", "research swarm", multi-agent tasks, audits, parallel work, "reverse reprompt", "learn from this", "extract prompt from", "prompt dna", "prompt genome".
+  Don't use for simple Q&A, casual chat, or execution-only tasks.
+  Outputs: structured XML/Markdown prompt, before/after score, Codex /goal command card with compressed summary of the expanded prompt, optional team brief + per-agent prompts, Agent Cards, Extraction Card.
+  Target score: Single and Codex Goal >= 7/10; Repromptverse per-agent >= 8/10; Reverse >= 7/10.
 compatibility: |
   Single mode works on Claude surfaces, OpenClaw, and Codex.
+  Codex Goal mode is Codex CLI only because `/goal` is a Codex slash command.
   Repromptverse mode supports Claude Code (TeamCreate or tmux), OpenClaw (sessions_spawn), and Codex CLI (native subagents in 0.121.0+ or shell-level parallelism via `codex exec` + background + wait, see Option D).
   Sequential fallback (Option E) works with any LLM runtime.
 metadata:
   author: AytuncYildizli
-  version: 12.1.0
+  version: 12.2.0
 ---
 
-# RePrompter v12.1.0
+# RePrompter v12.2.0
 
-> **Your prompt sucks. Let's fix that.** Single prompts, full agent teams, or reverse-engineer from great outputs — one skill, three modes. **v12.0 closes the loop: every prompt emits success criteria, every run can be recorded + scored + fed into a local flywheel that biases future generations toward what actually worked — with an A/B report to prove it.**
+> **Your prompt sucks. Let's fix that.** Single prompts, Codex `/goal` preflight, full agent teams, or reverse-engineer from great outputs — one skill, four output lanes. **v12.2 adds a dedicated Codex Goal Command Card so `/goal <objective>` receives a scoped, testable objective instead of a vague wish.**
 
 ---
 
-## Two modes
+## Four output lanes
 
 | Mode | Trigger | What happens |
 |------|---------|-------------|
 | **Single** | "reprompt this", "clean up this prompt" | Interview → structured prompt → score |
+| **Codex Goal** | "before /goal", "for /goal", "Codex /goal", "Codex goal prompt" | Codex-only: infer user intent → build expanded prompt → compress into exact `/goal <summary of expanded prompt>` command |
 | **Repromptverse** | "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "campaign swarm", "engineering swarm", "ops swarm", "research swarm" | Dimension Interview → Plan team → Agent Cards → reprompt each agent → execute → Result Cards → evaluate → retry |
 | **Reverse** | "reverse reprompt", "reprompt from example", "learn from this", "extract prompt from", "prompt dna", "prompt genome" | Analyze exemplar → classify → extract prompt DNA → generate XML prompt → score → inject into flywheel |
 
@@ -41,6 +43,91 @@ Definition — **2+ systems** means at least two distinct technical domains that
 - Scope does not involve prompt design, structure, or orchestration
 
 > Clarification: RePrompter **does** support code-related tasks (feature, bugfix, API, refactor) by generating better prompts. It does **not** directly apply code changes in Single mode. Direct code execution belongs to coding-agent unless Repromptverse execution mode is explicitly requested.
+
+---
+
+## Codex `/goal` preflight
+
+When the user mentions Codex `/goal`, `before /goal`, `for /goal`, or asks to improve a Codex goal prompt, run RePrompter before the goal is submitted.
+
+This lane is **Codex CLI only**. If the target runtime is Claude, OpenClaw, Gemini, or another LLM, use Single mode or Repromptverse instead; do not emit a `/goal` command for non-Codex runtimes.
+
+Process:
+
+1. Treat the input as **Single prompt mode** unless it clearly needs Repromptverse.
+2. Render the **Codex Goal Command Card** first.
+3. Infer the user's real intent from the rough prompt: desired outcome, hidden constraint, success signal, and likely risk.
+4. Build the rich expanded prompt first, using the normal RePrompter structure: goal/task, context, requirements, constraints, execution notes, and success criteria.
+5. Compress that expanded prompt into a dense one-line goal summary. This should feel like a summary of a long XML prompt, not a slightly polished copy of the user's rough sentence.
+6. Generate an exact copy-paste command in Codex's native shape: `/goal <summary of expanded prompt>`.
+7. Do not put the full XML or Markdown document after `/goal`; only the compressed summary belongs in the command.
+8. Include the expanded prompt basis after the command so the user can inspect what was compressed or send it as a follow-up normal message after the goal is set.
+9. Tell the user to run the exact `/goal <summary of expanded prompt>` command in Codex.
+10. Do not claim RePrompter can automatically intercept `/goal`; Codex slash commands are user-invoked unless the local runtime adds a separate hook.
+
+### Codex Goal Command Card
+
+Codex's alpha `/goal` surface is command-shaped: `Usage: /goal <objective>`. Render this card before the generated command:
+
+| Field | Content |
+|-------|---------|
+| Goal Command | Exact one-line `/goal <summary of expanded prompt>` command |
+| Compressed From | `Expanded RePrompter prompt` |
+| Objective | One sentence naming the reprompted intent Codex should pursue |
+| Runtime | `Codex CLI only` |
+| Mode | `Codex /goal preflight` |
+| Paste Into | Codex TUI prompt, as-is |
+| Risk Level | `low` / `medium` / `high`, based on blast radius |
+| Missing Inputs | Up to 3 unknowns; write `none` if the prompt is ready |
+| Verification | 2-4 checks Codex should run while pursuing the goal |
+| Quality | Before score → after score, with the weakest remaining dimension |
+
+Then output:
+
+```text
+/goal {dense single-line summary of the expanded prompt}
+```
+
+Then show the expanded prompt basis:
+
+```xml
+<goal>{specific outcome}</goal>
+<context>
+- {known repo/runtime/user context}
+</context>
+<requirements>
+- {measurable requirement}
+</requirements>
+<constraints>
+- {boundary or non-goal}
+</constraints>
+<execution_notes>
+- Start with discovery before edits.
+- Keep changes scoped and reversible.
+- Run the verification checks listed in the Goal Command Card.
+</execution_notes>
+<success_criteria schema_version="1">
+  <criterion id="{kebab-case-id}" verification_method="manual">
+    <description>{testable pass condition}</description>
+  </criterion>
+</success_criteria>
+```
+
+Codex setup check:
+
+```bash
+npm install -g @openai/codex@latest
+codex features list | grep '^goals'
+```
+
+If the feature exists but is disabled, configure:
+
+```toml
+[features]
+goals = true
+```
+
+Then start a fresh Codex session so the slash-command surface reloads.
 
 ---
 
@@ -1197,6 +1284,7 @@ approval_policy = "never"  # for interactive Codex TUI only; `codex exec` alread
 
 [features]
 multi_agent = true         # enables native subagents (Option D1, Codex 0.121.0+)
+goals = true               # enables /goal preflight flow when the CLI release gates it
 codex_hooks = false        # experimental; leave off unless you need hook events
 
 [agents]
@@ -1214,6 +1302,7 @@ artifact_root = "/tmp"     # override if your runtime sandboxes /tmp
 | `model` | any Codex-supported id | Default model when `--model` is omitted from `codex exec`. |
 | `approval_policy` | `"untrusted"` / `"on-request"` / `"never"` | Applies to the interactive Codex TUI. `codex exec` runs headless and defaults to `never`, so Option D2 workers never need this key set. |
 | `features.multi_agent` | `true` / `false` | Enables native subagents (Option D1). Default-enabled in current Codex releases (0.121.0+); set explicitly only if your config disabled it. |
+| `features.goals` | `true` / `false` | Enables Codex `/goal` when the installed CLI exposes the experimental goals feature. Use RePrompter first, then run its exact `/goal <summary of expanded prompt>` command. Codex-only. |
 | `agents.max_threads` | integer, default `6` | Concurrent subagent worker cap. |
 | `agents.max_depth` | integer, default `1` | Spawn nesting depth (1 = subagents only, no grandchildren). |
 | `reprompter.default_mode` | `"parallel"` / `"sequential"` | Skill-defined hint consumed by Phase 1. |
