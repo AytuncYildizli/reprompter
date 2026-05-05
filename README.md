@@ -8,7 +8,7 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-12.1.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-12.2.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-205%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
@@ -22,11 +22,12 @@ RePrompter is a prompt engineering skill for AI coding agents. It takes rough, l
 
 ---
 
-## Three Modes
+## Four Output Lanes
 
 | Mode | What it does | Trigger |
 |------|-------------|---------|
 | **Single** | Interview, structure, score one prompt | `reprompt this`, `clean up this prompt` |
+| **Codex Goal** | Codex-only: infer intent, build the expanded prompt, then compress it into `/goal <summary of expanded prompt>` | `reprompt this for Codex /goal`, `before /goal` |
 | **Repromptverse** | Plan a team of 2-5 agents, reprompt each one, execute in parallel, evaluate, retry | `reprompter teams`, `repromptverse`, `smart run` |
 | **Reverse** | Show a great output, extract the prompt DNA that produced it | `reverse reprompt`, `learn from this`, `prompt dna` |
 
@@ -124,6 +125,16 @@ curl -sL https://github.com/aytuncyildizli/reprompter/archive/main.tar.gz | \
 cp -R reprompter /path/to/workspace/skills/reprompter
 ```
 
+For Codex, install or update the CLI and confirm the goals feature is available:
+
+```bash
+npm install -g @openai/codex@latest
+codex --version
+codex features list | grep '^goals'
+```
+
+If `goals` is present but disabled, set `features.goals = true` in `~/.codex/config.toml` and start a fresh Codex session before using `/goal`.
+
 ### Any LLM
 
 Use `SKILL.md` as the behavior spec. Templates are in `references/`.
@@ -134,6 +145,35 @@ Use `SKILL.md` as the behavior spec. Templates are in `references/`.
 
 ```
 reprompt this: build a REST API with auth and rate limiting
+```
+
+### Codex `/goal` Preflight
+
+Use RePrompter before Codex `/goal` whenever the goal is bigger than a single direct instruction. This lane is Codex-only because `/goal` is a Codex slash command. Codex's goal command is shaped as `/goal <objective>`, so RePrompter first builds the full expanded prompt, then compresses it into a dense copy-pasteable `/goal <summary of expanded prompt>` command. The command should read like a summary of the old long XML prompt, not a tiny rewrite of the rough input.
+
+```
+reprompt this for Codex /goal: migrate our billing dashboard to the new API without breaking existing reports
+```
+
+RePrompter first shows a Goal Command Card:
+
+| Field | Example |
+|-------|---------|
+| Goal Command | `/goal Migrate billing dashboard API usage to the new API by first mapping current data/report consumers, preserving schemas, filters, exports, scheduled outputs, and historical totals, implementing the smallest compatible adapter changes, adding parity fixtures, and proving compatibility with unit, integration, dashboard smoke, and report export checks.` |
+| Compressed From | Expanded RePrompter prompt |
+| Objective | Migrate billing dashboard API usage without breaking reports |
+| Runtime | Codex CLI only |
+| Mode | Codex `/goal` preflight |
+| Paste Into | Codex TUI prompt, as-is |
+| Risk Level | medium |
+| Missing Inputs | API contract diff, report smoke path |
+| Verification | `npm test`, dashboard smoke, report export check |
+| Quality | 3/10 → 8/10 |
+
+Then run the generated command in Codex:
+
+```
+/goal Migrate billing dashboard API usage to the new API by first mapping current data/report consumers, preserving schemas, filters, exports, scheduled outputs, and historical totals, implementing the smallest compatible adapter changes, adding parity fixtures, and proving compatibility with unit, integration, dashboard smoke, and report export checks.
 ```
 
 ```
@@ -228,6 +268,7 @@ All benchmarks at 100%: routing (64/64), artifacts (84/84), flywheel (13/13), pr
 | Capability | Claude Code | Codex | OpenClaw | Any LLM |
 |-----------|:-:|:-:|:-:|:-:|
 | Single mode | yes | yes | yes | yes |
+| Codex `/goal` preflight | - | yes | - | - |
 | Reverse mode | yes | yes | yes | yes |
 | Multi-agent parallel | yes | yes | yes | - |
 | Multi-agent sequential | yes | yes | yes | yes |

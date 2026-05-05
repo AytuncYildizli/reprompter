@@ -6,6 +6,63 @@ Canonical reference for running Repromptverse on OpenAI Codex CLI. Used by Phase
 
 ---
 
+## `/goal` preflight with RePrompter
+
+Use RePrompter as the intent preflight step for Codex `/goal`. This flow is Codex-only because `/goal` is a Codex slash command.
+
+1. Ask RePrompter to improve the rough goal.
+2. RePrompter infers the user's intent and builds the expanded prompt first.
+3. RePrompter compresses that expanded prompt into a dense one-line `/goal <summary of expanded prompt>` command.
+4. Review the Goal Command Card for the exact command, risk, missing inputs, verification, and expanded prompt basis.
+5. Run the generated command in Codex.
+6. Optionally send the expanded prompt basis as the next normal message after the goal is set.
+
+Example:
+
+```text
+reprompt this for Codex /goal: ship a safe checkout migration with tests and rollback
+```
+
+Then in Codex:
+
+```text
+/goal Ship a safe checkout migration by mapping current checkout flows, identifying rollback boundaries, preserving payment/session/order behavior, implementing the smallest compatible changes, adding regression coverage for critical checkout paths, and proving rollback plus compatibility through unit, integration, and checkout smoke checks.
+```
+
+Required Goal Command Card shape:
+
+| Field | Content |
+|---|---|
+| Goal Command | Exact one-line `/goal <summary of expanded prompt>` command |
+| Compressed From | `Expanded RePrompter prompt` |
+| Objective | One sentence naming the reprompted intent Codex should pursue |
+| Runtime | `Codex CLI only` |
+| Mode | `Codex /goal preflight` |
+| Paste Into | Codex TUI prompt, as-is |
+| Risk Level | `low` / `medium` / `high` |
+| Missing Inputs | Up to 3 unknowns, or `none` |
+| Verification | 2-4 checks the later goal should run |
+| Quality | Before score -> after score, with the weakest remaining dimension |
+
+Feature check:
+
+```bash
+npm install -g @openai/codex@latest
+codex features list | grep '^goals'
+```
+
+If the CLI reports `goals` but the effective state is `false`, enable only that flag:
+
+```toml
+# ~/.codex/config.toml
+[features]
+goals = true
+```
+
+Start a fresh Codex session after changing the feature flag. RePrompter does not automatically intercept slash commands; the integration contract is "Reprompter infers intent, builds the expanded prompt, emits the exact Codex-only `/goal <summary of expanded prompt>` command, then the user runs it."
+
+---
+
 ## When to pick D1 (native subagents) vs D2 (shell-level)
 
 | Situation | Pick |

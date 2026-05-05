@@ -150,6 +150,22 @@ Verification scenarios for the RePrompter skill. Run these manually to validate 
 - Generated prompt includes required XML sections
 - Before/after quality score table is shown
 
+## Scenario 14b: Codex `/goal` Preflight
+
+**Setup:** Use Codex CLI with `features.goals = true`.
+**Input:** "reprompt this for Codex /goal: migrate billing dashboard API usage without breaking reports"
+**Expected:** Codex Goal lane triggers before `/goal` execution, stays Codex-only, infers the user's intent, builds the expanded prompt first, and emits Codex's native `/goal <summary of expanded prompt>` shape.
+**Verify:**
+- Output starts with a Codex Goal Command Card
+- Card includes Goal Command, Compressed From, Objective, Runtime, Mode, Paste Into, Risk Level, Missing Inputs, Verification, and Quality
+- Runtime is `Codex CLI only`
+- Compressed From is `Expanded RePrompter prompt`
+- Goal Command is an exact one-line `/goal <summary of expanded prompt>` command
+- Output makes clear the command is for Codex, not Claude/OpenClaw/other runtimes
+- Goal Command is substantially richer than the rough user input and summarizes goal, context, constraints, execution approach, and verification
+- Expanded prompt basis appears separately from the `/goal` command
+- Output does not claim automatic slash-command interception
+
 ## Scenario 15: Repromptverse Contract Coverage
 
 **Input:** "repromptverse - run 4 agents for security/cost/config/memory audit"

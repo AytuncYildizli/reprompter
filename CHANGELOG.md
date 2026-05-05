@@ -1,5 +1,37 @@
 # RePrompter Changelog
 
+## v12.2.0 (2026-05-05) — Codex `/goal` preflight
+
+### Headline
+
+RePrompter now has a dedicated Codex `/goal` preflight lane. Instead of handing Codex a rough wish, users can run RePrompter first so it infers the user's intent, builds the expanded prompt, and returns an exact `/goal <summary of expanded prompt>` command aligned with the alpha goal surface.
+
+Docs + skill release. No runtime dependencies added.
+
+### Added
+
+- **Codex Goal Command Card** — a mandatory Codex-only preflight card for `/goal` prompts with the exact `/goal <summary of expanded prompt>` command, inferred objective, explicit Codex CLI runtime, expanded-prompt provenance, mode, paste destination, risk level, missing inputs, verification checks, and before/after quality score.
+- **`/goal` trigger routing** in SKILL.md frontmatter for `before /goal`, `for /goal`, `Codex /goal`, and `goal prompt`.
+- **Codex setup verification** in README and runtime docs: `npm install -g @openai/codex@latest`, `codex features list | grep '^goals'`, and `features.goals = true` when the installed CLI gates `/goal`.
+- **User-facing README example** showing the Goal Command Card plus the native `/goal` command populated with a dense summary of the expanded prompt.
+- **Runtime reference contract** documenting that RePrompter is a preflight step, not an automatic slash-command interceptor.
+
+### Changed
+
+- Version aligned across README badge, SKILL metadata/header, and `package.json` at `12.2.0`.
+- SKILL.md frontmatter description was tightened to stay below Codex's 1024-character skill-description limit while adding the new `/goal` triggers.
+
+### Verified
+
+- `codex --version` with the local alpha build that exposes `goals`.
+- `codex features list | grep '^goals'` reports `experimental true`.
+- `codex login status` remains ChatGPT/OAuth.
+- Local alpha binary strings show `Usage: /goal <objective>`, `ThreadGoal.objective`, `tokenBudget`, `/goal pause`, `/goal resume`, and `/goal clear`; the release docs now target that shape instead of a multiline paste-after-command flow.
+- `codex exec --ephemeral --sandbox read-only ... 'reprompt this for Codex /goal: ...'` produced the required Codex Goal Command Card and exact one-line `/goal` command populated with a dense summary of the expanded prompt.
+- Self-test prompt `reprompt this for Codex /goal: make RePrompter better` produced a Codex-only card with `Runtime: Codex CLI only`, `Compressed From: Expanded RePrompter prompt`, a dense summary-style `/goal` command, and a separate XML-style expanded prompt basis for improving RePrompter itself.
+- `npm run validate:templates`
+- `npm run validate:tool-refs`
+
 ## v12.1.0 (2026-04-18) — Codex CLI runtime contract + factual corrections
 
 ### Headline
