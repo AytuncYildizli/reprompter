@@ -24,10 +24,10 @@ RePrompter is a prompt engineering skill for AI coding agents. It takes rough, l
 
 ## Four Output Lanes
 
-| Mode | What it does | Trigger |
+| Lane | What it does | Trigger |
 |------|-------------|---------|
 | **Single** | Interview, structure, score one prompt | `reprompt this`, `clean up this prompt` |
-| **Codex Goal** | Codex-only: infer intent, build the expanded prompt, then compress it into `/goal <summary of expanded prompt>` | `reprompt this for Codex /goal`, `before /goal` |
+| **Codex Goal** | Codex-only: infer intent, build the expanded prompt, then compress it into `/goal <summary of expanded prompt>` | `before /goal`, `for /goal`, `Codex /goal`, `Codex goal prompt` |
 | **Repromptverse** | Plan a team of 2-5 agents, reprompt each one, execute in parallel, evaluate, retry | `reprompter teams`, `repromptverse`, `smart run` |
 | **Reverse** | Show a great output, extract the prompt DNA that produced it | `reverse reprompt`, `learn from this`, `prompt dna` |
 
