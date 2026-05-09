@@ -176,6 +176,21 @@ Then run the generated command in Codex:
 /goal Migrate billing dashboard API usage to the new API by first mapping current data/report consumers, preserving schemas, filters, exports, scheduled outputs, and historical totals, implementing the smallest compatible adapter changes, adding parity fixtures, and proving compatibility with unit, integration, dashboard smoke, and report export checks.
 ```
 
+For automation surfaces such as Whip, the same contract is available as a local
+runtime command:
+
+```bash
+node scripts/goal-command.js \
+  --input "migrate our billing dashboard to the new API without breaking reports" \
+  --target codex \
+  --out-dir /tmp/reprompter-goal
+```
+
+It writes `goal-command.json`, `goal-command.txt`,
+`goal-command-card.json`, `reprompter-expanded-prompt.md`, and
+`compressed-goal-summary.txt`. The command is artifact generation only; it does
+not execute `/goal`, dispatch agents, read secrets, or touch production.
+
 ```
 reprompter teams - audit the auth module for security and test coverage
 ```
