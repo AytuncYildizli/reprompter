@@ -134,7 +134,7 @@ The compression flow is shared, but the two `/goal` surfaces have small behavior
 - The evaluator only judges what Claude **surfaces in the transcript**, so the expanded prompt should require the agent to print artifact paths, file contents, or test results — proof must be visible.
 - Pause / resume controls: `/goal pause` and `/goal resume` (handy for long-running goals interrupted by ad-hoc work).
 - Optional budget constraints (token or wall-clock) prevent runaway costs.
-- v2.1.140 fixed a bug where `/goal` silently hung when `disableAllHooks` or `allowManagedHooksOnly` was set in `settings.json` — pin to that or later when hooks are in use.
+- **`/goal` requires hooks.** When `disableAllHooks` or `allowManagedHooksOnly` is set in `settings.json`, `/goal` is unavailable. v2.1.139 silently hung in this case; v2.1.140 changed the failure mode to a clear error message but did **not** make `/goal` work under those settings. If you operate in a managed environment that blocks hooks, the `/goal` preflight lane cannot run on Claude Code until hooks are permitted — use Single mode in that case.
 
 **Codex CLI**:
 - `/goal` is an experimental alpha feature gated by `features.goals = true` in `~/.codex/config.toml`. The local alpha binary exposes `Usage: /goal <objective>`, `ThreadGoal.objective`, `tokenBudget`, `/goal pause`, `/goal resume`, and `/goal clear`.
@@ -1317,7 +1317,7 @@ In `~/.claude/settings.json`:
 | `teammateMode` | `"tmux"` / `"default"` | `tmux`: each teammate gets a visible split pane. `default`: teammates run in background |
 | `model` | `"opus"` / `"sonnet"` | Teammates default to Haiku. Always set `model: opus` explicitly in your prompt — do not rely on runtime defaults. |
 
-`/goal` preflight on Claude Code requires CLI v2.1.139+ (no config flag needed). If `disableAllHooks` or `allowManagedHooksOnly` is set in `settings.json`, pin to v2.1.140+ — v2.1.139 silently hangs `/goal` under those keys. See the `/goal` preflight lane near the top of this skill for the full Card + command flow.
+`/goal` preflight on Claude Code requires CLI v2.1.139+ (no config flag needed). `/goal` depends on Claude Code's hooks layer: if `disableAllHooks` or `allowManagedHooksOnly` is set in `settings.json`, `/goal` is unavailable on any version. v2.1.139 silently hung in that case; v2.1.140 surfaces a clear error message instead, but neither version runs `/goal` under hook-blocking settings — you must permit hooks for the lane to work. See the `/goal` preflight lane near the top of this skill for the full Card + command flow.
 
 ### Codex CLI
 

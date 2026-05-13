@@ -119,7 +119,7 @@ curl -sL https://github.com/aytuncyildizli/reprompter/archive/main.tar.gz | \
   tar xz --strip-components=1 -C skills/reprompter
 ```
 
-For the `/goal` preflight lane on Claude Code, pin the CLI to **v2.1.139 or later** (v2.1.140+ recommended if `disableAllHooks` or `allowManagedHooksOnly` is set in `settings.json`):
+For the `/goal` preflight lane on Claude Code, pin the CLI to **v2.1.139 or later**. `/goal` depends on the hooks layer — if `disableAllHooks` or `allowManagedHooksOnly` is set in `settings.json` the command is unavailable on any version (v2.1.140 only made the failure visible). Managed environments that block hooks should stick to Single mode for goal-shaped work.
 
 ```bash
 claude --version
@@ -299,7 +299,7 @@ All benchmarks at 100%: routing (64/64), artifacts (84/84), flywheel (13/13), pr
 | Multi-agent parallel | yes | yes | yes | - |
 | Multi-agent sequential | yes | yes | yes | yes |
 
-¹ Claude Code `/goal` requires CLI v2.1.139+ (shipped 2026-05-11). v2.1.140+ fixes a hang when `disableAllHooks` or `allowManagedHooksOnly` is set in `settings.json`. No config flag needed beyond the version pin.
+¹ Claude Code `/goal` requires CLI v2.1.139+ (shipped 2026-05-11) and depends on the hooks layer. Under `disableAllHooks` or `allowManagedHooksOnly` in `settings.json`, `/goal` is unavailable on any version — v2.1.140 only upgraded the failure mode from a silent hang to a clear error message. No config flag needed beyond the version pin in environments that permit hooks; managed environments that block hooks must use Single mode for goal-shaped work.
 
 Codex parallel paths: **D1 native subagents** (Codex CLI 0.121.0+, `multi_agent` default-enabled) or **D2 shell-level** (`codex exec --ephemeral --sandbox workspace-write` + background + `wait`; workspace-write is required for workers to write their `/tmp/rpt-*.md` artifacts, and `codex exec` keeps approval = `never` automatically). See SKILL.md Option D and `references/runtime/codex-runtime.md`.
 

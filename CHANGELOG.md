@@ -4,18 +4,18 @@
 
 ### Headline
 
-The `/goal` preflight lane is no longer Codex-only. Claude Code CLI shipped a native `/goal` slash command in **v2.1.139 on 2026-05-11** (and patched a hook-related hang in v2.1.140), so the v12.2 compression flow — infer intent → expanded prompt → dense `/goal <summary of expanded prompt>` command — now applies to both Codex and Claude Code without skill behavior changes. The Card stays the same shape; only the `Runtime` field and the Setup check block branch on the detected runtime.
+The `/goal` preflight lane is no longer Codex-only. Claude Code CLI shipped a native `/goal` slash command in **v2.1.139 on 2026-05-11** (v2.1.140 followed with a clearer error message when hook-restricting settings disable `/goal` — see below), so the v12.2 compression flow — infer intent → expanded prompt → dense `/goal <summary of expanded prompt>` command — now applies to both Codex and Claude Code without skill behavior changes. The Card stays the same shape; only the `Runtime` field and the Setup check block branch on the detected runtime.
 
 Docs-only release. No script behavior changes; `scripts/goal-command.js --target claude-code` is planned as a v12.4 follow-up.
 
 ### Added
 
 - **Runtime detection table** in the `/goal` preflight lane mapping user signals to runtime: explicit "Codex /goal" → Codex CLI, "Claude Code /goal" → Claude Code CLI (≥ v2.1.139), bare "/goal" → ASK with two options.
-- **Runtime-specific operational notes** in the lane: Claude Code `/goal` is thread-persistent (survives `/resume`, terminal close, context compaction), uses a Haiku evaluator that judges only what's surfaced in the transcript, supports `/goal pause` / `/goal resume`, and is gated by Claude Code CLI version (v2.1.139 minimum, v2.1.140+ recommended under hook-restricting settings). Codex notes preserved as before.
+- **Runtime-specific operational notes** in the lane: Claude Code `/goal` is thread-persistent (survives `/resume`, terminal close, context compaction), uses a Haiku evaluator that judges only what's surfaced in the transcript, supports `/goal pause` / `/goal resume`, and depends on the hooks layer (`disableAllHooks` / `allowManagedHooksOnly` disable `/goal` entirely on any version; v2.1.140 only changed the failure mode from a silent hang to a clear error message). Codex notes preserved as before.
 - **Setup check** subsection split into Codex (`codex features list | grep '^goals'` + `features.goals = true`) and Claude Code (`claude --version` ≥ 2.1.139, no config flag).
 - **Frontmatter `description:` triggers** "/goal preflight" and "Claude Code /goal" added alongside the existing Codex triggers. Total frontmatter stays under the 1024-char Codex skip threshold (v12.1.0 fix preserved).
 - **README Claude Code install hint** for the CLI version pin needed for `/goal`.
-- **Compatibility table** in README upgraded — `/goal` preflight row now checks Claude Code in addition to Codex, with a footnote on the v2.1.139 / v2.1.140 version pins.
+- **Compatibility table** in README upgraded — `/goal` preflight row now checks Claude Code in addition to Codex, with a footnote on the v2.1.139 version pin and the hooks-layer dependency (managed environments that block hooks fall back to Single mode for goal-shaped work).
 - **TESTING.md scenario 14b** parameterized to cover either runtime; new **scenario 14c** added specifically for Claude Code `/goal` (Haiku evaluator visibility, thread persistence, pause/resume mentions).
 
 ### Changed
