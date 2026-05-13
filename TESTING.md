@@ -150,21 +150,50 @@ Verification scenarios for the RePrompter skill. Run these manually to validate 
 - Generated prompt includes required XML sections
 - Before/after quality score table is shown
 
-## Scenario 14b: Codex `/goal` Preflight
+## Scenario 14b: `/goal` Preflight (Codex CLI path)
 
-**Setup:** Use Codex CLI with `features.goals = true`.
+**Setup:** Use Codex CLI with `features.goals = true` and a fresh session.
 **Input:** "reprompt this for Codex /goal: migrate billing dashboard API usage without breaking reports"
-**Expected:** Codex Goal lane triggers before `/goal` execution, stays Codex-only, infers the user's intent, builds the expanded prompt first, and emits Codex's native `/goal <summary of expanded prompt>` shape.
+**Expected:** `/goal` preflight lane triggers before `/goal` execution, detects Codex as the runtime from the explicit "Codex /goal" marker, infers the user's intent, builds the expanded prompt first, and emits the native `/goal <summary of expanded prompt>` shape.
 **Verify:**
-- Output starts with a Codex Goal Command Card
+- Output starts with a Goal Command Card
 - Card includes Goal Command, Compressed From, Objective, Runtime, Mode, Paste Into, Risk Level, Missing Inputs, Verification, and Quality
-- Runtime is `Codex CLI only`
+- Runtime is `Codex CLI`
+- Mode is `/goal preflight`
+- Paste Into references the Codex TUI prompt
 - Compressed From is `Expanded RePrompter prompt`
 - Goal Command is an exact one-line `/goal <summary of expanded prompt>` command
-- Output makes clear the command is for Codex, not Claude/OpenClaw/other runtimes
 - Goal Command is substantially richer than the rough user input and summarizes goal, context, constraints, execution approach, and verification
 - Expanded prompt basis appears separately from the `/goal` command
 - Output does not claim automatic slash-command interception
+
+## Scenario 14c: `/goal` Preflight (Claude Code CLI path)
+
+**Setup:** Use Claude Code CLI v2.1.139+ (v2.1.140+ if `disableAllHooks` or `allowManagedHooksOnly` is set in `settings.json`).
+**Input:** "reprompt this for Claude Code /goal: migrate billing dashboard API usage without breaking reports"
+**Expected:** `/goal` preflight lane triggers, detects Claude Code as the runtime from the explicit "Claude Code /goal" marker, infers the user's intent, builds the expanded prompt first, and emits the native `/goal <summary of expanded prompt>` shape.
+**Verify:**
+- Output starts with a Goal Command Card
+- Runtime is `Claude Code CLI (≥ v2.1.139)`
+- Mode is `/goal preflight`
+- Paste Into references the Claude Code TUI prompt
+- Compressed From is `Expanded RePrompter prompt`
+- Goal Command is an exact one-line `/goal <summary of expanded prompt>` command
+- Goal Command is substantially richer than the rough user input
+- Expanded prompt's `<execution_notes>` mention that the goal is thread-persistent, that a Haiku evaluator scores the transcript after each turn, that proof must be surfaced in the transcript, and that `/goal pause` / `/goal resume` are available
+- Output does not claim automatic slash-command interception
+- Output does not require any config flag setup (Claude Code has none for `/goal`)
+
+## Scenario 14d: `/goal` Preflight (Ambiguous runtime, no marker)
+
+**Setup:** Either Codex or Claude Code CLI is available.
+**Input:** "reprompt this for /goal: migrate billing dashboard API usage without breaking reports"
+**Expected:** `/goal` preflight lane triggers but the runtime is not specified. The skill MUST ask which runtime the goal targets, with the two valid options as buttons (Codex CLI or Claude Code CLI ≥ v2.1.139), before rendering the Goal Command Card.
+**Verify:**
+- Skill does not silently default to one runtime
+- The runtime question is asked once, with both options shown
+- After the user picks, the Card's `Runtime` field reflects the choice
+- A bare "/goal" without a runtime marker never produces a Card with the wrong runtime baked in
 
 ## Scenario 15: Repromptverse Contract Coverage
 
