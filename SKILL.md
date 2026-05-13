@@ -171,7 +171,7 @@ claude --version
 # or follow the install path you used originally.
 ```
 
-No config flag is required — `/goal` is enabled by default once Claude Code is at v2.1.139 or later. If `/goal` hangs silently and your `~/.claude/settings.json` sets `disableAllHooks` or `allowManagedHooksOnly`, upgrade to v2.1.140+ which fixes the interaction.
+No config flag is required — `/goal` is enabled by default once Claude Code is at v2.1.139 or later. However, `/goal` depends on Claude Code's hooks layer: if `disableAllHooks` or `allowManagedHooksOnly` is set in `~/.claude/settings.json`, the command is unavailable on any version. v2.1.139 silently hung in that case; v2.1.140 surfaces a clear error message instead. Upgrading does **not** re-enable `/goal` under hook-blocking settings — permitting hooks is the only way to use `/goal` on Claude Code. Managed environments that block hooks should use Single mode for goal-shaped work.
 
 ---
 
