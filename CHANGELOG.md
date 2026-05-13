@@ -6,7 +6,7 @@
 
 The `/goal` preflight lane is no longer Codex-only. Claude Code CLI shipped a native `/goal` slash command in **v2.1.139 on 2026-05-11** (v2.1.140 followed with a clearer error message when hook-restricting settings disable `/goal` — see below), so the v12.2 compression flow — infer intent → expanded prompt → dense `/goal <summary of expanded prompt>` command — now applies to both Codex and Claude Code without skill behavior changes. The Card stays the same shape; only the `Runtime` field and the Setup check block branch on the detected runtime.
 
-Docs-only release. No script behavior changes; `scripts/goal-command.js --target claude-code` is planned as a v12.4 follow-up.
+Docs-only release. No script behavior changes; `scripts/goal-command.js --target claude-code` is planned as a follow-up release.
 
 ### Added
 
@@ -33,7 +33,7 @@ Docs-only release. No script behavior changes; `scripts/goal-command.js --target
 - All v12.2 triggers ("before /goal", "for /goal", "Codex /goal", "Codex goal prompt") still route the lane.
 - Compression rule unchanged — both runtimes consume the same `/goal <objective>` single-argument shape, so the dense one-line summary is portable across CLIs.
 - Goal Command Card field schema unchanged (additive value vocabulary only).
-- `scripts/goal-command.js --target codex` behavior unchanged. Same artifact text pastes directly into Claude Code's `/goal`; a `--target claude-code` alias is flagged for v12.4.
+- `scripts/goal-command.js --target codex` behavior unchanged. Same artifact text pastes directly into Claude Code's `/goal`; a `--target claude-code` alias is flagged for a follow-up release.
 
 ### Verified
 
@@ -45,7 +45,7 @@ Docs-only release. No script behavior changes; `scripts/goal-command.js --target
 
 ### What's next (deliberately out of scope)
 
-- `scripts/goal-command.js --target claude-code` and matching test coverage — flagged for a v12.4 follow-up so this release stays docs-only.
+- `scripts/goal-command.js --target claude-code` and matching test coverage — flagged for a follow-up release so this release stays docs-only.
 - A Card preview that side-by-sides Codex and Claude Code Cards for the same input — nice-to-have for the README, follow-up.
 
 ## v12.2.0 (2026-05-05) — Codex `/goal` preflight
