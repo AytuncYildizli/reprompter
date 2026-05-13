@@ -2,23 +2,23 @@
 name: reprompter
 description: |
   Transform rough prompts into structured, high-scoring prompts for coding agents.
-  Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", "before /goal", "for /goal", "Codex /goal", "Codex goal prompt", "reprompter teams", "repromptverse", "smart run", "smart agents", "campaign swarm", "engineering swarm", "ops swarm", "research swarm", multi-agent tasks, audits, parallel work, "reverse reprompt", "learn from this", "extract prompt from", "prompt dna", "prompt genome".
+  Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", "before /goal", "for /goal", "/goal preflight", "Codex /goal", "Codex goal prompt", "Claude Code /goal", "reprompter teams", "repromptverse", "smart run", "smart agents", "campaign swarm", "engineering swarm", "ops swarm", "research swarm", multi-agent tasks, audits, parallel work, "reverse reprompt", "learn from this", "extract prompt from", "prompt dna", "prompt genome".
   Don't use for simple Q&A, casual chat, or execution-only tasks.
-  Outputs: structured XML/Markdown prompt, before/after score, Codex /goal command card with compressed summary of the expanded prompt, optional team brief + per-agent prompts, Agent Cards, Extraction Card.
-  Target score: Single and Codex Goal >= 7/10; Repromptverse per-agent >= 8/10; Reverse >= 7/10.
+  Outputs: structured XML/Markdown prompt, before/after score, /goal command card with compressed summary of the expanded prompt for Codex CLI or Claude Code CLI v2.1.139+, optional team brief + per-agent prompts, Agent Cards, Extraction Card.
+  Target score: Single and Goal preflight >= 7/10; Repromptverse per-agent >= 8/10; Reverse >= 7/10.
 compatibility: |
   Single mode works on Claude surfaces, OpenClaw, and Codex.
-  Codex Goal mode is Codex CLI only because `/goal` is a Codex slash command.
+  `/goal` preflight mode works on Codex CLI (any version exposing the `goals` feature) and Claude Code CLI v2.1.139+; both runtimes accept the same `/goal <objective>` shape. Disabled on Claude surfaces without `/goal` support and on OpenClaw.
   Repromptverse mode supports Claude Code (TeamCreate or tmux), OpenClaw (sessions_spawn), and Codex CLI (native subagents in 0.121.0+ or shell-level parallelism via `codex exec` + background + wait, see Option D).
   Sequential fallback (Option E) works with any LLM runtime.
 metadata:
   author: AytuncYildizli
-  version: 12.2.0
+  version: 12.3.0
 ---
 
-# RePrompter v12.2.0
+# RePrompter v12.3.0
 
-> **Your prompt sucks. Let's fix that.** Single prompts, Codex `/goal` preflight, full agent teams, or reverse-engineer from great outputs — one skill, four output lanes. **v12.2 adds a dedicated Codex Goal Command Card so `/goal <objective>` receives a scoped, testable objective instead of a vague wish.**
+> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, or reverse-engineer from great outputs — one skill, four output lanes. **v12.3 generalizes the `/goal` lane to support Claude Code CLI v2.1.139+ alongside Codex, so the same compressed `/goal <objective>` command works in both runtimes.**
 
 ---
 
@@ -27,7 +27,7 @@ metadata:
 | Lane | Trigger | What happens |
 |------|---------|-------------|
 | **Single** | "reprompt this", "clean up this prompt" | Interview → structured prompt → score |
-| **Codex Goal** | "before /goal", "for /goal", "Codex /goal", "Codex goal prompt" | Codex-only: infer user intent → build expanded prompt → compress into exact `/goal <summary of expanded prompt>` command |
+| **`/goal` preflight** | "before /goal", "for /goal", "Codex /goal", "Claude Code /goal", "/goal preflight", "Codex goal prompt" | Codex CLI or Claude Code CLI v2.1.139+: infer user intent → build expanded prompt → compress into exact `/goal <summary of expanded prompt>` command |
 | **Repromptverse** | "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "campaign swarm", "engineering swarm", "ops swarm", "research swarm" | Dimension Interview → Plan team → Agent Cards → reprompt each agent → execute → Result Cards → evaluate → retry |
 | **Reverse** | "reverse reprompt", "reprompt from example", "learn from this", "extract prompt from", "prompt dna", "prompt genome" | Analyze exemplar → classify → extract prompt DNA → generate XML prompt → score → inject into flywheel |
 
@@ -46,40 +46,51 @@ Definition — **2+ systems** means at least two distinct technical domains that
 
 ---
 
-## Lane: Codex `/goal` preflight
+## Lane: `/goal` preflight
 
-When the user mentions Codex `/goal`, `before /goal`, `for /goal`, or asks to improve a Codex goal prompt, run RePrompter before the goal is submitted.
+When the user mentions `/goal`, `before /goal`, `for /goal`, "Codex /goal", "Claude Code /goal", or asks to improve a goal prompt, run RePrompter before the goal is submitted.
 
-This lane is **Codex CLI only**. If the target runtime is Claude, OpenClaw, Gemini, or another LLM, use Single mode or Repromptverse instead; do not emit a `/goal` command for non-Codex runtimes.
+This lane works on **Codex CLI** (any version exposing the `goals` feature) and **Claude Code CLI v2.1.139+** (the release that shipped a native `/goal` slash command on 2026-05-11). Both runtimes accept the same `/goal <objective>` shape, so the compression flow is identical; only the setup check and a few runtime-specific operational notes differ. If the target runtime is Claude surfaces without `/goal` support, OpenClaw, Gemini, or another LLM, use Single mode or Repromptverse instead; do not emit a `/goal` command for runtimes that have no `/goal` surface.
+
+### Detecting the target runtime
+
+Pick the runtime once, at the start of the lane, and pass it through to the Card:
+
+| User signal | Runtime |
+|-------------|---------|
+| "Codex /goal", "for Codex /goal", explicit `codex` mention | **Codex CLI** |
+| "Claude Code /goal", "/goal in Claude Code", explicit `claude` / `claude-code` mention | **Claude Code CLI (≥ v2.1.139)** |
+| Bare "/goal" or "before /goal" with no runtime marker | **ASK** which runtime, with the two options as buttons; default to the user's primary CLI if known from session context |
 
 Process:
 
 1. Treat the input as **Single prompt mode** unless it clearly needs Repromptverse.
-2. Render the **Codex Goal Command Card** first.
-3. Infer the user's real intent from the rough prompt: desired outcome, hidden constraint, success signal, and likely risk.
-4. Build the rich expanded prompt first, using the normal RePrompter structure: goal/task, context, requirements, constraints, execution notes, and success criteria.
-5. Compress that expanded prompt into a dense one-line goal summary. This should feel like a summary of a long XML prompt, not a slightly polished copy of the user's rough sentence.
-6. Generate an exact copy-paste command in Codex's native shape: `/goal <summary of expanded prompt>`.
-7. Do not put the full XML or Markdown document after `/goal`; only the compressed summary belongs in the command.
-8. Include the expanded prompt basis after the command so the user can inspect what was compressed or send it as a follow-up normal message after the goal is set.
-9. Tell the user to run the exact `/goal <summary of expanded prompt>` command in Codex.
-10. Do not claim RePrompter can automatically intercept `/goal`; Codex slash commands are user-invoked unless the local runtime adds a separate hook.
+2. Detect the target runtime (table above). Carry the runtime label through the rest of the lane.
+3. Render the **Goal Command Card** first, with `Runtime` populated from step 2.
+4. Infer the user's real intent from the rough prompt: desired outcome, hidden constraint, success signal, and likely risk.
+5. Build the rich expanded prompt first, using the normal RePrompter structure: goal/task, context, requirements, constraints, execution notes, and success criteria.
+6. Compress that expanded prompt into a dense one-line goal summary. This should feel like a summary of a long XML prompt, not a slightly polished copy of the user's rough sentence. The compression rule is identical across runtimes — both Codex's alpha `/goal` and Claude Code's v2.1.139+ `/goal` consume `<objective>` as a single argument.
+7. Generate an exact copy-paste command: `/goal <summary of expanded prompt>`.
+8. Do not put the full XML or Markdown document after `/goal`; only the compressed summary belongs in the command.
+9. Include the expanded prompt basis after the command so the user can inspect what was compressed or send it as a follow-up normal message after the goal is set.
+10. Tell the user to run the exact `/goal <summary of expanded prompt>` command in the runtime chosen at step 2.
+11. Do not claim RePrompter can automatically intercept `/goal`; slash commands are user-invoked in both Codex and Claude Code unless the local runtime adds a separate hook.
 
-### Codex Goal Command Card
+### Goal Command Card
 
-Codex's alpha `/goal` surface is command-shaped: `Usage: /goal <objective>`. Render this card before the generated command:
+Both runtimes shape the slash command as `/goal <objective>`. Render this card before the generated command:
 
 | Field | Content |
 |-------|---------|
 | Goal Command | Exact one-line `/goal <summary of expanded prompt>` command |
 | Compressed From | `Expanded RePrompter prompt` |
-| Objective | One sentence naming the reprompted intent Codex should pursue |
-| Runtime | `Codex CLI only` |
-| Mode | `Codex /goal preflight` |
-| Paste Into | Codex TUI prompt, as-is |
+| Objective | One sentence naming the reprompted intent the runtime should pursue |
+| Runtime | `Codex CLI` or `Claude Code CLI (≥ v2.1.139)` — whichever was detected in step 2 above |
+| Mode | `/goal preflight` |
+| Paste Into | Codex TUI prompt or Claude Code TUI prompt, as-is |
 | Risk Level | `low` / `medium` / `high`, based on blast radius |
 | Missing Inputs | Up to 3 unknowns; write `none` if the prompt is ready |
-| Verification | 2-4 checks Codex should run while pursuing the goal |
+| Verification | 2-4 checks the agent should run while pursuing the goal |
 | Quality | Before score → after score, with the weakest remaining dimension |
 
 Then output:
@@ -113,7 +124,29 @@ Then show the expanded prompt basis:
 </success_criteria>
 ```
 
-Codex setup check:
+### Runtime-specific operational notes
+
+The compression flow is shared, but the two `/goal` surfaces have small behavioral differences worth surfacing in the expanded prompt's `<execution_notes>` block:
+
+**Claude Code CLI (≥ v2.1.139)**:
+- `/goal` sets a **thread-level persistent objective** that survives `/resume`, terminal close, and context compaction. Only one goal per session — setting a new `/goal` replaces the previous one.
+- After each turn a separate fast evaluator model (Haiku) checks the completion condition against the transcript. If not met, the runtime triggers another turn without user input.
+- The evaluator only judges what Claude **surfaces in the transcript**, so the expanded prompt should require the agent to print artifact paths, file contents, or test results — proof must be visible.
+- Pause / resume controls: `/goal pause` and `/goal resume` (handy for long-running goals interrupted by ad-hoc work).
+- Optional budget constraints (token or wall-clock) prevent runaway costs.
+- **`/goal` requires hooks.** When `disableAllHooks` or `allowManagedHooksOnly` is set in `settings.json`, `/goal` is unavailable. v2.1.139 silently hung in this case; v2.1.140 changed the failure mode to a clear error message but did **not** make `/goal` work under those settings. If you operate in a managed environment that blocks hooks, the `/goal` preflight lane cannot run on Claude Code until hooks are permitted — use Single mode in that case.
+
+**Codex CLI**:
+- `/goal` is an experimental alpha feature gated by `features.goals = true` in `~/.codex/config.toml`. The local alpha binary exposes `Usage: /goal <objective>`, `ThreadGoal.objective`, `tokenBudget`, `/goal pause`, `/goal resume`, and `/goal clear`.
+- Codex's `/goal` is invoked the same way (`/goal <objective>`), but config-gated — a fresh session is required after enabling.
+
+The Card's `Risk Level` and `Verification` fields apply equally to both runtimes.
+
+### Setup check
+
+Pick the block matching the detected runtime.
+
+**Codex CLI**:
 
 ```bash
 npm install -g @openai/codex@latest
@@ -128,6 +161,17 @@ goals = true
 ```
 
 Then start a fresh Codex session so the slash-command surface reloads.
+
+**Claude Code CLI**:
+
+```bash
+claude --version
+# Expect "2.1.139" or later. If older, upgrade:
+#   curl -sL https://claude.ai/install.sh | bash
+# or follow the install path you used originally.
+```
+
+No config flag is required — `/goal` is enabled by default once Claude Code is at v2.1.139 or later. However, `/goal` depends on Claude Code's hooks layer: if `disableAllHooks` or `allowManagedHooksOnly` is set in `~/.claude/settings.json`, the command is unavailable on any version. v2.1.139 silently hung in that case; v2.1.140 surfaces a clear error message instead. Upgrading does **not** re-enable `/goal` under hook-blocking settings — permitting hooks is the only way to use `/goal` on Claude Code. Managed environments that block hooks should use Single mode for goal-shaped work.
 
 ---
 
@@ -1273,6 +1317,8 @@ In `~/.claude/settings.json`:
 | `teammateMode` | `"tmux"` / `"default"` | `tmux`: each teammate gets a visible split pane. `default`: teammates run in background |
 | `model` | `"opus"` / `"sonnet"` | Teammates default to Haiku. Always set `model: opus` explicitly in your prompt — do not rely on runtime defaults. |
 
+`/goal` preflight on Claude Code requires CLI v2.1.139+ (no config flag needed). `/goal` depends on Claude Code's hooks layer: if `disableAllHooks` or `allowManagedHooksOnly` is set in `settings.json`, `/goal` is unavailable on any version. v2.1.139 silently hung in that case; v2.1.140 surfaces a clear error message instead, but neither version runs `/goal` under hook-blocking settings — you must permit hooks for the lane to work. See the `/goal` preflight lane near the top of this skill for the full Card + command flow.
+
 ### Codex CLI
 
 Install the skill under `~/.codex/skills/reprompter/` (same structure as `~/.claude/skills/`). Codex reads config from `~/.codex/config.toml`:
@@ -1302,7 +1348,7 @@ artifact_root = "/tmp"     # override if your runtime sandboxes /tmp
 | `model` | any Codex-supported id | Default model when `--model` is omitted from `codex exec`. |
 | `approval_policy` | `"untrusted"` / `"on-request"` / `"never"` | Applies to the interactive Codex TUI. `codex exec` runs headless and defaults to `never`, so Option D2 workers never need this key set. |
 | `features.multi_agent` | `true` / `false` | Enables native subagents (Option D1). Default-enabled in current Codex releases (0.121.0+); set explicitly only if your config disabled it. |
-| `features.goals` | `true` / `false` | Enables Codex `/goal` when the installed CLI exposes the experimental goals feature. Use RePrompter first, then run its exact `/goal <summary of expanded prompt>` command. Codex-only. |
+| `features.goals` | `true` / `false` | Enables Codex `/goal` when the installed CLI exposes the experimental goals feature. Use RePrompter first, then run its exact `/goal <summary of expanded prompt>` command. Claude Code CLI v2.1.139+ ships the same `/goal` surface natively, without a config flag — see the `/goal` preflight lane near the top of this skill for both runtimes. |
 | `agents.max_threads` | integer, default `6` | Concurrent subagent worker cap. |
 | `agents.max_depth` | integer, default `1` | Spawn nesting depth (1 = subagents only, no grandchildren). |
 | `reprompter.default_mode` | `"parallel"` / `"sequential"` | Skill-defined hint consumed by Phase 1. |

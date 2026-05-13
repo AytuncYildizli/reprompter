@@ -1,5 +1,53 @@
 # RePrompter Changelog
 
+## v12.3.0 (2026-05-13) — `/goal` preflight on Claude Code CLI
+
+### Headline
+
+The `/goal` preflight lane is no longer Codex-only. Claude Code CLI shipped a native `/goal` slash command in **v2.1.139 on 2026-05-11** (v2.1.140 followed with a clearer error message when hook-restricting settings disable `/goal` — see below), so the v12.2 compression flow — infer intent → expanded prompt → dense `/goal <summary of expanded prompt>` command — now applies to both Codex and Claude Code without skill behavior changes. The Card stays the same shape; only the `Runtime` field and the Setup check block branch on the detected runtime.
+
+Docs-only release. No script behavior changes; `scripts/goal-command.js --target claude-code` is planned as a v12.4 follow-up.
+
+### Added
+
+- **Runtime detection table** in the `/goal` preflight lane mapping user signals to runtime: explicit "Codex /goal" → Codex CLI, "Claude Code /goal" → Claude Code CLI (≥ v2.1.139), bare "/goal" → ASK with two options.
+- **Runtime-specific operational notes** in the lane: Claude Code `/goal` is thread-persistent (survives `/resume`, terminal close, context compaction), uses a Haiku evaluator that judges only what's surfaced in the transcript, supports `/goal pause` / `/goal resume`, and depends on the hooks layer (`disableAllHooks` / `allowManagedHooksOnly` disable `/goal` entirely on any version; v2.1.140 only changed the failure mode from a silent hang to a clear error message). Codex notes preserved as before.
+- **Setup check** subsection split into Codex (`codex features list | grep '^goals'` + `features.goals = true`) and Claude Code (`claude --version` ≥ 2.1.139, no config flag).
+- **Frontmatter `description:` triggers** "/goal preflight" and "Claude Code /goal" added alongside the existing Codex triggers. Total frontmatter stays under the 1024-char Codex skip threshold (v12.1.0 fix preserved).
+- **README Claude Code install hint** for the CLI version pin needed for `/goal`.
+- **Compatibility table** in README upgraded — `/goal` preflight row now checks Claude Code in addition to Codex, with a footnote on the v2.1.139 version pin and the hooks-layer dependency (managed environments that block hooks fall back to Single mode for goal-shaped work).
+- **TESTING.md scenario 14b** parameterized to cover either runtime; new **scenario 14c** added specifically for Claude Code `/goal` (Haiku evaluator visibility, thread persistence, pause/resume mentions).
+
+### Changed
+
+- **Lane title**: "Lane: Codex `/goal` preflight" → "Lane: `/goal` preflight" (runtime-agnostic).
+- **"Four output lanes" table** row renamed from "Codex Goal" to "`/goal` preflight" with both runtimes named in the description.
+- **Goal Command Card `Runtime` field** values widened from `Codex CLI only` to `Codex CLI` or `Claude Code CLI (≥ v2.1.139)`. Card schema unchanged.
+- **Goal Command Card `Mode` field** value normalized from `Codex /goal preflight` to `/goal preflight`.
+- **Frontmatter `compatibility:`** rewritten — `/goal` preflight is no longer "Codex CLI only because /goal is a Codex slash command"; it works on Codex CLI and Claude Code CLI v2.1.139+, both consuming the same `/goal <objective>` shape. Disabled on Claude surfaces without `/goal` support and on OpenClaw.
+- **SKILL.md Codex CLI Settings table** — the `features.goals` row now cross-links to Claude Code's native `/goal` (no config flag) so readers don't think Codex setup is the only path.
+- **Version aligned** across `package.json`, SKILL.md frontmatter, SKILL.md header, and the README badge at `12.3.0`.
+
+### Preserved
+
+- All v12.2 triggers ("before /goal", "for /goal", "Codex /goal", "Codex goal prompt") still route the lane.
+- Compression rule unchanged — both runtimes consume the same `/goal <objective>` single-argument shape, so the dense one-line summary is portable across CLIs.
+- Goal Command Card field schema unchanged (additive value vocabulary only).
+- `scripts/goal-command.js --target codex` behavior unchanged. Same artifact text pastes directly into Claude Code's `/goal`; a `--target claude-code` alias is flagged for v12.4.
+
+### Verified
+
+- Local Claude Code CLI v2.1.139 release notes confirm `/goal <objective>` shape and Haiku evaluator behavior; CHANGELOG entry references the published version.
+- Local Codex CLI alpha binary still exposes `Usage: /goal <objective>` (unchanged from v12.2 verification).
+- SKILL.md frontmatter `description:` re-measured under 1024 chars after trigger additions.
+- No script files modified — `scripts/goal-command.js` and its test suite unchanged.
+- Re-grep of SKILL.md for stale `Codex CLI only` claims in the lane section confirms zero matches outside the historical CHANGELOG block.
+
+### What's next (deliberately out of scope)
+
+- `scripts/goal-command.js --target claude-code` and matching test coverage — flagged for a v12.4 follow-up so this release stays docs-only.
+- A Card preview that side-by-sides Codex and Claude Code Cards for the same input — nice-to-have for the README, follow-up.
+
 ## v12.2.0 (2026-05-05) — Codex `/goal` preflight
 
 ### Headline
