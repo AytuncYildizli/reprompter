@@ -1035,7 +1035,7 @@ Use `hermes chat -q "..."` instead of `hermes -z "..."` when you want the normal
 
 **G3 — Hermes Kanban (explicit opt-in only)**
 
-Do not auto-select Kanban for normal Repromptverse. Use it only when the user wants durable work that survives restarts, spans multiple Hermes profiles, needs human-in-loop checkpoints, or should be visible as a board. Kanban workers coordinate through `kanban_show`, `kanban_list`, `kanban_complete`, `kanban_block`, `kanban_comment`, `kanban_create`, `kanban_link`, and `kanban_unblock`.
+Do not auto-select Kanban for normal Repromptverse. Use it only when the user wants durable work that survives restarts, spans multiple Hermes profiles, needs human-in-loop checkpoints, or should be visible as a board. Kanban agents use the `kanban_*` toolset directly: task workers normally use lifecycle tools such as `kanban_show`, `kanban_complete`, `kanban_block`, `kanban_heartbeat`, and `kanban_comment`, while profiles that explicitly enable the Kanban toolset and are not scoped to one dispatcher task can also use orchestration tools such as `kanban_list`, `kanban_create`, `kanban_link`, and `kanban_unblock`.
 
 **Known Hermes gotchas:**
 

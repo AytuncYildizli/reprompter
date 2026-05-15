@@ -225,15 +225,9 @@ Use Kanban when:
 
 Relevant tools:
 
-- `kanban_show`
-- `kanban_list`
-- `kanban_complete`
-- `kanban_block`
-- `kanban_heartbeat`
-- `kanban_comment`
-- `kanban_create`
-- `kanban_link`
-- `kanban_unblock`
+- Task lifecycle: `kanban_show`, `kanban_complete`, `kanban_block`, `kanban_heartbeat`, `kanban_comment`
+- Orchestration/fan-out: `kanban_create`, `kanban_link`
+- Orchestrator-only by runtime guard: `kanban_list`, `kanban_unblock`
 
 Keep the same RePrompter artifact contract (`/tmp/rpt-{taskname}-{role}.md`) even when Kanban is the coordination surface.
 
