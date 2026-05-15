@@ -7,10 +7,9 @@ description: |
   Outputs: structured XML/Markdown prompt, before/after score, /goal command card with compressed summary of the expanded prompt for Codex CLI or Claude Code CLI v2.1.139+, optional team brief + per-agent prompts, Agent Cards, Extraction Card.
   Target score: Single and Goal preflight >= 7/10; Repromptverse per-agent >= 8/10; Reverse >= 7/10.
 compatibility: |
-  Single mode works on Claude surfaces, OpenClaw, and Codex.
+  Single mode works on Claude surfaces, OpenClaw, Codex, and Grok CLI.
   `/goal` preflight mode works on Codex CLI (any version exposing the `goals` feature) and Claude Code CLI v2.1.139+; both runtimes accept the same `/goal <objective>` shape. Disabled on Claude surfaces without `/goal` support and on OpenClaw.
-  Repromptverse mode supports Claude Code (TeamCreate or tmux), OpenClaw (sessions_spawn), and Codex CLI (native subagents in 0.121.0+ or shell-level parallelism via `codex exec` + background + wait, see Option D).
-  Sequential fallback (Option E) works with any LLM runtime.
+  Repromptverse mode supports Claude Code (TeamCreate or tmux → Option B/A), OpenClaw (sessions_spawn → Option C), Codex CLI (native subagents or `codex exec` → Option D), and Grok CLI 4.3+ (spawn_subagent F1 or `grok -p` F2 → Option F, see `references/runtime/grok-cli-runtime.md`). Sequential fallback (Option E) works with any LLM runtime.
 metadata:
   author: AytuncYildizli
   version: 12.3.0
@@ -622,21 +621,22 @@ If the user explicitly named an option in their request (e.g. "use tmux", "run i
 
 | Order | Capability check | If true, use |
 |-------|-----------------|--------------|
-| 1 | **All four** of `TeamCreate`, `Agent`, `SendMessage`, and `TeamDelete` are listed in your current toolset. (Gating on `TeamCreate` alone is not enough — Option B's spawn/shutdown path needs the whole set; without it the run fails mid-execution rather than falling through to another option.) | **Option B** — native Claude Code teams; teammates can message each other; no tmux init or send-keys timing risk |
-| 2 | `sessions_spawn` tool is listed in your current toolset | **Option C** — OpenClaw |
-| 3 | `bash -c 'command -v tmux && { v=$(claude --version 2>/dev/null \| awk "{print \$1}"); [[ "$v" =~ ^(2\.[1-9]\|[3-9]) ]]; }'` exits 0. (Binary presence alone is insufficient — Option A needs `claude` ≥ 2.1 so `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is honoured; older CLIs accept the env var but don't enable team mode.) | **Option A** — tmux + child `claude --model opus`, visible panes |
-| 4 | Running inside Codex (parallel sessions available) | **Option D** |
-| 5 | None of the above | **Option E** — sequential fallback (works with any LLM) |
+| 1 | `spawn_subagent` is present **and** at least two of `run_command`, `todo_write`, `ask_user_question` are in the current toolset (unambiguous Grok 4.3+ signature). | **Option F** — Grok CLI native parallel (F1: `spawn_subagent` with `fork_context=true`, `persona`, `capability_mode`; F2: shell-level `grok -p "..." --yolo --sandbox workspace &` then `wait`). Full contract and gotchas in `references/runtime/grok-cli-runtime.md`. |
+| 2 | **All four** of `TeamCreate`, `Agent`, `SendMessage`, and `TeamDelete` are listed in your current toolset. (Gating on `TeamCreate` alone is not enough — Option B's spawn/shutdown path needs the whole set; without it the run fails mid-execution rather than falling through to another option.) | **Option B** — native Claude Code teams; teammates can message each other; no tmux init or send-keys timing risk |
+| 3 | `sessions_spawn` tool is listed in your current toolset | **Option C** — OpenClaw |
+| 4 | `bash -c 'command -v tmux && { v=$(claude --version 2>/dev/null \| awk "{print \$1}"); [[ "$v" =~ ^(2\.[1-9]\|[3-9]) ]]; }'` exits 0. (Binary presence alone is insufficient — Option A needs `claude` ≥ 2.1 so `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is honoured; older CLIs accept the env var but don't enable team mode.) | **Option A** — tmux + child `claude --model opus`, visible panes |
+| 5 | Running inside Codex (parallel sessions available) | **Option D** |
+| 6 | None of the above | **Option E** — sequential fallback (works with any LLM) |
 
-After picking, announce it in one short line before starting Phase 3 work, so the user can redirect:
+After picking, announce the selected option in one short line before starting Phase 3 work, so the user can redirect. Use this shape with the actual option and runtime you selected:
 
-> Auto-picked **Option B** (TeamCreate + Agent) — `TeamCreate` is available in this runtime. Override by saying "use Option A" (tmux) or "use Option E" (sequential).
+> Auto-picked **Option {letter}** ({runtime}) — {short detection reason}. Override by saying "use Option B", "use Option A (tmux)", "use Option D", or "use Option E" (sequential).
 
-Why B is first: it's the only option where teammates can `SendMessage` each other and share a `TaskList` in-process. Option A is picked only when B isn't available — it still works end-to-end but loses cross-agent messaging and adds the tmux init + send-keys timing surface.
+Why F is first for Grok: when an unambiguous Grok signature is detected (`spawn_subagent` + at least two of the supporting tools), Repromptverse must use Grok-native execution (Option F) to honour the "full Grok runtime support" claim. This check is intentionally strict to prevent false positives on other runtimes. Option B (Claude native teams with cross-agent `SendMessage`) is preferred on Claude Code surfaces because it offers richer inter-agent messaging than Grok subagents currently provide. The rest of the priority order is unchanged.
 
 #### Tool-schema guard (all options)
 
-Before invoking any tool named in Options A–E, verify it appears in your current toolset and that the call signature matches the schema Claude Code loaded for you. Opus 4.7 rejects calls against an unknown tool or a non-matching signature instead of inferring intent like 4.6 used to. If a named tool is unfamiliar, halt and report back rather than substituting a similar-looking one.
+Before invoking any tool named in Options A–F, verify it appears in your current toolset and that the call signature matches the schema loaded for the current runtime. Modern CLI runtimes reject calls against an unknown tool or a non-matching signature instead of inferring intent. If a named tool is unfamiliar, halt and report back rather than substituting a similar-looking one.
 
 Known pitfalls captured from 4.6 → 4.7 drift in this skill:
 
@@ -1430,3 +1430,42 @@ Templates may add domain-specific tags beyond the 8 required base tags. Always i
 | `<threat_model>` | security | Threat landscape and vectors |
 | `<structure>` | docs | Document organization |
 | `<reference>` | docs | Source material to reference |
+
+## Grok CLI Support (Additive Section — Zero Impact on Claude, Codex, OpenClaw)
+
+When the current toolset includes `spawn_subagent` together with at least two of `run_command`, `todo_write`, `ask_user_question`, you are executing under Grok CLI (xAI Grok 4.3+). A normal Grok session will usually also expose `read_file`, `search_replace`, and `write`.
+
+In this environment:
+
+- Single mode, Smart Interview, Dimension Interview, pattern library usage, prompt generation (Phases 1–2), quality scoring, evaluation loop, flywheel, Reverse Reprompter, and all template logic remain 100% identical to other runtimes. No change in behavior or output format.
+
+- For Repromptverse Phase 3 execution, treat this as **Option F** (Grok-native parallel):
+  - Use `spawn_subagent` for in-session parallel workers (F1 — recommended for most interactive runs).
+  - Or shell-level (external orchestration): `grok -p "..." --yolo --sandbox workspace &` then `wait` (F2). Example:
+    ```bash
+    grok -p "..." --yolo --sandbox workspace &
+    wait
+    ```
+  - Recommended parameters for `spawn_subagent`:
+    - `subagent_type`: "general-purpose" (full capability) or "explore" / "plan" for specialized workers
+    - `persona`: "implementer", "researcher", "reviewer", "security-auditor", or a custom persona defined in `~/.grok/personas/*.toml`
+    - `fork_context`: true (strongly recommended — the worker receives the original user task, Smart/Dimension Interview answers, team plan, and interviewContext without repetition)
+    - `capability_mode`: "execute" (default for general-purpose) or "read-only" / "read-write"
+    - `prompt`: the full per-agent reprompted XML document produced in Phase 2
+  - Every worker **must** be explicitly instructed in its prompt to write its final output to the exact path `/tmp/rpt-{taskname}-{role}.md` (identical artifact contract used by all other runtimes).
+  - Status Line during Phase 3: combine `todo_write` (for orchestrator tracking) with `run_command` + `ls /tmp/rpt-*.md` (exclude any `.prompt.md` or `.stdout` files) and render the compact line:
+    ```
+    Agents: ✅ 3/5  ⏳ 1/5  🔄 1/5 (retry 1)
+    ```
+
+- Full invocation examples, `~/.grok/config.toml` [subagents] settings, sandbox profile interaction, model-compatible headless flags, concurrency recommendations, retry patterns, and the complete list of "What Grok CLI does NOT provide" (no native TeamCreate/SendMessage/TeamDelete cross-messaging between workers, no /goal surface, no automatically shared TaskList across subagents, only partial hook matcher aliases for Claude tool names, etc.) are documented in:
+
+  `references/runtime/grok-cli-runtime.md`
+
+Read that file the first time you detect Grok-native tools in the current environment.
+
+This section is purely additive. The Phase 3 "Runtime auto-pick" decision tree (see above) now contains an explicit Order-1 check for the Grok tool surface (`spawn_subagent` must be present together with at least two of `run_command`, `todo_write`, `ask_user_question`). When this signature is detected, Repromptverse **automatically selects Option F** and uses the Grok-native execution path documented in `references/runtime/grok-cli-runtime.md`. No manual override is required for normal Repromptverse runs on Grok CLI.
+
+The rest of the skill (Single, `/goal` preflight, Reverse, all templates, scoring, flywheel, etc.) is completely unchanged for every other runtime. Non-Grok users (Claude Code, Codex, OpenClaw) see zero difference in behaviour or output.
+
+Grok users can install this skill by copying the directory to `~/.grok/skills/reprompter/` (or continue using the existing `~/.claude/skills/reprompter/` location — Grok automatically loads skills from the Claude compatibility path).
