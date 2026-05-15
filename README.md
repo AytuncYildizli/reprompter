@@ -136,7 +136,7 @@ Hermes Agent's default skill location is `~/.hermes/skills/reprompter/`:
 
 ```bash
 mkdir -p ~/.hermes/skills
-cp -R reprompter ~/.hermes/skills/reprompter
+cp -R reprompter ~/.hermes/skills/
 ```
 
 For Codex, install or update the CLI and confirm the goals feature is available:
@@ -177,7 +177,7 @@ Add an explicit runtime marker when you have one — "Codex /goal", "Claude Code
 | Compressed From | Expanded RePrompter prompt |
 | Objective | Migrate billing dashboard API usage without breaking reports |
 | Runtime | Claude Code CLI (≥ v2.1.139) |
-| Mode | `/goal` preflight |
+| Mode | `/goal preflight` |
 | Paste Into | Claude Code TUI prompt, as-is |
 | Risk Level | medium |
 | Missing Inputs | API contract diff, report smoke path |

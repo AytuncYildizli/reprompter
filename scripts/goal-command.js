@@ -209,7 +209,7 @@ function buildGoalCommand(input, options = {}) {
       command,
       objective: sentenceCase(`${taskLabel}: ${compact(input, 180)}`),
       runtime_target: target,
-      mode: isCodex ? "Codex /goal preflight" : "RePrompter handoff preflight",
+      mode: isCodex ? "/goal preflight" : "RePrompter handoff preflight",
       paste_into: isCodex ? "Codex TUI prompt" : "target agent handoff",
       risk_level: risk.level,
       missing_inputs: [],

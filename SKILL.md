@@ -1459,7 +1459,7 @@ Install the skill under Hermes' default skill directory:
 
 ```bash
 mkdir -p ~/.hermes/skills
-cp -R reprompter ~/.hermes/skills/reprompter
+cp -R reprompter ~/.hermes/skills/
 ```
 
 Hermes also supports external skill directories through its skills configuration. RePrompter only needs the skill directory to be visible to Hermes; no JS adapter or npm dependency is required.
