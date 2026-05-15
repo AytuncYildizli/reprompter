@@ -12,12 +12,12 @@ compatibility: |
   Repromptverse mode supports Claude Code (TeamCreate or tmux → Option B/A), OpenClaw (sessions_spawn → Option C), Codex CLI (native subagents or `codex exec` → Option D), and Grok CLI 4.3+ (spawn_subagent F1 or `grok -p` F2 → Option F, see `references/runtime/grok-cli-runtime.md`). Sequential fallback (Option E) works with any LLM runtime.
 metadata:
   author: AytuncYildizli
-  version: 12.3.0
+  version: 12.4.0
 ---
 
-# RePrompter v12.3.0
+# RePrompter v12.4.0
 
-> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, or reverse-engineer from great outputs — one skill, four output lanes. **v12.3 generalizes the `/goal` lane to support Claude Code CLI v2.1.139+ alongside Codex, so the same compressed `/goal <objective>` command works in both runtimes.**
+> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, or reverse-engineer from great outputs — one skill, four output lanes. **v12.4 adds Grok CLI runtime support for Repromptverse while preserving Claude Code, Codex, and OpenClaw behavior.**
 
 ---
 

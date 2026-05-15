@@ -1,4 +1,10 @@
-## Unreleased
+## v12.4.0 (2026-05-15) — Grok CLI runtime support
+
+### Headline
+
+RePrompter now supports Grok CLI as a first-class Repromptverse runtime. Grok sessions can auto-select Option F, run parallel workers through `spawn_subagent` or shell-level `grok -p`, and keep the same artifact contract used by the other runtimes.
+
+Docs + skill release. No JS runtime adapter, dependency, template, test, or CI behavior changes.
 
 ### Added
 
@@ -11,7 +17,8 @@
 ### Notes
 - Purely additive runtime release. The skill remains fully backward-compatible.
 - Existing installs in `~/.claude/skills/reprompter/` continue to work (Grok automatically loads skills from the Claude compatibility path). New recommended location for Grok users: `~/.grok/skills/reprompter/`.
-- No changes to any JS runtime adapter, package.json, tests, or CI workflows.
+- No changes to any JS runtime adapter, dependencies, tests, or CI workflows.
+- Version aligned across `package.json`, SKILL.md frontmatter, SKILL.md header, and the README badge at `12.4.0`.
 
 # RePrompter Changelog
 
