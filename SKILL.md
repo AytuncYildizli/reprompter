@@ -1455,7 +1455,7 @@ If Codex CLI is the only runtime available, skip the Claude Code block above —
 
 ### Hermes Agent
 
-Install the skill under Hermes' default skill directory:
+Install the skill under Hermes' default skill directory. Run this from the parent directory that contains the RePrompter checkout as `reprompter/`:
 
 ```bash
 mkdir -p ~/.hermes/skills

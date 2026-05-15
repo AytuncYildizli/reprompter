@@ -128,13 +128,17 @@ claude --version
 
 ### OpenClaw / Codex / Grok CLI / Hermes Agent
 
+Run copy-based installs from the parent directory that contains a cloned or downloaded `reprompter/` folder:
+
 ```bash
-cp -R reprompter /path/to/workspace/skills/reprompter
+mkdir -p /path/to/workspace/skills
+cp -R reprompter /path/to/workspace/skills/
 ```
 
 Hermes Agent's default skill location is `~/.hermes/skills/reprompter/`:
 
 ```bash
+# Run from the parent directory that contains reprompter/
 mkdir -p ~/.hermes/skills
 cp -R reprompter ~/.hermes/skills/
 ```
