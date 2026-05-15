@@ -140,6 +140,7 @@ The parent can track its own plan with Hermes `todo`, then verify artifacts afte
 
 ```bash
 done=0
+TOTAL=${TOTAL:-3} # expected number of agents; override as needed
 for f in /tmp/rpt-${TASKNAME}-*.md; do
   [ -e "$f" ] || continue
   case "$f" in *.prompt.md|*.stdout) continue ;; esac

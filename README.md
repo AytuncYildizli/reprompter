@@ -277,13 +277,13 @@ Exemplar output → EXTRACT structure → ANALYZE task type + domain + tone
 ## Testing
 
 ```bash
-npm run check    # 205 tests + 4 benchmarks
+npm run check    # 209 tests + 4 benchmarks
 npm run test:reverse-engineer  # individual suite example
 ```
 
 | Suite | Tests |
 |-------|------:|
-| Intent router | 21 |
+| Intent router | 22 |
 | Reverse engineer | 43 |
 | Outcome collector | 43 |
 | Strategy learner | 36 |
@@ -293,10 +293,14 @@ npm run test:reverse-engineer  # individual suite example
 | Pattern selector | 7 |
 | Runtime adapter | 5 |
 | Flywheel E2E | 5 |
-| Others | 4 |
-| **Total** | **169** |
+| Context builder | 3 |
+| Artifact evaluator | 4 |
+| Goal command | 3 |
+| Telemetry schema/store | 6 |
+| Observability report | 2 |
+| **Total** | **209** |
 
-All benchmarks at 100%: routing (64/64), artifacts (84/84), flywheel (13/13), provider (9/9).
+All benchmarks at 100%: swarm routing (9/9), real-world routing (64/64), artifacts (84/84), flywheel (13/13), provider (9/9).
 
 ---
 
