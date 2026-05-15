@@ -27,7 +27,7 @@ The Goal Command Card and `/goal <compressed summary>` compression flow are ther
 | Situation | Pick |
 |-----------|------|
 | Agents share high-level context via `fork_context`; one synthesis output expected | F1 |
-| Need per-agent log files, `--effort` overrides, or named sessions (`-s`) | F2 |
+| Need per-agent log files, model-compatible effort overrides, or named sessions (`-s`) | F2 |
 | Orchestrating from CI / headless script outside an interactive Grok session | F2 |
 | You want fresh context per worker without re-ingesting the full codebase | F1 |
 | Running under heavy sandbox (`read-only` or `strict`) and want isolated workers | F1 (with `capability_mode="read-only"`) |
@@ -108,7 +108,7 @@ Re-spawn only the failing agent with a delta prompt (Phase 4 of Repromptverse). 
 - Subagents are fully independent sessions. There is no built-in `SendMessage` equivalent between them mid-run. All coordination must go through the parent orchestrator or shared artifact files in `/tmp`.
 - `fork_context` copies history at spawn time. Later parent context is not automatically visible to already-running subagents.
 - Sandbox profiles are inherited by subagents. If the parent was started with `--sandbox read-only`, workers cannot write `/tmp/rpt-*.md` unless the profile explicitly allows `/tmp`.
-- `--effort` is a headless flag. In interactive TUI it is ignored. For high-quality Repromptverse Phase 1–2, run the orchestrator with high effort or set a strong model.
+- `--effort` / `--reasoning-effort` are headless-only and model-dependent. Do not pass them to the default `grok-build` model unless you have verified support, because unsupported models reject the request before any worker starts.
 - Tool allow-listing via `--tools` / `--disallowed-tools` in headless mode also affects subagent spawning (`Agent(explore)` syntax).
 - `todo_write` calls made by a subagent are local to that subagent's session and not automatically visible in the parent's Tasks pane.
 - When using custom personas or roles, the definition must exist in `~/.grok/personas/*.toml` or `~/.grok/roles/*.toml`, otherwise spawn fails (fail-closed).
@@ -135,7 +135,6 @@ Use file:line citations. Do not speculate.
 " \
     --yolo \
     --sandbox workspace \
-    --effort medium \
     --model "$MODEL" \
     --output-format json \
     > "/tmp/rpt-${TASKNAME}-${role}.stdout" 2>&1 &

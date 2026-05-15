@@ -2,10 +2,10 @@
 
 ### Added
 
-- **Grok CLI runtime support (Option F)** — Full additive support for Grok 4.3+ (April 2026) via `spawn_subagent` (F1: in-session parallel with `subagent_type`, `persona`, `fork_context=true`, `capability_mode`) and shell-level `grok -p "..." --yolo --sandbox workspace &` + `wait` (F2). 
+- **Grok CLI runtime support (Option F)** — Full additive support for Grok 4.3+ (April 2026) via `spawn_subagent` (F1: in-session parallel with `subagent_type`, `persona`, `fork_context=true`, `capability_mode`) and shell-level `grok -p "..." --yolo --sandbox workspace &` + `wait` (F2).
   - New `references/runtime/grok-cli-runtime.md` (exact structural match to `codex-runtime.md`).
   - Self-contained "Grok CLI Support" section appended at EOF of SKILL.md.
-  - **Phase 3 Runtime auto-pick decision tree** updated with explicit Order-1 Grok detection (`spawn_subagent` + `run_command` + `todo_write` + `ask_user_question`) so Option F is now **automatically selected** on Grok CLI (addresses Codex P1 review on PR #50). Previously the flow would have fallen through to Option E.
+  - **Phase 3 Runtime auto-pick decision tree** updated with explicit Order-1 Grok detection (`spawn_subagent` plus at least two of `run_command`, `todo_write`, `ask_user_question`) so Option F is now **automatically selected** on Grok CLI (addresses Codex P1 review on PR #50). Previously the flow would have fallen through to Option E.
   - All existing behavior, text, templates, and output formats for Claude Code, Codex, and OpenClaw remain 100% unchanged. Non-Grok users experience zero difference.
 
 ### Notes
