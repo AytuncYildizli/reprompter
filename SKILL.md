@@ -621,7 +621,7 @@ If the user explicitly named an option in their request (e.g. "use tmux", "run i
 
 | Order | Capability check | If true, use |
 |-------|-----------------|--------------|
-| 1 | At least three of `spawn_subagent`, `run_command`, `todo_write`, `ask_user_question` are present in the current toolset (Grok 4.3+ signature). | **Option F** — Grok CLI native parallel (F1: `spawn_subagent` with `fork_context=true`, `persona`, `capability_mode`; F2: shell-level `grok -p "..." --yolo --sandbox workspace &` then `wait`). Full contract and gotchas in `references/runtime/grok-cli-runtime.md`. |
+| 1 | `spawn_subagent` is present **and** at least two of `run_command`, `todo_write`, `ask_user_question` are in the current toolset (unambiguous Grok 4.3+ signature). | **Option F** — Grok CLI native parallel (F1: `spawn_subagent` with `fork_context=true`, `persona`, `capability_mode`; F2: shell-level `grok -p "..." --yolo --sandbox workspace &` then `wait`). Full contract and gotchas in `references/runtime/grok-cli-runtime.md`. |
 | 2 | **All four** of `TeamCreate`, `Agent`, `SendMessage`, and `TeamDelete` are listed in your current toolset. (Gating on `TeamCreate` alone is not enough — Option B's spawn/shutdown path needs the whole set; without it the run fails mid-execution rather than falling through to another option.) | **Option B** — native Claude Code teams; teammates can message each other; no tmux init or send-keys timing risk |
 | 3 | `sessions_spawn` tool is listed in your current toolset | **Option C** — OpenClaw |
 | 4 | `bash -c 'command -v tmux && { v=$(claude --version 2>/dev/null \| awk "{print \$1}"); [[ "$v" =~ ^(2\.[1-9]\|[3-9]) ]]; }'` exits 0. (Binary presence alone is insufficient — Option A needs `claude` ≥ 2.1 so `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is honoured; older CLIs accept the env var but don't enable team mode.) | **Option A** — tmux + child `claude --model opus`, visible panes |
@@ -632,7 +632,7 @@ After picking, announce it in one short line before starting Phase 3 work, so th
 
 > Auto-picked **Option F** (Grok CLI) — Grok-native tools detected (F1 via `spawn_subagent` or F2 via `grok -p`). Override by saying "use Option B", "use Option A (tmux)", or "use Option E" (sequential).
 
-Why F is first for Grok: when the distinctive Grok tool surface (`spawn_subagent` + `run_command` + `todo_write` + `ask_user_question`) is detected, Repromptverse must use Grok-native execution (Option F) to honour the "full Grok runtime support" claim. Option B (Claude native teams with cross-agent `SendMessage`) is preferred on Claude Code surfaces because it offers richer inter-agent messaging than Grok subagents currently provide. The rest of the priority order is unchanged.
+Why F is first for Grok: when an unambiguous Grok signature is detected (`spawn_subagent` + at least two of the supporting tools), Repromptverse must use Grok-native execution (Option F) to honour the "full Grok runtime support" claim. This check is intentionally strict to prevent false positives on other runtimes. Option B (Claude native teams with cross-agent `SendMessage`) is preferred on Claude Code surfaces because it offers richer inter-agent messaging than Grok subagents currently provide. The rest of the priority order is unchanged.
 
 #### Tool-schema guard (all options)
 
