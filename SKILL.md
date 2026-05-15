@@ -1464,7 +1464,7 @@ In this environment:
 
 Read that file the first time you detect Grok-native tools in the current environment.
 
-This section is purely additive. The Phase 3 "Runtime auto-pick" decision tree (see above) now contains an explicit Order-1 check for the Grok tool surface (`spawn_subagent` + `run_command` + `todo_write` + `ask_user_question`). When these are detected, Repromptverse **automatically selects Option F** and uses the Grok-native execution path documented in `references/runtime/grok-cli-runtime.md`. No manual override is required for normal Repromptverse runs on Grok CLI.
+This section is purely additive. The Phase 3 "Runtime auto-pick" decision tree (see above) now contains an explicit Order-1 check for the Grok tool surface (`spawn_subagent` must be present together with at least two of `run_command`, `todo_write`, `ask_user_question`). When this signature is detected, Repromptverse **automatically selects Option F** and uses the Grok-native execution path documented in `references/runtime/grok-cli-runtime.md`. No manual override is required for normal Repromptverse runs on Grok CLI.
 
 The rest of the skill (Single, `/goal` preflight, Reverse, all templates, scoring, flywheel, etc.) is completely unchanged for every other runtime. Non-Grok users (Claude Code, Codex, OpenClaw) see zero difference in behaviour or output.
 
