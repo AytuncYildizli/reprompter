@@ -20,6 +20,7 @@ test("buildGoalCommand emits exact Codex /goal command and card", () => {
   assert.notEqual(packet.compressed_summary, packet.source_message);
   assert.equal(packet.goal_command_card.command, packet.goal_command);
   assert.equal(packet.goal_command_card.runtime_target, "codex");
+  assert.equal(packet.goal_command_card.mode, "/goal preflight");
   assert.ok(packet.expanded_prompt.includes("<success_criteria schema_version=\"1\">"));
   assert.ok(packet.quality_score.after >= 7);
 });
@@ -45,6 +46,7 @@ test("CLI writes machine-readable goal artifacts", () => {
   assert.equal(result.status, 0, result.stderr);
   const packet = JSON.parse(fs.readFileSync(path.join(dir, "goal-command.json"), "utf8"));
   assert.ok(packet.goal_command.startsWith("/goal "));
+  assert.equal(packet.goal_command_card.mode, "/goal preflight");
   assert.equal(fs.readFileSync(path.join(dir, "goal-command.txt"), "utf8").startsWith("/goal "), true);
   assert.ok(fs.existsSync(path.join(dir, "goal-command-card.json")));
   assert.ok(fs.existsSync(path.join(dir, "reprompter-expanded-prompt.md")));

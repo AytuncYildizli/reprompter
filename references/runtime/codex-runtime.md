@@ -8,7 +8,7 @@ Canonical reference for running Repromptverse on OpenAI Codex CLI. Used by Phase
 
 ## `/goal` preflight with RePrompter
 
-Use RePrompter as the intent preflight step for Codex `/goal`. This flow is Codex-only because `/goal` is a Codex slash command.
+Use RePrompter as the intent preflight step for Codex `/goal`. Codex, Claude Code, and Hermes all consume the same `/goal <objective>` command shape; this document covers the Codex-specific setup and runtime notes.
 
 1. Ask RePrompter to improve the rough goal.
 2. RePrompter infers the user's intent and builds the expanded prompt first.
@@ -36,8 +36,8 @@ Required Goal Command Card shape:
 | Goal Command | Exact one-line `/goal <summary of expanded prompt>` command |
 | Compressed From | `Expanded RePrompter prompt` |
 | Objective | One sentence naming the reprompted intent Codex should pursue |
-| Runtime | `Codex CLI only` |
-| Mode | `Codex /goal preflight` |
+| Runtime | `Codex CLI` |
+| Mode | `/goal preflight` |
 | Paste Into | Codex TUI prompt, as-is |
 | Risk Level | `low` / `medium` / `high` |
 | Missing Inputs | Up to 3 unknowns, or `none` |
@@ -59,7 +59,7 @@ If the CLI reports `goals` but the effective state is `false`, enable only that 
 goals = true
 ```
 
-Start a fresh Codex session after changing the feature flag. RePrompter does not automatically intercept slash commands; the integration contract is "Reprompter infers intent, builds the expanded prompt, emits the exact Codex-only `/goal <summary of expanded prompt>` command, then the user runs it."
+Start a fresh Codex session after changing the feature flag. RePrompter does not automatically intercept slash commands; the integration contract is "Reprompter infers intent, builds the expanded prompt, emits the exact `/goal <summary of expanded prompt>` command, then the user runs it in the selected runtime."
 
 ---
 

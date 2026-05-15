@@ -49,7 +49,7 @@ test("uses single mode without multi-agent trigger", () => {
   assert.equal(result.profile, "single");
 });
 
-test("keeps Codex /goal preflight prompts in single mode", () => {
+test("keeps /goal preflight prompts in single mode", () => {
   const result = routeIntent("reprompt this for Codex /goal: make RePrompter better");
   assert.equal(result.mode, "single");
   assert.equal(result.profile, "single");

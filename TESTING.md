@@ -184,14 +184,30 @@ Verification scenarios for the RePrompter skill. Run these manually to validate 
 - Output does not claim automatic slash-command interception
 - Output does not require any config flag setup (Claude Code has none for `/goal`)
 
-## Scenario 14d: `/goal` Preflight (Ambiguous runtime, no marker)
+## Scenario 14d: `/goal` Preflight (Hermes Agent path)
 
-**Setup:** Either Codex or Claude Code CLI is available.
+**Setup:** Use Hermes Agent v0.13.0 / 2026.5.7 or later.
+**Input:** "reprompt this for Hermes /goal: migrate billing dashboard API usage without breaking reports"
+**Expected:** `/goal` preflight lane triggers, detects Hermes Agent as the runtime from the explicit "Hermes /goal" marker, infers the user's intent, builds the expanded prompt first, and emits the native `/goal <summary of expanded prompt>` shape.
+**Verify:**
+- Output starts with a Goal Command Card
+- Runtime is `Hermes Agent`
+- Mode is `/goal preflight`
+- Paste Into references the Hermes TUI prompt
+- Compressed From is `Expanded RePrompter prompt`
+- Goal Command is an exact one-line `/goal <summary of expanded prompt>` command
+- Goal Command is substantially richer than the rough user input
+- Expanded prompt's `<execution_notes>` mention persistent goals, `/goal status`, `/goal pause`, `/goal resume`, `/goal clear`, bounded continuation, and visible verification proof
+- Output does not claim automatic slash-command interception
+
+## Scenario 14e: `/goal` Preflight (Ambiguous runtime, no marker)
+
+**Setup:** Codex CLI, Claude Code CLI, or Hermes Agent is available.
 **Input:** "reprompt this for /goal: migrate billing dashboard API usage without breaking reports"
-**Expected:** `/goal` preflight lane triggers but the runtime is not specified. The skill MUST ask which runtime the goal targets, with the two valid options as buttons (Codex CLI or Claude Code CLI ≥ v2.1.139), before rendering the Goal Command Card.
+**Expected:** `/goal` preflight lane triggers but the runtime is not specified. The skill MUST ask which runtime the goal targets, with the three valid options as buttons (Codex CLI, Claude Code CLI ≥ v2.1.139, or Hermes Agent), before rendering the Goal Command Card.
 **Verify:**
 - Skill does not silently default to one runtime
-- The runtime question is asked once, with both options shown
+- The runtime question is asked once, with all three options shown
 - After the user picks, the Card's `Runtime` field reflects the choice
 - A bare "/goal" without a runtime marker never produces a Card with the wrong runtime baked in
 
@@ -286,6 +302,18 @@ Verification scenarios for the RePrompter skill. Run these manually to validate 
 - `npm run test:runtime-adapter` passes
 - `pollArtifacts` returns `completed` when outputs exist
 - `pollArtifacts` returns `stalled` on no-progress state
+
+## Scenario 24b: Hermes Agent Runtime Contract
+
+**Input:** "repromptverse - run Hermes agents for security/cost/config/memory audit"
+**Expected:** Runtime auto-pick detects `delegate_task` plus Hermes supporting tools and selects Option G. Generated worker prompts include the full per-agent context because Hermes children start fresh.
+**Verify:**
+- Runtime announcement says `Option G` and `Hermes Agent`
+- G1 uses `delegate_task(tasks=[...])` by default
+- Each child task includes full per-agent XML prompt, interviewContext, success criteria, and `/tmp/rpt-{taskname}-{role}.md` artifact path
+- G2 shell-level fallback uses `hermes -z` or `hermes chat -q` with background jobs and `wait`
+- G3 Kanban is documented as explicit opt-in only, not the default path
+- Status Line counts only real `.md` artifacts and excludes `.prompt.md` / `.stdout`
 
 ## Scenario 25: End-to-End Runtime Composition
 

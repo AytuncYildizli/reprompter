@@ -1,6 +1,6 @@
 # Multi-Agent/Swarm Template
 
-Use this template for tasks requiring multiple coordinated agents. It defines the **prompt structure** for swarm work. The **runtime** (how agents are actually spawned and coordinated) comes from SKILL.md Mode 2 (Repromptverse) Options A–E.
+Use this template for tasks requiring multiple coordinated agents. It defines the **prompt structure** for swarm work. The **runtime** (how agents are actually spawned and coordinated) comes from SKILL.md Mode 2 (Repromptverse) Options A–G.
 
 ## Template
 
@@ -10,7 +10,7 @@ Use this template for tasks requiring multiple coordinated agents. It defines th
 </role>
 
 <context>
-- Orchestration: {reprompter Option A (tmux) | B (TeamCreate+Agent) | C (sessions_spawn) | D (Codex) | E (sequential) — see SKILL.md}
+- Orchestration: {reprompter Option A (tmux) | B (TeamCreate+Agent) | C (sessions_spawn) | D (Codex) | E (sequential) | F (Grok CLI) | G (Hermes Agent) — see SKILL.md}
 - Topology: {hierarchical, mesh, ring, star}
 - Available agents: {agent types available}
 - Coordination surface: {shared TaskList, per-agent artifact files at /tmp/rpt-{taskname}-{role}.md, inter-agent SendMessage}
@@ -188,6 +188,8 @@ The template above defines the **prompt structure**. Execution happens via SKILL
 | C | `sessions_spawn` | OpenClaw runtime |
 | D | Codex parallel sessions | Codex runtime |
 | E | Sequential (any LLM) | No parallel infrastructure available |
+| F | `spawn_subagent` or shell-level `grok -p` | Grok CLI runtime |
+| G | `delegate_task`, shell-level Hermes, or Kanban | Hermes Agent runtime |
 
 Option B runtime sketch (full version in SKILL.md `#### Option B: TeamCreate`):
 

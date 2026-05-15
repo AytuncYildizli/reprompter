@@ -2,22 +2,22 @@
 name: reprompter
 description: |
   Transform rough prompts into structured, high-scoring prompts for coding agents.
-  Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", "before /goal", "for /goal", "/goal preflight", "Codex /goal", "Codex goal prompt", "Claude Code /goal", "reprompter teams", "repromptverse", "smart run", "smart agents", "campaign swarm", "engineering swarm", "ops swarm", "research swarm", multi-agent tasks, audits, parallel work, "reverse reprompt", "learn from this", "extract prompt from", "prompt dna", "prompt genome".
+  Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", "before /goal", "for /goal", "/goal preflight", "Codex /goal", "Codex goal prompt", "Claude Code /goal", "Hermes /goal", "reprompter teams", "repromptverse", "smart run", "smart agents", "campaign swarm", "engineering swarm", "ops swarm", "research swarm", multi-agent tasks, audits, parallel work, "reverse reprompt", "learn from this", "extract prompt from", "prompt dna", "prompt genome".
   Don't use for simple Q&A, casual chat, or execution-only tasks.
-  Outputs: structured XML/Markdown prompt, before/after score, /goal command card with compressed summary of the expanded prompt for Codex CLI or Claude Code CLI v2.1.139+, optional team brief + per-agent prompts, Agent Cards, Extraction Card.
+  Outputs: structured XML/Markdown prompt, before/after score, /goal command card with compressed summary of the expanded prompt for Codex CLI, Claude Code CLI v2.1.139+, or Hermes Agent, optional team brief + per-agent prompts, Agent Cards, Extraction Card.
   Target score: Single and Goal preflight >= 7/10; Repromptverse per-agent >= 8/10; Reverse >= 7/10.
 compatibility: |
-  Single mode works on Claude surfaces, OpenClaw, Codex, and Grok CLI.
-  `/goal` preflight mode works on Codex CLI (any version exposing the `goals` feature) and Claude Code CLI v2.1.139+; both runtimes accept the same `/goal <objective>` shape. Disabled on Claude surfaces without `/goal` support and on OpenClaw.
-  Repromptverse mode supports Claude Code (TeamCreate or tmux → Option B/A), OpenClaw (sessions_spawn → Option C), Codex CLI (native subagents or `codex exec` → Option D), and Grok CLI 4.3+ (spawn_subagent F1 or `grok -p` F2 → Option F, see `references/runtime/grok-cli-runtime.md`). Sequential fallback (Option E) works with any LLM runtime.
+  Single mode works on Claude surfaces, OpenClaw, Codex, Grok CLI, and Hermes Agent.
+  `/goal` preflight mode works on Codex CLI (any version exposing the `goals` feature), Claude Code CLI v2.1.139+, and Hermes Agent; all three runtimes accept the same `/goal <objective>` shape. Disabled on Claude surfaces without `/goal` support, OpenClaw, and Grok CLI.
+  Repromptverse mode supports Claude Code (TeamCreate or tmux → Option B/A), OpenClaw (sessions_spawn → Option C), Codex CLI (native subagents or `codex exec` → Option D), Grok CLI 4.3+ (spawn_subagent F1 or `grok -p` F2 → Option F), and Hermes Agent (delegate_task G1, shell-level G2, Kanban G3 → Option G). Sequential fallback (Option E) works with any LLM runtime.
 metadata:
   author: AytuncYildizli
-  version: 12.4.0
+  version: 12.5.0
 ---
 
-# RePrompter v12.4.0
+# RePrompter v12.5.0
 
-> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, or reverse-engineer from great outputs — one skill, four output lanes. **v12.4 adds Grok CLI runtime support for Repromptverse while preserving Claude Code, Codex, and OpenClaw behavior.**
+> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, or reverse-engineer from great outputs — one skill, four output lanes. **v12.5 adds Hermes Agent runtime support while preserving Claude Code, Codex, OpenClaw, and Grok CLI behavior.**
 
 ---
 
@@ -26,7 +26,7 @@ metadata:
 | Lane | Trigger | What happens |
 |------|---------|-------------|
 | **Single** | "reprompt this", "clean up this prompt" | Interview → structured prompt → score |
-| **`/goal` preflight** | "before /goal", "for /goal", "Codex /goal", "Claude Code /goal", "/goal preflight", "Codex goal prompt" | Codex CLI or Claude Code CLI v2.1.139+: infer user intent → build expanded prompt → compress into exact `/goal <summary of expanded prompt>` command |
+| **`/goal` preflight** | "before /goal", "for /goal", "Codex /goal", "Claude Code /goal", "Hermes /goal", "/goal preflight", "Codex goal prompt" | Codex CLI, Claude Code CLI v2.1.139+, or Hermes Agent: infer user intent → build expanded prompt → compress into exact `/goal <summary of expanded prompt>` command |
 | **Repromptverse** | "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "campaign swarm", "engineering swarm", "ops swarm", "research swarm" | Dimension Interview → Plan team → Agent Cards → reprompt each agent → execute → Result Cards → evaluate → retry |
 | **Reverse** | "reverse reprompt", "reprompt from example", "learn from this", "extract prompt from", "prompt dna", "prompt genome" | Analyze exemplar → classify → extract prompt DNA → generate XML prompt → score → inject into flywheel |
 
@@ -47,9 +47,9 @@ Definition — **2+ systems** means at least two distinct technical domains that
 
 ## Lane: `/goal` preflight
 
-When the user mentions `/goal`, `before /goal`, `for /goal`, "Codex /goal", "Claude Code /goal", or asks to improve a goal prompt, run RePrompter before the goal is submitted.
+When the user mentions `/goal`, `before /goal`, `for /goal`, "Codex /goal", "Claude Code /goal", "Hermes /goal", or asks to improve a goal prompt, run RePrompter before the goal is submitted.
 
-This lane works on **Codex CLI** (any version exposing the `goals` feature) and **Claude Code CLI v2.1.139+** (the release that shipped a native `/goal` slash command on 2026-05-11). Both runtimes accept the same `/goal <objective>` shape, so the compression flow is identical; only the setup check and a few runtime-specific operational notes differ. If the target runtime is Claude surfaces without `/goal` support, OpenClaw, Gemini, or another LLM, use Single mode or Repromptverse instead; do not emit a `/goal` command for runtimes that have no `/goal` surface.
+This lane works on **Codex CLI** (any version exposing the `goals` feature), **Claude Code CLI v2.1.139+** (the release that shipped a native `/goal` slash command on 2026-05-11), and **Hermes Agent** (persistent goals documented in the v0.13.0 / 2026.5.7 release). These runtimes accept the same `/goal <objective>` shape, so the compression flow is identical; only the setup check and a few runtime-specific operational notes differ. If the target runtime is Claude surfaces without `/goal` support, OpenClaw, Grok CLI, Gemini, or another LLM, use Single mode or Repromptverse instead; do not emit a `/goal` command for runtimes that have no `/goal` surface.
 
 ### Detecting the target runtime
 
@@ -59,7 +59,8 @@ Pick the runtime once, at the start of the lane, and pass it through to the Card
 |-------------|---------|
 | "Codex /goal", "for Codex /goal", explicit `codex` mention | **Codex CLI** |
 | "Claude Code /goal", "/goal in Claude Code", explicit `claude` / `claude-code` mention | **Claude Code CLI (≥ v2.1.139)** |
-| Bare "/goal" or "before /goal" with no runtime marker | **ASK** which runtime, with the two options as buttons; default to the user's primary CLI if known from session context |
+| "Hermes /goal", "/goal in Hermes", explicit `hermes` / `hermes-agent` mention | **Hermes Agent** |
+| Bare "/goal" or "before /goal" with no runtime marker | **ASK** which runtime, with the three options as buttons; default to the user's primary CLI if known from session context |
 
 Process:
 
@@ -84,9 +85,9 @@ Both runtimes shape the slash command as `/goal <objective>`. Render this card b
 | Goal Command | Exact one-line `/goal <summary of expanded prompt>` command |
 | Compressed From | `Expanded RePrompter prompt` |
 | Objective | One sentence naming the reprompted intent the runtime should pursue |
-| Runtime | `Codex CLI` or `Claude Code CLI (≥ v2.1.139)` — whichever was detected in step 2 above |
+| Runtime | `Codex CLI`, `Claude Code CLI (≥ v2.1.139)`, or `Hermes Agent` — whichever was detected in step 2 above |
 | Mode | `/goal preflight` |
-| Paste Into | Codex TUI prompt or Claude Code TUI prompt, as-is |
+| Paste Into | Codex TUI prompt, Claude Code TUI prompt, or Hermes TUI prompt, as-is |
 | Risk Level | `low` / `medium` / `high`, based on blast radius |
 | Missing Inputs | Up to 3 unknowns; write `none` if the prompt is ready |
 | Verification | 2-4 checks the agent should run while pursuing the goal |
@@ -139,7 +140,14 @@ The compression flow is shared, but the two `/goal` surfaces have small behavior
 - `/goal` is an experimental alpha feature gated by `features.goals = true` in `~/.codex/config.toml`. The local alpha binary exposes `Usage: /goal <objective>`, `ThreadGoal.objective`, `tokenBudget`, `/goal pause`, `/goal resume`, and `/goal clear`.
 - Codex's `/goal` is invoked the same way (`/goal <objective>`), but config-gated — a fresh session is required after enabling.
 
-The Card's `Risk Level` and `Verification` fields apply equally to both runtimes.
+**Hermes Agent**:
+- `/goal` sets a persistent objective that continues across turns until the runtime's goal judge considers it complete, the user pauses/clears it, or the configured turn budget is reached.
+- Goal state survives `/resume`, and user messages preempt the continuation loop.
+- Useful controls: `/goal status`, `/goal pause`, `/goal resume`, and `/goal clear`.
+- Default continuation budget is bounded (`goals.max_turns`, documented default 20), so the expanded prompt should make success criteria and verification visible.
+- Hermes supports `/goal` in both CLI and messaging-command surfaces; RePrompter still only emits the copy-paste command and does not intercept slash commands.
+
+The Card's `Risk Level` and `Verification` fields apply equally to all supported `/goal` runtimes.
 
 ### Setup check
 
@@ -171,6 +179,20 @@ claude --version
 ```
 
 No config flag is required — `/goal` is enabled by default once Claude Code is at v2.1.139 or later. However, `/goal` depends on Claude Code's hooks layer: if `disableAllHooks` or `allowManagedHooksOnly` is set in `~/.claude/settings.json`, the command is unavailable on any version. v2.1.139 silently hung in that case; v2.1.140 surfaces a clear error message instead. Upgrading does **not** re-enable `/goal` under hook-blocking settings — permitting hooks is the only way to use `/goal` on Claude Code. Managed environments that block hooks should use Single mode for goal-shaped work.
+
+**Hermes Agent**:
+
+```bash
+hermes --version
+# Expect a release with persistent goals support (v0.13.0 / 2026.5.7 or later).
+```
+
+No feature flag is required for normal `/goal` use. Optional tuning lives in Hermes config:
+
+```toml
+[goals]
+max_turns = 20
+```
 
 ---
 
@@ -622,21 +644,24 @@ If the user explicitly named an option in their request (e.g. "use tmux", "run i
 | Order | Capability check | If true, use |
 |-------|-----------------|--------------|
 | 1 | `spawn_subagent` is present **and** at least two of `run_command`, `todo_write`, `ask_user_question` are in the current toolset (unambiguous Grok 4.3+ signature). | **Option F** — Grok CLI native parallel (F1: `spawn_subagent` with `fork_context=true`, `persona`, `capability_mode`; F2: shell-level `grok -p "..." --yolo --sandbox workspace &` then `wait`). Full contract and gotchas in `references/runtime/grok-cli-runtime.md`. |
-| 2 | **All four** of `TeamCreate`, `Agent`, `SendMessage`, and `TeamDelete` are listed in your current toolset. (Gating on `TeamCreate` alone is not enough — Option B's spawn/shutdown path needs the whole set; without it the run fails mid-execution rather than falling through to another option.) | **Option B** — native Claude Code teams; teammates can message each other; no tmux init or send-keys timing risk |
-| 3 | `sessions_spawn` tool is listed in your current toolset | **Option C** — OpenClaw |
-| 4 | `bash -c 'command -v tmux && { v=$(claude --version 2>/dev/null \| awk "{print \$1}"); [[ "$v" =~ ^(2\.[1-9]\|[3-9]) ]]; }'` exits 0. (Binary presence alone is insufficient — Option A needs `claude` ≥ 2.1 so `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is honoured; older CLIs accept the env var but don't enable team mode.) | **Option A** — tmux + child `claude --model opus`, visible panes |
-| 5 | Running inside Codex (parallel sessions available) | **Option D** |
-| 6 | None of the above | **Option E** — sequential fallback (works with any LLM) |
+| 2 | `delegate_task` is present **and** at least two of `terminal`, `process`, `read_file`, `write_file`, `patch`, `search_files`, `todo`, `skills_list`, or `skill_view` are in the current toolset (Hermes Agent signature). | **Option G** — Hermes Agent native parallel (G1: `delegate_task` batch; G2: shell-level `hermes -z` / `hermes chat -q` then `wait`; G3: Kanban only for durable workflows). Full contract and gotchas in `references/runtime/hermes-agent-runtime.md`. |
+| 3 | **All four** of `TeamCreate`, `Agent`, `SendMessage`, and `TeamDelete` are listed in your current toolset. (Gating on `TeamCreate` alone is not enough — Option B's spawn/shutdown path needs the whole set; without it the run fails mid-execution rather than falling through to another option.) | **Option B** — native Claude Code teams; teammates can message each other; no tmux init or send-keys timing risk |
+| 4 | `sessions_spawn` tool is listed in your current toolset | **Option C** — OpenClaw |
+| 5 | `bash -c 'command -v tmux && { v=$(claude --version 2>/dev/null \| awk "{print \$1}"); [[ "$v" =~ ^(2\.[1-9]\|[3-9]) ]]; }'` exits 0. (Binary presence alone is insufficient — Option A needs `claude` ≥ 2.1 so `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is honoured; older CLIs accept the env var but don't enable team mode.) | **Option A** — tmux + child `claude --model opus`, visible panes |
+| 6 | Running inside Codex (parallel sessions available) | **Option D** |
+| 7 | None of the above | **Option E** — sequential fallback (works with any LLM) |
 
 After picking, announce the selected option in one short line before starting Phase 3 work, so the user can redirect. Use this shape with the actual option and runtime you selected:
 
-> Auto-picked **Option {letter}** ({runtime}) — {short detection reason}. Override by saying "use Option B", "use Option A (tmux)", "use Option D", or "use Option E" (sequential).
+> Auto-picked **Option {letter}** ({runtime}) — {short detection reason}. Override by saying "use Option B", "use Option A (tmux)", "use Option D", "use Option G (Hermes)", or "use Option E" (sequential).
 
 Why F is first for Grok: when an unambiguous Grok signature is detected (`spawn_subagent` + at least two of the supporting tools), Repromptverse must use Grok-native execution (Option F) to honour the "full Grok runtime support" claim. This check is intentionally strict to prevent false positives on other runtimes. Option B (Claude native teams with cross-agent `SendMessage`) is preferred on Claude Code surfaces because it offers richer inter-agent messaging than Grok subagents currently provide. The rest of the priority order is unchanged.
 
+Why G is next for Hermes: `delegate_task` is a Hermes-specific fork/join primitive. When that tool appears with Hermes' file, terminal, skills, or todo tools, Repromptverse should use the native Hermes path instead of falling through to OpenClaw, tmux, Codex, or sequential mode. Hermes workers receive fresh context, so the parent must pass the full per-agent prompt and artifact path in each task's `context`.
+
 #### Tool-schema guard (all options)
 
-Before invoking any tool named in Options A–F, verify it appears in your current toolset and that the call signature matches the schema loaded for the current runtime. Modern CLI runtimes reject calls against an unknown tool or a non-matching signature instead of inferring intent. If a named tool is unfamiliar, halt and report back rather than substituting a similar-looking one.
+Before invoking any tool named in Options A–G, verify it appears in your current toolset and that the call signature matches the schema loaded for the current runtime. Modern CLI runtimes reject calls against an unknown tool or a non-matching signature instead of inferring intent. If a named tool is unfamiliar, halt and report back rather than substituting a similar-looking one.
 
 Known pitfalls captured from 4.6 → 4.7 drift in this skill:
 
@@ -946,6 +971,82 @@ echo "Agents: ✅ $done/$total  ⏳ $((total-done))/$total"
 | You want fresh context per worker without re-ingesting the codebase | D1 |
 | Codex < 0.121.0 or `multi_agent` feature disabled | D2 |
 | Cross-agent messaging required mid-run | Neither — use Option B (TeamCreate in Claude Code) |
+
+#### Option G: Hermes Agent
+
+Hermes Agent supports three valid Repromptverse execution patterns. Pick G1 by default for normal interactive runs.
+
+| Pattern | When to use | Mechanism |
+|---|---|---|
+| **G1: `delegate_task` batch** | In-session parallel Repromptverse; parent needs final summaries before synthesis | `delegate_task(tasks=[...])` with one task per role |
+| **G2: Shell-level Hermes** | External orchestration, per-worker logs, CI/headless scripts | Write prompt files with single-quoted heredocs, then run `hermes -z "$prompt_text"` or `hermes chat -q "$prompt_text"` in the background, then `wait` |
+| **G3: Kanban** | Durable, restart-surviving, multi-profile, human-in-loop workflows | `kanban_create` + worker agents pulling/listing/completing cards |
+
+See `references/runtime/hermes-agent-runtime.md` for the full runtime contract (invocation, artifacts, retries, `/goal`, Kanban, and known gotchas).
+
+**G1 — Native delegation via `delegate_task` (recommended)**
+
+Hermes child agents start with fresh conversation context. The parent must pass all relevant context in each task's `goal` and `context`; do not assume the child can see the parent's full transcript.
+
+```text
+delegate_task(tasks=[
+  {
+    "goal": "Repromptverse researcher worker for {taskname}",
+    "context": "You are the researcher agent on rpt-{taskname}.\n\n[PASTE THE FULL PHASE-2 REPROMPTED XML PROMPT HERE]\n\nWrite your complete findings to /tmp/rpt-{taskname}-researcher.md. Use file:line citations. Do not speculate.",
+    "toolsets": ["terminal", "file", "web", "skills"]
+  },
+  {
+    "goal": "Repromptverse reviewer worker for {taskname}",
+    "context": "You are the reviewer agent on rpt-{taskname}.\n\n[PASTE THE FULL PHASE-2 REPROMPTED XML PROMPT HERE]\n\nWrite your complete findings to /tmp/rpt-{taskname}-reviewer.md. Use file:line citations. Do not speculate.",
+    "toolsets": ["terminal", "file", "web", "skills"]
+  }
+])
+```
+
+Default Hermes concurrency is bounded by `delegation.max_concurrent_children` (documented default 3). If the planned team is larger than the limit, split into batches or use G2/G3. Oversized batches return an error rather than silently queueing.
+
+Status Line during G1: track the parent plan with Hermes `todo`, then combine returned child summaries with artifact checks (`ls /tmp/rpt-{taskname}-*.md`, excluding `.prompt.md` and `.stdout`) before Phase 4 synthesis.
+
+**G2 — Shell-level `hermes -z` / `hermes chat -q`**
+
+Use this when the parent is orchestrating from a shell script or needs separate stdout/stderr logs:
+
+```bash
+TASKNAME="audit-2026-05"
+AGENTS=(researcher implementer reviewer)
+
+for role in "${AGENTS[@]}"; do
+  prompt_file="/tmp/rpt-${TASKNAME}-${role}.prompt.md"
+  {
+    printf 'You are the %s agent on the rpt-%s team.\n\n' "$role" "$TASKNAME"
+    cat <<'REPROMPTER_PROMPT'
+[PASTE THE FULL PHASE-2 REPROMPTED XML PROMPT FOR THIS ROLE]
+REPROMPTER_PROMPT
+    printf '\n\nWrite your complete findings to the exact file /tmp/rpt-%s-%s.md.\n' "$TASKNAME" "$role"
+    printf 'Use file:line citations. Do not speculate.\n'
+  } > "$prompt_file"
+
+  prompt_text="$(cat "$prompt_file")"
+  hermes -z "$prompt_text" \
+    --toolsets terminal,file,web,skills \
+    > "/tmp/rpt-${TASKNAME}-${role}.stdout" 2>&1 &
+done
+
+wait
+```
+
+Use `hermes chat -q "$prompt_text"` instead of `hermes -z "$prompt_text"` when you want the normal chat one-shot path rather than pure final text. Workers must still write `/tmp/rpt-{taskname}-{role}.md`.
+
+**G3 — Hermes Kanban (explicit opt-in only)**
+
+Do not auto-select Kanban for normal Repromptverse. Use it only when the user wants durable work that survives restarts, spans multiple Hermes profiles, needs human-in-loop checkpoints, or should be visible as a board. Kanban agents use the `kanban_*` toolset directly: task workers normally use lifecycle tools such as `kanban_show`, `kanban_complete`, `kanban_block`, `kanban_heartbeat`, and `kanban_comment`, while profiles that explicitly enable the Kanban toolset and are not scoped to one dispatcher task can also use orchestration tools such as `kanban_list`, `kanban_create`, `kanban_link`, and `kanban_unblock`.
+
+**Known Hermes gotchas:**
+
+- `delegate_task` is synchronous from the parent's perspective; the parent waits for child summaries before continuing.
+- Child summaries are the only child state automatically returned to the parent. Intermediate tool outputs do not enter the parent context unless the child writes artifacts or summarizes them.
+- Normal child agents cannot themselves use `delegate_task`, `clarify`, `memory`, `send_message`, or `execute_code` unless Hermes is configured for orchestrator/nested roles.
+- Cross-agent messaging during a running G1 batch is not the default coordination surface. Use artifact files and parent synthesis, or use G3 Kanban for durable coordination.
 
 #### Option E: Sequential (any LLM)
 
@@ -1348,13 +1449,43 @@ artifact_root = "/tmp"     # override if your runtime sandboxes /tmp
 | `model` | any Codex-supported id | Default model when `--model` is omitted from `codex exec`. |
 | `approval_policy` | `"untrusted"` / `"on-request"` / `"never"` | Applies to the interactive Codex TUI. `codex exec` runs headless and defaults to `never`, so Option D2 workers never need this key set. |
 | `features.multi_agent` | `true` / `false` | Enables native subagents (Option D1). Default-enabled in current Codex releases (0.121.0+); set explicitly only if your config disabled it. |
-| `features.goals` | `true` / `false` | Enables Codex `/goal` when the installed CLI exposes the experimental goals feature. Use RePrompter first, then run its exact `/goal <summary of expanded prompt>` command. Claude Code CLI v2.1.139+ ships the same `/goal` surface natively, without a config flag — see the `/goal` preflight lane near the top of this skill for both runtimes. |
+| `features.goals` | `true` / `false` | Enables Codex `/goal` when the installed CLI exposes the experimental goals feature. Use RePrompter first, then run its exact `/goal <summary of expanded prompt>` command. Claude Code CLI v2.1.139+ and Hermes Agent expose the same `/goal` surface natively, without a Codex feature flag — see the `/goal` preflight lane near the top of this skill for supported runtimes. |
 | `agents.max_threads` | integer, default `6` | Concurrent subagent worker cap. |
 | `agents.max_depth` | integer, default `1` | Spawn nesting depth (1 = subagents only, no grandchildren). |
 | `reprompter.default_mode` | `"parallel"` / `"sequential"` | Skill-defined hint consumed by Phase 1. |
 | `reprompter.artifact_root` | absolute path | Override `/tmp` when needed. |
 
 If Codex CLI is the only runtime available, skip the Claude Code block above — Single and Repromptverse modes do not require Claude Code to be installed.
+
+### Hermes Agent
+
+Install the skill under Hermes' default skill directory. Run this from the parent directory that contains the RePrompter checkout as `reprompter/`:
+
+```bash
+mkdir -p ~/.hermes/skills
+cp -R reprompter ~/.hermes/skills/
+```
+
+Hermes also supports external skill directories through its skills configuration. RePrompter only needs the skill directory to be visible to Hermes; no JS adapter or npm dependency is required.
+
+Useful Hermes config knobs for Repromptverse and `/goal`:
+
+```toml
+[delegation]
+max_concurrent_children = 3
+max_spawn_depth = 1
+
+[goals]
+max_turns = 20
+```
+
+| Setting | Values | Effect |
+|---------|--------|--------|
+| `delegation.max_concurrent_children` | integer, default `3` | Max concurrent children for `delegate_task` batch runs (Option G1). Larger teams should split batches or use G2/G3. |
+| `delegation.max_spawn_depth` | integer, default `1` | Spawn nesting depth. Keep at 1 for normal Repromptverse so workers do not create uncontrolled subteams. |
+| `goals.max_turns` | integer, default `20` | Bounded continuation budget for Hermes `/goal` runs. |
+
+Hermes `/goal` accepts the same `/goal <objective>` command shape used by Codex CLI and Claude Code CLI. For Repromptverse, the native path is Option G: G1 `delegate_task`, G2 shell-level `hermes -z` / `hermes chat -q`, or G3 Kanban when durable orchestration is explicitly requested. See `references/runtime/hermes-agent-runtime.md`.
 
 ---
 
@@ -1431,7 +1562,39 @@ Templates may add domain-specific tags beyond the 8 required base tags. Always i
 | `<structure>` | docs | Document organization |
 | `<reference>` | docs | Source material to reference |
 
-## Grok CLI Support (Additive Section — Zero Impact on Claude, Codex, OpenClaw)
+## Hermes Agent Support (Additive Section — Zero Impact on Claude, Codex, OpenClaw, Grok)
+
+When the current toolset includes `delegate_task` together with at least two of `terminal`, `process`, `read_file`, `write_file`, `patch`, `search_files`, `todo`, `skills_list`, or `skill_view`, you are executing under Hermes Agent.
+
+In this environment:
+
+- Single mode, Smart Interview, Dimension Interview, pattern library usage, prompt generation (Phases 1–2), quality scoring, evaluation loop, flywheel, Reverse Reprompter, and all template logic remain identical to other runtimes. No change in behavior or output format.
+
+- `/goal` preflight is supported. Hermes accepts `/goal <objective>`, exposes `/goal status`, `/goal pause`, `/goal resume`, and `/goal clear`, and runs a bounded continuation loop until success, pause/clear, or budget exhaustion. The Goal Command Card should use:
+  - `Runtime`: `Hermes Agent`
+  - `Paste Into`: `Hermes TUI prompt, as-is`
+  - `Mode`: `/goal preflight`
+
+- For Repromptverse Phase 3 execution, treat this as **Option G** (Hermes-native parallel):
+  - Use `delegate_task(tasks=[...])` for in-session parallel workers (G1 — recommended for most interactive runs).
+  - Or shell-level external orchestration: write each prompt with a single-quoted heredoc, load it into `prompt_text`, then run `hermes -z "$prompt_text" --toolsets terminal,file,web,skills &` and `wait` (G2).
+  - Use Hermes Kanban only when the user explicitly asks for durable, restart-surviving, multi-profile, or human-in-loop orchestration (G3).
+  - Every worker **must** be explicitly instructed in its prompt/context to write its final output to the exact path `/tmp/rpt-{taskname}-{role}.md` (identical artifact contract used by all other runtimes).
+  - Hermes `delegate_task` children start from fresh context. The parent must pass the full per-agent XML prompt, interviewContext, artifact path, and success criteria through each task's `goal` / `context`.
+
+- Full invocation examples, `delegate_task` batch shape, `hermes -z` and `hermes chat -q` shell-level usage, Kanban boundaries, concurrency recommendations, retry patterns, `/goal` behavior, and the complete list of Hermes gotchas are documented in:
+
+  `references/runtime/hermes-agent-runtime.md`
+
+Read that file the first time you detect Hermes-native tools in the current environment.
+
+This section is purely additive. The Phase 3 "Runtime auto-pick" decision tree (see above) contains an explicit Order-2 check for the Hermes tool surface (`delegate_task` plus at least two supporting Hermes tools). When this signature is detected, Repromptverse **automatically selects Option G** and uses the Hermes-native execution path documented in `references/runtime/hermes-agent-runtime.md`. No manual override is required for normal Repromptverse runs on Hermes Agent.
+
+The rest of the skill remains unchanged for every other runtime. Non-Hermes users (Claude Code, Codex, OpenClaw, Grok CLI) see zero difference in behaviour or output.
+
+Hermes users can install this skill by copying the directory to `~/.hermes/skills/reprompter/` or by adding the repo path to Hermes' external skill directories.
+
+## Grok CLI Support (Additive Section — Zero Impact on Claude, Codex, OpenClaw, Hermes)
 
 When the current toolset includes `spawn_subagent` together with at least two of `run_command`, `todo_write`, `ask_user_question`, you are executing under Grok CLI (xAI Grok 4.3+). A normal Grok session will usually also expose `read_file`, `search_replace`, and `write`.
 
@@ -1464,8 +1627,8 @@ In this environment:
 
 Read that file the first time you detect Grok-native tools in the current environment.
 
-This section is purely additive. The Phase 3 "Runtime auto-pick" decision tree (see above) now contains an explicit Order-1 check for the Grok tool surface (`spawn_subagent` must be present together with at least two of `run_command`, `todo_write`, `ask_user_question`). When this signature is detected, Repromptverse **automatically selects Option F** and uses the Grok-native execution path documented in `references/runtime/grok-cli-runtime.md`. No manual override is required for normal Repromptverse runs on Grok CLI.
+This section is purely additive. The Phase 3 "Runtime auto-pick" decision tree (see above) contains an explicit Order-1 check for the Grok tool surface (`spawn_subagent` must be present together with at least two of `run_command`, `todo_write`, `ask_user_question`). When this signature is detected, Repromptverse **automatically selects Option F** and uses the Grok-native execution path documented in `references/runtime/grok-cli-runtime.md`. No manual override is required for normal Repromptverse runs on Grok CLI.
 
-The rest of the skill (Single, `/goal` preflight, Reverse, all templates, scoring, flywheel, etc.) is completely unchanged for every other runtime. Non-Grok users (Claude Code, Codex, OpenClaw) see zero difference in behaviour or output.
+The rest of the skill (Single, `/goal` preflight, Reverse, all templates, scoring, flywheel, etc.) is completely unchanged for every other runtime. Non-Grok users (Claude Code, Codex, OpenClaw, Hermes Agent) see zero difference in behaviour or output.
 
 Grok users can install this skill by copying the directory to `~/.grok/skills/reprompter/` (or continue using the existing `~/.claude/skills/reprompter/` location — Grok automatically loads skills from the Claude compatibility path).

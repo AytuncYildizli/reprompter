@@ -1,3 +1,33 @@
+## v12.5.0 (2026-05-15) — Hermes Agent runtime support
+
+### Headline
+
+RePrompter now supports Nous Research's Hermes Agent as a first-class runtime. Hermes users get `/goal` preflight support, Repromptverse Option G auto-selection via `delegate_task`, and a runtime reference that distinguishes short fork/join delegation from durable Kanban orchestration.
+
+Docs + skill release. No JS runtime adapter, dependency, template validation, or CI behavior changes.
+
+### Added
+
+- **Hermes Agent runtime support (Option G)** — Additive Repromptverse support for Hermes Agent through three paths:
+  - **G1 `delegate_task` batch** for normal in-session parallel Repromptverse runs.
+  - **G2 shell-level `hermes -z` / `hermes chat -q`** for external orchestration with per-worker logs.
+  - **G3 Hermes Kanban** for durable, restart-surviving, multi-profile workflows when explicitly requested.
+- **Hermes `/goal` preflight support** — The `/goal` lane now recognizes explicit "Hermes /goal" requests and emits the same compressed `/goal <objective>` command shape used by Codex CLI and Claude Code CLI.
+- New `references/runtime/hermes-agent-runtime.md` documenting Hermes-specific `/goal`, `delegate_task`, Kanban, shell-level execution, artifact contracts, status lines, retries, and known gotchas.
+- **Phase 3 Runtime auto-pick decision tree** updated with an explicit Hermes tool-surface check (`delegate_task` plus at least two file/terminal/skill/todo tools) so Hermes sessions select **Option G** instead of falling through to sequential mode.
+
+### Changed
+
+- README, SKILL frontmatter, Repromptverse templates, and TESTING scenarios now list Hermes Agent alongside Claude Code, OpenClaw, Codex, and Grok CLI where applicable.
+- `/goal` ambiguous-runtime prompts now offer three valid choices: Codex CLI, Claude Code CLI v2.1.139+, and Hermes Agent.
+- Version aligned across `package.json`, SKILL.md frontmatter, SKILL.md header, and README badge at `12.5.0`.
+
+### Notes
+
+- Grok CLI still has no `/goal` surface, so Grok users remain on Single mode or Repromptverse Option F.
+- Hermes `delegate_task` children start with fresh context and only receive the `goal` / `context` fields provided by the parent; the new runtime reference calls this out explicitly to avoid missing-context failures.
+- Hermes Kanban is documented but not auto-selected by default because it is a durable workflow surface, not the normal short Repromptverse path.
+
 ## v12.4.0 (2026-05-15) — Grok CLI runtime support
 
 ### Headline
