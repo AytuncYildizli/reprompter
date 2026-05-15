@@ -1,8 +1,8 @@
 {
   "name": "reprompter",
-  "version": "12.4.0",
+  "version": "12.5.0",
   "private": true,
-  "description": "Prompt engineering skill for Claude Code, OpenClaw, Codex, and Grok CLI",
+  "description": "Prompt engineering skill for Claude Code, OpenClaw, Codex, Grok CLI, and Hermes Agent",
   "scripts": {
     "validate:templates": "bash scripts/validate-templates.sh",
     "validate:tool-refs": "node scripts/validate-tool-refs.js",

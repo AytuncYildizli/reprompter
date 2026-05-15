@@ -10,7 +10,7 @@ Use this template for multi-agent tasks that need explicit routing, stop rules, 
 </role>
 
 <context>
-- Runtime: {Claude Code | OpenClaw | Codex | Other}
+- Runtime: {Claude Code | OpenClaw | Codex | Grok CLI | Hermes Agent | Other}
 - Topology: {star | hierarchical | mesh | pipeline}
 - Agent roster: {agent ids and domain ownership}
 - Shared state: {memory keys, output paths, message channels}

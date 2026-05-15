@@ -8,12 +8,12 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-12.4.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-12.5.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-205%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 
-RePrompter is a prompt engineering skill for AI coding agents. It takes rough, low-quality prompts and transforms them into structured, high-scoring prompts that produce dramatically better results. Works with Claude Code, OpenClaw, Codex, Grok CLI, or any LLM that accepts structured prompts.
+RePrompter is a prompt engineering skill for AI coding agents. It takes rough, low-quality prompts and transforms them into structured, high-scoring prompts that produce dramatically better results. Works with Claude Code, OpenClaw, Codex, Grok CLI, Hermes Agent, or any LLM that accepts structured prompts.
 
 <br/>
 <p align="center">
@@ -27,7 +27,7 @@ RePrompter is a prompt engineering skill for AI coding agents. It takes rough, l
 | Lane | What it does | Trigger |
 |------|-------------|---------|
 | **Single** | Interview, structure, score one prompt | `reprompt this`, `clean up this prompt` |
-| **`/goal` preflight** | Codex CLI or Claude Code CLI v2.1.139+: infer intent, build the expanded prompt, then compress it into `/goal <summary of expanded prompt>` | `before /goal`, `for /goal`, `Codex /goal`, `Claude Code /goal`, `/goal preflight` |
+| **`/goal` preflight** | Codex CLI, Claude Code CLI v2.1.139+, or Hermes Agent: infer intent, build the expanded prompt, then compress it into `/goal <summary of expanded prompt>` | `before /goal`, `for /goal`, `Codex /goal`, `Claude Code /goal`, `Hermes /goal`, `/goal preflight` |
 | **Repromptverse** | Plan a team of 2-5 agents, reprompt each one, execute in parallel, evaluate, retry | `reprompter teams`, `repromptverse`, `smart run` |
 | **Reverse** | Show a great output, extract the prompt DNA that produced it | `reverse reprompt`, `learn from this`, `prompt dna` |
 
@@ -126,10 +126,17 @@ claude --version
 # Expect 2.1.139 or later. Upgrade if older.
 ```
 
-### OpenClaw / Codex
+### OpenClaw / Codex / Grok CLI / Hermes Agent
 
 ```bash
 cp -R reprompter /path/to/workspace/skills/reprompter
+```
+
+Hermes Agent's default skill location is `~/.hermes/skills/reprompter/`:
+
+```bash
+mkdir -p ~/.hermes/skills
+cp -R reprompter ~/.hermes/skills/reprompter
 ```
 
 For Codex, install or update the CLI and confirm the goals feature is available:
@@ -156,13 +163,13 @@ reprompt this: build a REST API with auth and rate limiting
 
 ### `/goal` Preflight
 
-Use RePrompter before `/goal` whenever the goal is bigger than a single direct instruction. The lane works on **Codex CLI** (any version exposing the `goals` feature) and **Claude Code CLI v2.1.139+** (native `/goal` slash command shipped on 2026-05-11). Both runtimes shape the command as `/goal <objective>`, so RePrompter first builds the full expanded prompt, then compresses it into a dense copy-pasteable `/goal <summary of expanded prompt>` command. The command should read like a summary of the old long XML prompt, not a tiny rewrite of the rough input.
+Use RePrompter before `/goal` whenever the goal is bigger than a single direct instruction. The lane works on **Codex CLI** (any version exposing the `goals` feature), **Claude Code CLI v2.1.139+** (native `/goal` slash command shipped on 2026-05-11), and **Hermes Agent** (persistent goals in the v0.13.0 / 2026.5.7 release). These runtimes shape the command as `/goal <objective>`, so RePrompter first builds the full expanded prompt, then compresses it into a dense copy-pasteable `/goal <summary of expanded prompt>` command. The command should read like a summary of the old long XML prompt, not a tiny rewrite of the rough input.
 
 ```
 reprompt this for /goal: migrate our billing dashboard to the new API without breaking existing reports
 ```
 
-Add an explicit runtime marker when you have one — "Codex /goal" or "Claude Code /goal" — otherwise RePrompter will ask. RePrompter then shows a Goal Command Card:
+Add an explicit runtime marker when you have one — "Codex /goal", "Claude Code /goal", or "Hermes /goal" — otherwise RePrompter will ask. RePrompter then shows a Goal Command Card:
 
 | Field | Example (Claude Code) |
 |-------|---------|
@@ -177,7 +184,7 @@ Add an explicit runtime marker when you have one — "Codex /goal" or "Claude Co
 | Verification | `npm test`, dashboard smoke, report export check |
 | Quality | 3/10 → 8/10 |
 
-For Codex, the Card differs only in the `Runtime` (`Codex CLI`) and `Paste Into` (`Codex TUI prompt, as-is`) rows.
+For Codex or Hermes, the Card differs only in the `Runtime` (`Codex CLI` or `Hermes Agent`) and `Paste Into` rows.
 
 Then run the generated command in your chosen runtime:
 
@@ -185,7 +192,7 @@ Then run the generated command in your chosen runtime:
 /goal Migrate billing dashboard API usage to the new API by first mapping current data/report consumers, preserving schemas, filters, exports, scheduled outputs, and historical totals, implementing the smallest compatible adapter changes, adding parity fixtures, and proving compatibility with unit, integration, dashboard smoke, and report export checks.
 ```
 
-On Claude Code (v2.1.139+) the goal is **thread-persistent** — it survives `/resume`, terminal close, and context compaction — and a Haiku evaluator checks the completion condition against the transcript after each turn. Use `/goal pause` and `/goal resume` to handle interruptions. On Codex (alpha) the same `/goal <objective>` shape applies once `features.goals = true` in `~/.codex/config.toml` and a fresh session is started.
+On Claude Code (v2.1.139+) the goal is **thread-persistent** — it survives `/resume`, terminal close, and context compaction — and a Haiku evaluator checks the completion condition against the transcript after each turn. Use `/goal pause` and `/goal resume` to handle interruptions. On Codex (alpha) the same `/goal <objective>` shape applies once `features.goals = true` in `~/.codex/config.toml` and a fresh session is started. On Hermes Agent, `/goal` is also persistent and supports `/goal status`, `/goal pause`, `/goal resume`, and `/goal clear`; Hermes defaults to a bounded continuation loop and survives `/resume`.
 
 For automation surfaces such as Whip, the same contract is available as a local
 runtime command:
@@ -200,7 +207,7 @@ node scripts/goal-command.js \
 It writes `goal-command.json`, `goal-command.txt`,
 `goal-command-card.json`, `reprompter-expanded-prompt.md`, and
 `compressed-goal-summary.txt`. The command is artifact generation only; it does
-not execute `/goal`, dispatch agents, read secrets, or touch production. The same `/goal <objective>` output also pastes directly into Claude Code v2.1.139+ — a `--target claude-code` switch is planned for a follow-up release; until then the existing `--target codex` artifact text is shape-compatible with Claude Code's `/goal` surface.
+not execute `/goal`, dispatch agents, read secrets, or touch production. The same `/goal <objective>` output also pastes directly into Claude Code v2.1.139+ and Hermes Agent — dedicated `--target claude-code` / `--target hermes` switches are planned for a follow-up release; until then the existing `--target codex` artifact text is shape-compatible with both `/goal` surfaces.
 
 ```
 reprompter teams - audit the auth module for security and test coverage
@@ -230,7 +237,7 @@ Rough prompt → Input guard → Quick mode gate → Interview (2-5 questions)
 ```
 Phase 1: Score prompt, interview if needed, plan team, show Plan Cards → user approves
 Phase 2: Write XML prompt per agent (target 8+/10), show quality scorecard
-Phase 3: Execute (tmux / TeamCreate / OpenClaw / sequential fallback)
+Phase 3: Execute (tmux / TeamCreate / OpenClaw / Codex / Grok CLI / Hermes Agent / sequential fallback)
 Phase 4: Show Result Cards, evaluate, retry with delta prompts if needed (max 2)
 ```
 
@@ -291,17 +298,23 @@ All benchmarks at 100%: routing (64/64), artifacts (84/84), flywheel (13/13), pr
 
 ## Compatibility
 
-| Capability | Claude Code | Codex | OpenClaw | Any LLM |
-|-----------|:-:|:-:|:-:|:-:|
-| Single mode | yes | yes | yes | yes |
-| `/goal` preflight | yes¹ | yes | - | - |
-| Reverse mode | yes | yes | yes | yes |
-| Multi-agent parallel | yes | yes | yes | - |
-| Multi-agent sequential | yes | yes | yes | yes |
+| Capability | Claude Code | Codex | OpenClaw | Grok CLI | Hermes Agent | Any LLM |
+|-----------|:-:|:-:|:-:|:-:|:-:|:-:|
+| Single mode | yes | yes | yes | yes | yes | yes |
+| `/goal` preflight | yes¹ | yes | - | - | yes² | - |
+| Reverse mode | yes | yes | yes | yes | yes | yes |
+| Multi-agent parallel | yes | yes | yes | yes | yes | - |
+| Multi-agent sequential | yes | yes | yes | yes | yes | yes |
 
 ¹ Claude Code `/goal` requires CLI v2.1.139+ (shipped 2026-05-11) and depends on the hooks layer. Under `disableAllHooks` or `allowManagedHooksOnly` in `settings.json`, `/goal` is unavailable on any version — v2.1.140 only upgraded the failure mode from a silent hang to a clear error message. No config flag needed beyond the version pin in environments that permit hooks; managed environments that block hooks must use Single mode for goal-shaped work.
 
+² Hermes Agent `/goal` is documented in the v0.13.0 / 2026.5.7 release. It uses the same `/goal <objective>` command shape, with `/goal status`, `/goal pause`, `/goal resume`, and `/goal clear` available in the runtime.
+
 Codex parallel paths: **D1 native subagents** (Codex CLI 0.121.0+, `multi_agent` default-enabled) or **D2 shell-level** (`codex exec --ephemeral --sandbox workspace-write` + background + `wait`; workspace-write is required for workers to write their `/tmp/rpt-*.md` artifacts, and `codex exec` keeps approval = `never` automatically). See SKILL.md Option D and `references/runtime/codex-runtime.md`.
+
+Grok parallel paths: **F1 native subagents** (`spawn_subagent`) or **F2 shell-level** (`grok -p ... &` + `wait`). Grok does not expose `/goal`.
+
+Hermes parallel paths: **G1 `delegate_task` batch** for normal Repromptverse, **G2 shell-level** (`hermes -z` / `hermes chat -q` + background + `wait`) for external orchestration, or **G3 Kanban** for durable multi-profile workflows. See `references/runtime/hermes-agent-runtime.md`.
 
 ---
 
