@@ -1,3 +1,14 @@
+## Unreleased
+
+### Added
+
+- **Grok CLI runtime support (Option F)** — Full additive support for Grok 4.3+ (April 2026) via `spawn_subagent` (F1: in-session parallel with `subagent_type`, `persona`, `fork_context=true`, `capability_mode`) and shell-level `grok -p "..." --yolo --sandbox workspace &; wait` (F2). New `references/runtime/grok-cli-runtime.md` (exact structural match to `codex-runtime.md`, including F1/F2 decision table, artifact contract `/tmp/rpt-{taskname}-{role}.md`, status polling, retries, and "What Grok does NOT provide"). Self-contained "Grok CLI Support" section appended at the very end of SKILL.md (after the appendix) that only activates when the LLM's toolset includes Grok-native tools (`spawn_subagent`, `run_command`, `ask_user_question`, `todo_write`). All existing behavior, text, templates, decision trees, and output formats for Claude Code (TeamCreate/Agent or tmux), Codex CLI (D1/D2), OpenClaw (`sessions_spawn`), and sequential fallback remain 100% unchanged. Non-Grok users experience zero difference.
+
+### Notes
+- Purely additive runtime release. The skill remains fully backward-compatible.
+- Existing installs in `~/.claude/skills/reprompter/` continue to work (Grok automatically loads skills from the Claude compatibility path). New recommended location for Grok users: `~/.grok/skills/reprompter/`.
+- No changes to any JS runtime adapter, package.json, tests, or CI workflows.
+
 # RePrompter Changelog
 
 ## v12.3.0 (2026-05-13) — `/goal` preflight on Claude Code CLI

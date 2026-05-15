@@ -1430,3 +1430,37 @@ Templates may add domain-specific tags beyond the 8 required base tags. Always i
 | `<threat_model>` | security | Threat landscape and vectors |
 | `<structure>` | docs | Document organization |
 | `<reference>` | docs | Source material to reference |
+
+## Grok CLI Support (Additive Section — Zero Impact on Claude, Codex, OpenClaw)
+
+When the current toolset visible to you includes `spawn_subagent` (also referred to as the `task` tool in documentation), `run_command`, `ask_user_question`, `todo_write`, `read_file`, `search_replace`, and `write`, you are executing under Grok CLI (xAI Grok 4.3+).
+
+In this environment:
+
+- Single mode, Smart Interview, Dimension Interview, pattern library usage, prompt generation (Phases 1–2), quality scoring, evaluation loop, flywheel, Reverse Reprompter, and all template logic remain 100% identical to other runtimes. No change in behavior or output format.
+
+- For Repromptverse Phase 3 execution, treat this as **Option F** (Grok-native parallel):
+  - Use `spawn_subagent` for in-session parallel workers (F1 — recommended for most interactive runs).
+  - Or shell-level background `grok -p "..." --yolo --sandbox workspace &; wait` (F2) when orchestrating from external scripts or CI.
+  - Recommended parameters for `spawn_subagent`:
+    - `subagent_type`: "general-purpose" (full capability) or "explore" / "plan" for specialized workers
+    - `persona`: "implementer", "researcher", "reviewer", "security-auditor", or a custom persona defined in `~/.grok/personas/*.toml`
+    - `fork_context`: true (strongly recommended — the worker receives the original user task, Smart/Dimension Interview answers, team plan, and interviewContext without repetition)
+    - `capability_mode`: "execute" (default for general-purpose) or "read-only" / "read-write"
+    - `prompt`: the full per-agent reprompted XML document produced in Phase 2
+  - Every worker **must** be explicitly instructed in its prompt to write its final output to the exact path `/tmp/rpt-{taskname}-{role}.md` (identical artifact contract used by all other runtimes).
+  - Status Line during Phase 3: combine `todo_write` (for orchestrator tracking) with `run_command` + `ls /tmp/rpt-*.md` (exclude any `.prompt.md` or `.stdout` files) and render the compact line:
+    ```
+    Agents: ✅ 3/5  ⏳ 1/5  🔄 1/5 (retry 1)
+    ```
+
+- Full invocation examples, `~/.grok/config.toml` [subagents] settings, sandbox profile interaction, `--effort` usage in headless mode, concurrency recommendations, retry patterns, and the complete list of "What Grok CLI does NOT provide" (no native TeamCreate/SendMessage/TeamDelete cross-messaging between workers, no /goal surface, no automatically shared TaskList across subagents, only partial hook matcher aliases for Claude tool names, etc.) are documented in:
+
+  `references/runtime/grok-cli-runtime.md`
+
+Read that file the first time you detect Grok-native tools in the current environment.
+
+This section is purely additive. It activates only when Grok CLI tools are present and does not alter any instruction, decision tree, template, or output format for users on Claude Code (TeamCreate/Agent or tmux Option A/B), Codex CLI (native subagents D1 or `codex exec` D2), OpenClaw (`sessions_spawn` Option C), or sequential fallback (Option E).
+
+Grok users can install this skill by copying the directory to `~/.grok/skills/reprompter/` (or continue using the existing `~/.claude/skills/reprompter/` location — Grok automatically loads skills from the Claude compatibility path).
+
