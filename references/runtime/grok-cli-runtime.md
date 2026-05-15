@@ -206,4 +206,6 @@ All accessed 2026-05-15:
 
 **End of Grok CLI Runtime Contract**
 
-This document is additive. It does not modify any behavior for users on Claude Code, Codex CLI, or OpenClaw. Grok CLI users (or anyone whose toolset includes `spawn_subagent`, `run_command`, `ask_user_question`, and `todo_write`) should read this file when the SKILL.md Grok Support section activates Option F.
+This document is additive. It does not modify any behavior for users on Claude Code, Codex CLI, or OpenClaw.
+
+**Auto-selection:** The central "Runtime auto-pick" decision tree in SKILL.md (Phase 3 Execute lane) now includes an explicit Order-1 check for the Grok tool surface. When `spawn_subagent` + `run_command` + `todo_write` + `ask_user_question` are all present in the current toolset, Repromptverse **automatically routes to Option F** (this contract) without any manual instruction. You only need to read this file the first time you see the Grok Support section activate in a Repromptverse run.

@@ -2,7 +2,11 @@
 
 ### Added
 
-- **Grok CLI runtime support (Option F)** — Full additive support for Grok 4.3+ (April 2026) via `spawn_subagent` (F1: in-session parallel with `subagent_type`, `persona`, `fork_context=true`, `capability_mode`) and shell-level `grok -p "..." --yolo --sandbox workspace &; wait` (F2). New `references/runtime/grok-cli-runtime.md` (exact structural match to `codex-runtime.md`, including F1/F2 decision table, artifact contract `/tmp/rpt-{taskname}-{role}.md`, status polling, retries, and "What Grok does NOT provide"). Self-contained "Grok CLI Support" section appended at the very end of SKILL.md (after the appendix) that only activates when the LLM's toolset includes Grok-native tools (`spawn_subagent`, `run_command`, `ask_user_question`, `todo_write`). All existing behavior, text, templates, decision trees, and output formats for Claude Code (TeamCreate/Agent or tmux), Codex CLI (D1/D2), OpenClaw (`sessions_spawn`), and sequential fallback remain 100% unchanged. Non-Grok users experience zero difference.
+- **Grok CLI runtime support (Option F)** — Full additive support for Grok 4.3+ (April 2026) via `spawn_subagent` (F1: in-session parallel with `subagent_type`, `persona`, `fork_context=true`, `capability_mode`) and shell-level `grok -p "..." --yolo --sandbox workspace &; wait` (F2). 
+  - New `references/runtime/grok-cli-runtime.md` (exact structural match to `codex-runtime.md`).
+  - Self-contained "Grok CLI Support" section appended at EOF of SKILL.md.
+  - **Phase 3 Runtime auto-pick decision tree** updated with explicit Order-1 Grok detection (`spawn_subagent` + `run_command` + `todo_write` + `ask_user_question`) so Option F is now **automatically selected** on Grok CLI (addresses Codex P1 review on PR #50). Previously the flow would have fallen through to Option E.
+  - All existing behavior, text, templates, and output formats for Claude Code, Codex, and OpenClaw remain 100% unchanged. Non-Grok users experience zero difference.
 
 ### Notes
 - Purely additive runtime release. The skill remains fully backward-compatible.
