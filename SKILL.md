@@ -979,7 +979,7 @@ Hermes Agent supports three valid Repromptverse execution patterns. Pick G1 by d
 | Pattern | When to use | Mechanism |
 |---|---|---|
 | **G1: `delegate_task` batch** | In-session parallel Repromptverse; parent needs final summaries before synthesis | `delegate_task(tasks=[...])` with one task per role |
-| **G2: Shell-level Hermes** | External orchestration, per-worker logs, CI/headless scripts | `hermes -z "..."` or `hermes chat -q "..."` in the background, then `wait` |
+| **G2: Shell-level Hermes** | External orchestration, per-worker logs, CI/headless scripts | Write prompt files with single-quoted heredocs, then run `hermes -z "$prompt_text"` or `hermes chat -q "$prompt_text"` in the background, then `wait` |
 | **G3: Kanban** | Durable, restart-surviving, multi-profile, human-in-loop workflows | `kanban_create` + worker agents pulling/listing/completing cards |
 
 See `references/runtime/hermes-agent-runtime.md` for the full runtime contract (invocation, artifacts, retries, `/goal`, Kanban, and known gotchas).
@@ -1016,14 +1016,18 @@ TASKNAME="audit-2026-05"
 AGENTS=(researcher implementer reviewer)
 
 for role in "${AGENTS[@]}"; do
-  hermes -z "
-You are the ${role} agent on the rpt-${TASKNAME} team.
-
+  prompt_file="/tmp/rpt-${TASKNAME}-${role}.prompt.md"
+  {
+    printf 'You are the %s agent on the rpt-%s team.\n\n' "$role" "$TASKNAME"
+    cat <<'REPROMPTER_PROMPT'
 [PASTE THE FULL PHASE-2 REPROMPTED XML PROMPT FOR THIS ROLE]
+REPROMPTER_PROMPT
+    printf '\n\nWrite your complete findings to the exact file /tmp/rpt-%s-%s.md.\n' "$TASKNAME" "$role"
+    printf 'Use file:line citations. Do not speculate.\n'
+  } > "$prompt_file"
 
-Write your complete findings to the exact file /tmp/rpt-${TASKNAME}-${role}.md.
-Use file:line citations. Do not speculate.
-" \
+  prompt_text="$(cat "$prompt_file")"
+  hermes -z "$prompt_text" \
     --toolsets terminal,file,web,skills \
     > "/tmp/rpt-${TASKNAME}-${role}.stdout" 2>&1 &
 done
@@ -1031,7 +1035,7 @@ done
 wait
 ```
 
-Use `hermes chat -q "..."` instead of `hermes -z "..."` when you want the normal chat one-shot path rather than pure final text. Workers must still write `/tmp/rpt-{taskname}-{role}.md`.
+Use `hermes chat -q "$prompt_text"` instead of `hermes -z "$prompt_text"` when you want the normal chat one-shot path rather than pure final text. Workers must still write `/tmp/rpt-{taskname}-{role}.md`.
 
 **G3 — Hermes Kanban (explicit opt-in only)**
 
@@ -1573,7 +1577,7 @@ In this environment:
 
 - For Repromptverse Phase 3 execution, treat this as **Option G** (Hermes-native parallel):
   - Use `delegate_task(tasks=[...])` for in-session parallel workers (G1 — recommended for most interactive runs).
-  - Or shell-level external orchestration: `hermes -z "..." --toolsets terminal,file,web,skills &` then `wait` (G2).
+  - Or shell-level external orchestration: write each prompt with a single-quoted heredoc, load it into `prompt_text`, then run `hermes -z "$prompt_text" --toolsets terminal,file,web,skills &` and `wait` (G2).
   - Use Hermes Kanban only when the user explicitly asks for durable, restart-surviving, multi-profile, or human-in-loop orchestration (G3).
   - Every worker **must** be explicitly instructed in its prompt/context to write its final output to the exact path `/tmp/rpt-{taskname}-{role}.md` (identical artifact contract used by all other runtimes).
   - Hermes `delegate_task` children start from fresh context. The parent must pass the full per-agent XML prompt, interviewContext, artifact path, and success criteria through each task's `goal` / `context`.

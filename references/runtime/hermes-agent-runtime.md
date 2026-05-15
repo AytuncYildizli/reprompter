@@ -173,14 +173,18 @@ TASKNAME="audit-2026-05"
 AGENTS=(researcher implementer reviewer)
 
 for role in "${AGENTS[@]}"; do
-  hermes -z "
-You are the ${role} agent on the rpt-${TASKNAME} team.
-
+  prompt_file="/tmp/rpt-${TASKNAME}-${role}.prompt.md"
+  {
+    printf 'You are the %s agent on the rpt-%s team.\n\n' "$role" "$TASKNAME"
+    cat <<'REPROMPTER_PROMPT'
 [PASTE THE FULL PHASE-2 REPROMPTED XML PROMPT FOR THIS ROLE]
+REPROMPTER_PROMPT
+    printf '\n\nWrite your complete findings to the exact file /tmp/rpt-%s-%s.md.\n' "$TASKNAME" "$role"
+    printf 'Use file:line citations. Do not speculate.\n'
+  } > "$prompt_file"
 
-Write your complete findings to the exact file /tmp/rpt-${TASKNAME}-${role}.md.
-Use file:line citations. Do not speculate.
-" \
+  prompt_text="$(cat "$prompt_file")"
+  hermes -z "$prompt_text" \
     --toolsets terminal,file,web,skills \
     > "/tmp/rpt-${TASKNAME}-${role}.stdout" 2>&1 &
 done
@@ -191,7 +195,13 @@ wait
 ### `hermes chat -q` one-shot path
 
 ```bash
-hermes chat -q "[FULL PER-AGENT PROMPT]" \
+prompt_file="/tmp/rpt-${TASKNAME}-${role}.prompt.md"
+cat > "$prompt_file" <<'REPROMPTER_PROMPT'
+[FULL PER-AGENT PROMPT]
+REPROMPTER_PROMPT
+
+prompt_text="$(cat "$prompt_file")"
+hermes chat -q "$prompt_text" \
   --toolsets terminal,file,skills \
   > "/tmp/rpt-${TASKNAME}-${role}.stdout" 2>&1 &
 ```

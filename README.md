@@ -185,7 +185,7 @@ Add an explicit runtime marker when you have one — "Codex /goal", "Claude Code
 | Paste Into | Claude Code TUI prompt, as-is |
 | Risk Level | medium |
 | Missing Inputs | API contract diff, report smoke path |
-| Verification | `npm test`, dashboard smoke, report export check |
+| Verification | `npm run check`, dashboard smoke, report export check |
 | Quality | 3/10 → 8/10 |
 
 For Codex or Hermes, the Card differs only in the `Runtime` (`Codex CLI` or `Hermes Agent`) and `Paste Into` rows.
@@ -278,7 +278,7 @@ Exemplar output → EXTRACT structure → ANALYZE task type + domain + tone
 
 ```bash
 npm run check    # 205 tests + 4 benchmarks
-npm test         # individual: npm run test:reverse-engineer
+npm run test:reverse-engineer  # individual suite example
 ```
 
 | Suite | Tests |
