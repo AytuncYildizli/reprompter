@@ -1433,7 +1433,7 @@ Templates may add domain-specific tags beyond the 8 required base tags. Always i
 
 ## Grok CLI Support (Additive Section — Zero Impact on Claude, Codex, OpenClaw)
 
-When the current toolset visible to you includes `spawn_subagent` (also referred to as the `task` tool in documentation), `run_command`, `ask_user_question`, `todo_write`, `read_file`, `search_replace`, and `write`, you are executing under Grok CLI (xAI Grok 4.3+).
+When the current toolset includes `spawn_subagent` together with at least two of `run_command`, `todo_write`, `ask_user_question`, you are executing under Grok CLI (xAI Grok 4.3+). A normal Grok session will usually also expose `read_file`, `search_replace`, and `write`.
 
 In this environment:
 
