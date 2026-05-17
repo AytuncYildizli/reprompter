@@ -128,6 +128,8 @@ claude --version
 
 ### OpenClaw / Codex / Grok CLI / Hermes Agent
 
+Root `SKILL.md` is canonical for Claude Code, Codex, OpenClaw, Grok, and direct GitHub browsing. `skills/reprompter/` is the Hermes-only installable package, generated from root and sanitized for Hermes Skills Guard.
+
 Run copy-based installs from the parent directory that contains a cloned or downloaded `reprompter/` folder:
 
 ```bash
@@ -135,12 +137,24 @@ mkdir -p /path/to/workspace/skills
 cp -R reprompter /path/to/workspace/skills/
 ```
 
-Hermes Agent's default skill location is `~/.hermes/skills/reprompter/`:
+For Hermes Agent v0.14+, prefer the generated install package so Skills Guard scans only the runtime skill artifact:
+
+```bash
+hermes skills install AytuncYildizli/reprompter/skills/reprompter
+```
+
+Avoid using the two-part Hermes identifier as the primary install command because it can resolve stale marketplace content:
+
+```bash
+hermes skills install AytuncYildizli/reprompter
+```
+
+Hermes Agent's default manual skill location is `~/.hermes/skills/reprompter/`:
 
 ```bash
 # Run from the parent directory that contains reprompter/
 mkdir -p ~/.hermes/skills
-cp -R reprompter ~/.hermes/skills/
+cp -R reprompter/skills/reprompter ~/.hermes/skills/
 ```
 
 For Codex, install or update the CLI and confirm the goals feature is available:

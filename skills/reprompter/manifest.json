@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "generated_by": "scripts/package-hermes-skill.js",
+  "packager_version": "1",
+  "package": "skills/reprompter",
+  "generated_at": "1970-01-01T00:00:00.000Z",
+  "tested_hermes": {
+    "version": "v0.14.0 (2026.5.16)",
+    "commit": "1345dda0c"
+  },
+  "source": {
+    "root_skill": "SKILL.md",
+    "root_skill_sha256": "cb1a261390c1894e92d860cfacdd2ea12f72e1601540016a59971145a2b00178",
+    "sanitizer": "scripts/hermes-sanitizer.json",
+    "sanitizer_sha256": "6a59643c8ecd09d678bead513c92853c8c655dfccdbdefb94bad0de47400dfe7"
+  },
+  "files": [
+    {
+      "path": "SKILL.md",
+      "source_sha256": "cb1a261390c1894e92d860cfacdd2ea12f72e1601540016a59971145a2b00178",
+      "generated_sha256": "3ea3edeb4b89f534ba02bb8ce5faa8ad36c41b392988ac3b47f2985365c92274"
+    },
+    {
+      "path": "references/api-template.md",
+      "source_sha256": "e216b1ecb36937c1ac9d2922bbb031b98cb2a4631f533b91e1ca926b961f646a",
+      "generated_sha256": "e216b1ecb36937c1ac9d2922bbb031b98cb2a4631f533b91e1ca926b961f646a"
+    },
+    {
+      "path": "references/bugfix-template.md",
+      "source_sha256": "4cc90da0fac739680c0a6ea87a06ec830bcd1130114fe491b1c91358d9dfdaae",
+      "generated_sha256": "4cc90da0fac739680c0a6ea87a06ec830bcd1130114fe491b1c91358d9dfdaae"
+    },
+    {
+      "path": "references/content-template.md",
+      "source_sha256": "f3eadb5fa0596a575d37365c4a4273b1697301f61e4ed611c6f9cd506a4d344b",
+      "generated_sha256": "f3eadb5fa0596a575d37365c4a4273b1697301f61e4ed611c6f9cd506a4d344b"
+    },
+    {
+      "path": "references/docs-template.md",
+      "source_sha256": "db6ab76fa38627ac170c20becf3049e40ed9ed296d8ddcc95910a048e4fc5e4d",
+      "generated_sha256": "db6ab76fa38627ac170c20becf3049e40ed9ed296d8ddcc95910a048e4fc5e4d"
+    },
+    {
+      "path": "references/engineering-swarm-template.md",
+      "source_sha256": "73c33b3ba1fc5907bdc4007f7f955cb104592b89e9b960e851b05fa90effc1ec",
+      "generated_sha256": "73c33b3ba1fc5907bdc4007f7f955cb104592b89e9b960e851b05fa90effc1ec"
+    },
+    {
+      "path": "references/feature-template.md",
+      "source_sha256": "08089bd2ffb2a0b2f4d82ed8139e6e9c1ae58b751f4b0de51d2145de38d68708",
+      "generated_sha256": "08089bd2ffb2a0b2f4d82ed8139e6e9c1ae58b751f4b0de51d2145de38d68708"
+    },
+    {
+      "path": "references/marketing-swarm-template.md",
+      "source_sha256": "2bc7b96812222ca450f78a25a2a3d45363fd0cdda0844a4ec3a2f1357229dd61",
+      "generated_sha256": "2bc7b96812222ca450f78a25a2a3d45363fd0cdda0844a4ec3a2f1357229dd61"
+    },
+    {
+      "path": "references/ops-swarm-template.md",
+      "source_sha256": "e3eb89eb42e5936af23043913eaaeb4008d44ebc168c48dc09b328a3064d8e93",
+      "generated_sha256": "e3eb89eb42e5936af23043913eaaeb4008d44ebc168c48dc09b328a3064d8e93"
+    },
+    {
+      "path": "references/outcome-schema.md",
+      "source_sha256": "3df3b0c83578304b8d70a2dee0c3f2736fb5dff980e2867f8ea31f86b444ca0c",
+      "generated_sha256": "3df3b0c83578304b8d70a2dee0c3f2736fb5dff980e2867f8ea31f86b444ca0c"
+    },
+    {
+      "path": "references/patterns/pattern-catalog.md",
+      "source_sha256": "b050dc42de06091e4a5cefa44665417fb99f232792612c9e6685372fe6002250",
+      "generated_sha256": "b050dc42de06091e4a5cefa44665417fb99f232792612c9e6685372fe6002250"
+    },
+    {
+      "path": "references/refactor-template.md",
+      "source_sha256": "50b14ce3aa9e2ac0deac4d8609be907983d45f76f4071de11bbed0710561953a",
+      "generated_sha256": "50b14ce3aa9e2ac0deac4d8609be907983d45f76f4071de11bbed0710561953a"
+    },
+    {
+      "path": "references/repromptverse-template.md",
+      "source_sha256": "d036eb567e2a6f683318507526507e8c0fe5d429f15478a64130a39d791d60b9",
+      "generated_sha256": "d036eb567e2a6f683318507526507e8c0fe5d429f15478a64130a39d791d60b9"
+    },
+    {
+      "path": "references/research-swarm-template.md",
+      "source_sha256": "a68f92b9c482693931bed4066d9972badbbf467f3e87ec52387457b9db47a7a0",
+      "generated_sha256": "a68f92b9c482693931bed4066d9972badbbf467f3e87ec52387457b9db47a7a0"
+    },
+    {
+      "path": "references/research-template.md",
+      "source_sha256": "837a5cab862c3775b25d6d89216584b4fe1421907de97c3b2a4e81cc0fa97f76",
+      "generated_sha256": "837a5cab862c3775b25d6d89216584b4fe1421907de97c3b2a4e81cc0fa97f76"
+    },
+    {
+      "path": "references/reverse-template.md",
+      "source_sha256": "26c614f6828035c2a181f0a2dece141f87bd27593be4ea125cdd0338b2fc7df8",
+      "generated_sha256": "26c614f6828035c2a181f0a2dece141f87bd27593be4ea125cdd0338b2fc7df8"
+    },
+    {
+      "path": "references/runtime/capability-profiles.md",
+      "source_sha256": "6b3203e9f51eb9903942690c052644a9a521a13833904147d17e56b950247060",
+      "generated_sha256": "6b3203e9f51eb9903942690c052644a9a521a13833904147d17e56b950247060"
+    },
+    {
+      "path": "references/runtime/context-layers.md",
+      "source_sha256": "0e60fb2ffd6e8b2391b475034388fd9a1b59cd2351e2eb1fea0841033ebd7583",
+      "generated_sha256": "0e60fb2ffd6e8b2391b475034388fd9a1b59cd2351e2eb1fea0841033ebd7583"
+    },
+    {
+      "path": "references/runtime/evaluation-rubric.md",
+      "source_sha256": "aeeba07f9ff732f677ee2ad99ae640278ff62b0ab8c4e73a89969eaa0c2910c5",
+      "generated_sha256": "aeeba07f9ff732f677ee2ad99ae640278ff62b0ab8c4e73a89969eaa0c2910c5"
+    },
+    {
+      "path": "references/runtime/hermes-agent-runtime.md",
+      "source_sha256": "39495555fb3cb6d69e79abc349ef89eec3f2a3727521bfa30153a6b2e89f28ad",
+      "generated_sha256": "dde195443caa99f4bee40f0d565454c4672bc0112b209b0c77899ffdb5fc245c"
+    },
+    {
+      "path": "references/security-template.md",
+      "source_sha256": "17127d8dff9ffb95f6d771d6a4ab5379fb2fb885ac6a16b71f157128000a160b",
+      "generated_sha256": "17127d8dff9ffb95f6d771d6a4ab5379fb2fb885ac6a16b71f157128000a160b"
+    },
+    {
+      "path": "references/swarm-template.md",
+      "source_sha256": "2de696f3d057c3b2f088fbe7af0704eea604be92fa0d14dcd1e6f69f7e256edb",
+      "generated_sha256": "04bef63f2adab39482c1d0e8e990237c8d759e8f23c43997666f1060cabbd41e"
+    },
+    {
+      "path": "references/testing-template.md",
+      "source_sha256": "6c4d34a0cd503be47f509f3a9dfa2f1f59823f11ca791a36dfc657b69d733ec9",
+      "generated_sha256": "6c4d34a0cd503be47f509f3a9dfa2f1f59823f11ca791a36dfc657b69d733ec9"
+    },
+    {
+      "path": "references/ui-template.md",
+      "source_sha256": "5e2703def4d514f090672a74838a77bd06671231730d59fac660e1a3d08e92f7",
+      "generated_sha256": "5e2703def4d514f090672a74838a77bd06671231730d59fac660e1a3d08e92f7"
+    }
+  ]
+}

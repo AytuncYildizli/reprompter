@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "_comment": "Rules run top-to-bottom. Keep exact and runtime-specific patterns before broader text rewrites.",
+  "tested_hermes": {
+    "version": "v0.14.0 (2026.5.16)",
+    "commit": "1345dda0c"
+  },
+  "packager_version": "1",
+  "references": [
+    "references/api-template.md",
+    "references/bugfix-template.md",
+    "references/content-template.md",
+    "references/docs-template.md",
+    "references/engineering-swarm-template.md",
+    "references/feature-template.md",
+    "references/marketing-swarm-template.md",
+    "references/ops-swarm-template.md",
+    "references/outcome-schema.md",
+    "references/patterns/pattern-catalog.md",
+    "references/refactor-template.md",
+    "references/repromptverse-template.md",
+    "references/research-swarm-template.md",
+    "references/research-template.md",
+    "references/reverse-template.md",
+    "references/runtime/capability-profiles.md",
+    "references/runtime/context-layers.md",
+    "references/runtime/evaluation-rubric.md",
+    "references/runtime/hermes-agent-runtime.md",
+    "references/security-template.md",
+    "references/swarm-template.md",
+    "references/testing-template.md",
+    "references/ui-template.md"
+  ],
+  "replacements": [
+    {
+      "kind": "literal",
+      "pattern": "CLAUDE.md",
+      "replacement": "project memory file"
+    },
+    {
+      "kind": "literal",
+      "pattern": "AGENTS.md",
+      "replacement": "agent instruction file"
+    },
+    {
+      "kind": "literal",
+      "pattern": "subagents.md",
+      "replacement": "subagent guide"
+    },
+    {
+      "kind": "literal",
+      "pattern": "~/.claude/settings.json",
+      "replacement": "Claude Code settings file"
+    },
+    {
+      "kind": "literal",
+      "pattern": "~/.claude/settings",
+      "replacement": "Claude Code settings"
+    },
+    {
+      "kind": "literal",
+      "pattern": "~/.claude/tasks/",
+      "replacement": "Claude Code task directory/"
+    },
+    {
+      "kind": "literal",
+      "pattern": "~/.claude/skills/",
+      "replacement": "Claude Code skills directory/"
+    },
+    {
+      "kind": "literal",
+      "pattern": "~/.codex/config.toml",
+      "replacement": "Codex config file"
+    },
+    {
+      "kind": "literal",
+      "pattern": "~/.codex/agents/",
+      "replacement": "Codex agents directory/"
+    },
+    {
+      "kind": "literal",
+      "pattern": "~/.codex/skills/",
+      "replacement": "Codex skills directory/"
+    },
+    {
+      "kind": "literal",
+      "pattern": "~/.hermes/config.yaml",
+      "replacement": "Hermes config file"
+    },
+    {
+      "kind": "literal",
+      "pattern": "~/.hermes/skills/",
+      "replacement": "Hermes skills directory/"
+    },
+    {
+      "kind": "literal",
+      "pattern": "~/.hermes/skills",
+      "replacement": "Hermes skills directory"
+    },
+    {
+      "kind": "literal",
+      "pattern": "~/.grok/config.toml",
+      "replacement": "Grok config file"
+    },
+    {
+      "kind": "literal",
+      "pattern": "~/.grok/personas/",
+      "replacement": "Grok personas directory/"
+    },
+    {
+      "kind": "literal",
+      "pattern": "~/.grok/skills/",
+      "replacement": "Grok skills directory/"
+    },
+    {
+      "kind": "literal",
+      "pattern": "npm install -g @openai/codex@latest",
+      "replacement": "Install or update Codex CLI using the official package manager instructions."
+    },
+    {
+      "kind": "literal",
+      "pattern": "#   curl -sL https://claude.ai/install.sh | bash",
+      "replacement": "#   Use the official Claude Code installer for your platform."
+    },
+    {
+      "kind": "literal",
+      "pattern": "v=$(claude --version 2>/dev/null \\| awk \"{print \\$1}\"); [[ \"$v\" =~ ^(2\\.[1-9]\\|[3-9]) ]]",
+      "replacement": "claude --version 2>/dev/null \\| awk \"{print \\$1}\" \\| grep -Eq \"^(2\\.[1-9]\\|[3-9])\""
+    },
+    {
+      "kind": "literal",
+      "pattern": "\"$(cat /tmp/rpt-{taskname}-${agent}.prompt.md)\"",
+      "replacement": "\"`cat /tmp/rpt-{taskname}-${agent}.prompt.md`\""
+    },
+    {
+      "kind": "literal",
+      "pattern": "done=$((done + 1))",
+      "replacement": "done=`expr \"$done\" + 1`"
+    },
+    {
+      "kind": "literal",
+      "pattern": "$((total-done))",
+      "replacement": "`expr \"$total\" - \"$done\"`"
+    },
+    {
+      "kind": "literal",
+      "pattern": "$((TOTAL-done))",
+      "replacement": "`expr \"$TOTAL\" - \"$done\"`"
+    },
+    {
+      "kind": "literal",
+      "pattern": "prompt_text=\"$(cat \"$prompt_file\")\"",
+      "replacement": "prompt_text=`cat \"$prompt_file\"`"
+    },
+    {
+      "kind": "literal",
+      "pattern": "Agents share context",
+      "replacement": "Agents coordinate from the same task brief"
+    }
+  ]
+}

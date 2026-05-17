@@ -1,0 +1,54 @@
+name: Hermes Package
+
+on:
+  pull_request:
+    paths:
+      - "SKILL.md"
+      - "README.md"
+      - "package.json"
+      - "references/**"
+      - "scripts/hermes-sanitizer.json"
+      - "scripts/hermes-package.test.js"
+      - "scripts/package-hermes-skill.js"
+      - "scripts/package-hermes-skill.sh"
+      - "scripts/check-hermes-package.sh"
+      - "scripts/check-hermes-guard.sh"
+      - "skills/reprompter/**"
+      - ".github/workflows/hermes-package.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "SKILL.md"
+      - "README.md"
+      - "package.json"
+      - "references/**"
+      - "scripts/hermes-sanitizer.json"
+      - "scripts/hermes-package.test.js"
+      - "scripts/package-hermes-skill.js"
+      - "scripts/package-hermes-skill.sh"
+      - "scripts/check-hermes-package.sh"
+      - "scripts/check-hermes-guard.sh"
+      - "skills/reprompter/**"
+      - ".github/workflows/hermes-package.yml"
+
+jobs:
+  hermes-package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify generated package is current
+        run: npm run check:hermes-package
+
+      - name: Run Hermes Skills Guard
+        run: npm run check:hermes-guard
