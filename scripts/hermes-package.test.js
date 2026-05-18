@@ -1,7 +1,9 @@
 const assert = require("node:assert/strict");
+const { execFileSync, spawnSync } = require("node:child_process");
 const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
+const os = require("node:os");
 const test = require("node:test");
 const packager = require("./package-hermes-skill.js");
 
@@ -128,6 +130,34 @@ test("packager rejects output path traversal", () => {
 test("Hermes Guard check never deletes a custom HERMES_AGENT_DIR", () => {
   const script = fs.readFileSync(path.join(repoRoot, "scripts/check-hermes-guard.sh"), "utf8");
 
-  assert.match(script, /if \[\[ -n "\$\{HERMES_AGENT_DIR:-\}" \]\]/);
+  assert.match(script, /\[\[ -z "\$\{HERMES_AGENT_DIR:-\}" && ! -f "\$HERMES_DIR\/tools\/skills_guard\.py" \]\]/);
   assert.equal(script.includes('rm -rf "$HERMES_DIR"'), false);
+});
+
+test("Hermes Guard check rejects unpinned custom HERMES_AGENT_DIR", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "reprompter-hermes-"));
+  const hermesDir = path.join(tempRoot, "hermes-agent");
+
+  try {
+    fs.mkdirSync(path.join(hermesDir, "tools"), { recursive: true });
+    fs.writeFileSync(path.join(hermesDir, "tools/skills_guard.py"), "# fake guard\n");
+
+    execFileSync("git", ["init"], { cwd: hermesDir, stdio: "ignore" });
+    execFileSync("git", ["config", "user.email", "test@example.com"], { cwd: hermesDir, stdio: "ignore" });
+    execFileSync("git", ["config", "user.name", "Test User"], { cwd: hermesDir, stdio: "ignore" });
+    execFileSync("git", ["add", "tools/skills_guard.py"], { cwd: hermesDir, stdio: "ignore" });
+    execFileSync("git", ["commit", "--no-gpg-sign", "-m", "fake guard"], { cwd: hermesDir, stdio: "ignore" });
+
+    const result = spawnSync("bash", [path.join(repoRoot, "scripts/check-hermes-guard.sh")], {
+      cwd: repoRoot,
+      env: { ...process.env, HERMES_AGENT_DIR: hermesDir },
+      encoding: "utf8",
+    });
+
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /expected 1345dda0c/);
+    assert.ok(fs.existsSync(path.join(hermesDir, "tools/skills_guard.py")));
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
 });

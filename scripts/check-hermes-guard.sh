@@ -9,18 +9,34 @@ PINNED_HERMES_VERSION="v0.14.0 (2026.5.16)"
 DEFAULT_HERMES_DIR="$REPO_DIR/.cache/hermes-agent-$PINNED_HERMES_COMMIT"
 HERMES_DIR="${HERMES_AGENT_DIR:-$DEFAULT_HERMES_DIR}"
 
+validate_hermes_checkout() {
+  if [[ ! -f "$HERMES_DIR/tools/skills_guard.py" ]]; then
+    echo "ERROR: Hermes checkout missing tools/skills_guard.py: $HERMES_DIR" >&2
+    exit 1
+  fi
+
+  actual_commit="$(git -C "$HERMES_DIR" rev-parse --verify HEAD 2>/dev/null || true)"
+  if [[ -z "$actual_commit" ]]; then
+    echo "ERROR: Hermes checkout is not a git checkout: $HERMES_DIR" >&2
+    exit 1
+  fi
+
+  case "$actual_commit" in
+    "$PINNED_HERMES_COMMIT"*) ;;
+    *)
+      echo "ERROR: Hermes checkout is $actual_commit, expected $PINNED_HERMES_COMMIT ($PINNED_HERMES_VERSION)" >&2
+      exit 1
+      ;;
+  esac
+}
+
 if [[ ! -d "$PACKAGE_DIR" ]]; then
   echo "ERROR: Hermes package not found: $PACKAGE_DIR" >&2
   echo "Run scripts/package-hermes-skill.sh first." >&2
   exit 1
 fi
 
-if [[ -n "${HERMES_AGENT_DIR:-}" ]]; then
-  if [[ ! -f "$HERMES_DIR/tools/skills_guard.py" ]]; then
-    echo "ERROR: HERMES_AGENT_DIR does not point to a Hermes checkout with tools/skills_guard.py: $HERMES_DIR" >&2
-    exit 1
-  fi
-elif [[ ! -f "$HERMES_DIR/tools/skills_guard.py" ]]; then
+if [[ -z "${HERMES_AGENT_DIR:-}" && ! -f "$HERMES_DIR/tools/skills_guard.py" ]]; then
   mkdir -p "$(dirname "$HERMES_DIR")"
   tmp_dir="$DEFAULT_HERMES_DIR.tmp"
   rm -rf "$tmp_dir"
@@ -29,6 +45,8 @@ elif [[ ! -f "$HERMES_DIR/tools/skills_guard.py" ]]; then
   rm -rf "$DEFAULT_HERMES_DIR"
   mv "$tmp_dir" "$DEFAULT_HERMES_DIR"
 fi
+
+validate_hermes_checkout
 
 echo "Using Hermes Guard $PINNED_HERMES_VERSION ($PINNED_HERMES_COMMIT)"
 echo "Hermes source: $HERMES_DIR"
