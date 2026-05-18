@@ -23,11 +23,14 @@
     "references/research-template.md",
     "references/reverse-template.md",
     "references/runtime/capability-profiles.md",
+    "references/runtime/codex-runtime.md",
     "references/runtime/context-layers.md",
     "references/runtime/evaluation-rubric.md",
+    "references/runtime/grok-cli-runtime.md",
     "references/runtime/hermes-agent-runtime.md",
     "references/security-template.md",
     "references/swarm-template.md",
+    "references/team-brief-template.md",
     "references/testing-template.md",
     "references/ui-template.md"
   ],
@@ -119,6 +122,36 @@
     },
     {
       "kind": "literal",
+      "pattern": "scripts/outcome-record.js",
+      "replacement": "the root repository outcome recording helper"
+    },
+    {
+      "kind": "literal",
+      "pattern": "scripts/evaluate-outcome.js",
+      "replacement": "the root repository outcome evaluation helper"
+    },
+    {
+      "kind": "literal",
+      "pattern": "scripts/intent-router.js",
+      "replacement": "the root repository intent routing helper"
+    },
+    {
+      "kind": "literal",
+      "pattern": "scripts/validate-tool-refs.js",
+      "replacement": "the root repository tool-reference validator"
+    },
+    {
+      "kind": "literal",
+      "pattern": "scripts/reverse-engineer.js",
+      "replacement": "the root repository reverse-engineering helper"
+    },
+    {
+      "kind": "literal",
+      "pattern": "scripts/repromptverse-runtime.js",
+      "replacement": "the root repository Repromptverse runtime helper"
+    },
+    {
+      "kind": "literal",
       "pattern": "#   curl -sL https://claude.ai/install.sh | bash",
       "replacement": "#   Use the official Claude Code installer for your platform."
     },
@@ -131,6 +164,11 @@
       "kind": "literal",
       "pattern": "\"$(cat /tmp/rpt-{taskname}-${agent}.prompt.md)\"",
       "replacement": "\"`cat /tmp/rpt-{taskname}-${agent}.prompt.md`\""
+    },
+    {
+      "kind": "literal",
+      "pattern": "\"$(cat ...)\"",
+      "replacement": "a pre-read prompt string"
     },
     {
       "kind": "literal",

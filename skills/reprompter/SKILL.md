@@ -12,12 +12,12 @@ compatibility: |
   Repromptverse mode supports Claude Code (TeamCreate or tmux → Option B/A), OpenClaw (sessions_spawn → Option C), Codex CLI (native subagents or `codex exec` → Option D), Grok CLI 4.3+ (spawn_subagent F1 or `grok -p` F2 → Option F), and Hermes Agent (delegate_task G1, shell-level G2, Kanban G3 → Option G). Sequential fallback (Option E) works with any LLM runtime.
 metadata:
   author: AytuncYildizli
-  version: 12.5.0
+  version: 12.5.1
 ---
 
-# RePrompter v12.5.0
+# RePrompter v12.5.1
 
-> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, or reverse-engineer from great outputs — one skill, four output lanes. **v12.5 adds Hermes Agent runtime support while preserving Claude Code, Codex, OpenClaw, and Grok CLI behavior.**
+> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, or reverse-engineer from great outputs — one skill, four output lanes. **v12.5.1 ships the Hermes install package while preserving Claude Code, Codex, OpenClaw, and Grok CLI behavior.**
 
 ---
 
@@ -210,7 +210,7 @@ max_turns = 20
 6. **Generate + Score** — apply template, show before/after quality metrics. The generated prompt MUST include a `<success_criteria schema_version="1">` block with 3-6 `<criterion>` entries. Each criterion has `id` (kebab-case slug, unique in block), `verification_method` (`rule` | `llm_judge` | `manual`), a one-sentence `<description>`, and — depending on method — an inline `<rule type="regex|predicate">` or `<judge_prompt>` (neither for `manual`). Schema of record: `references/outcome-schema.md`.
 7. **Single-pass evaluator** — run self-eval rubric and do one delta rewrite if score < 7
 
-**Why criteria are emitted:** so every prompt carries its own testable assertions; outcome records produced by `scripts/outcome-record.js` (added in the same PR) join criteria to results for flywheel learning.
+**Why criteria are emitted:** so every prompt carries its own testable assertions; outcome records produced by `the root repository outcome recording helper` (added in the same PR) join criteria to results for flywheel learning.
 
 #### Flywheel bias injection (v3 read-path)
 
@@ -230,7 +230,7 @@ When the flag is set, between the interview and the template pick:
    Or, if no bias applied:
    > Flywheel: no bias (cold start / low confidence)
 6. The bias changes **which template/patterns you start from.** The rest of the pipeline (interview content, generated prompt's XML structure, criteria emission) is unchanged. The flywheel never rewrites Claude's output.
-7. **Attribution (v3 part 3).** When bias is applied, remember the chosen recipe's `hash`, `confidence`, and `sampleCount` until the outcome is recorded for this run. Then stamp them onto the record via `scripts/outcome-record.js --applied-recommendation '{"recipe_hash":"<hash>","confidence":"<low|medium|high>","sample_count":<N>,"applied_at":"prompt_gen"}'`. Use `applied_at="phase_2"` for Repromptverse team-wide bias. **If no bias was applied (flag off, query returned null, or low confidence) OMIT the flag entirely** — the *absence* of `applied_recommendation` on a record is what marks it as the bias-off control group for `npm run flywheel:ab` analysis. Never stamp a zero/placeholder block; absence is the signal.
+7. **Attribution (v3 part 3).** When bias is applied, remember the chosen recipe's `hash`, `confidence`, and `sampleCount` until the outcome is recorded for this run. Then stamp them onto the record via `the root repository outcome recording helper --applied-recommendation '{"recipe_hash":"<hash>","confidence":"<low|medium|high>","sample_count":<N>,"applied_at":"prompt_gen"}'`. Use `applied_at="phase_2"` for Repromptverse team-wide bias. **If no bias was applied (flag off, query returned null, or low confidence) OMIT the flag entirely** — the *absence* of `applied_recommendation` on a record is what marks it as the bias-off control group for `npm run flywheel:ab` analysis. Never stamp a zero/placeholder block; absence is the signal.
 
 ### ⚠️ MUST GENERATE AFTER INTERVIEW
 
@@ -438,7 +438,7 @@ Domain profile auto-load rules (lazy-load, on demand):
 
 Then merge with `references/repromptverse-template.md` for routing/termination/evaluation contract and add task-specific constraints.
 
-Canonical implementation for deterministic routing lives in `scripts/intent-router.js`.
+Canonical implementation for deterministic routing lives in `the root repository intent routing helper`.
 If docs and code ever diverge, the script is the source of truth for benchmark/testing paths.
 
 ### Phase 1: Team plan (~45 seconds)
@@ -608,7 +608,7 @@ For EACH agent:
 
 Write all to `/tmp/rpt-agent-prompts-{taskname}.md`
 
-**Flywheel hook (per-agent):** after Phase 3 execution, each agent's artifact at `/tmp/rpt-{taskname}-{agent-domain}.md` can be recorded separately with `scripts/outcome-record.js --role <agent-name>` (one record per agent, `mode="repromptverse"`, and `--role` set to the teammate's name so the flywheel bridge uses it as the `domain` when building the recipe fingerprint). Score each record with `scripts/evaluate-outcome.js`. Without `--role`, all agents on the same `task_type` collapse into the same recipe bucket and the strategy learner can't tell which roles consistently win vs struggle — so always pass it for Repromptverse records.
+**Flywheel hook (per-agent):** after Phase 3 execution, each agent's artifact at `/tmp/rpt-{taskname}-{agent-domain}.md` can be recorded separately with `the root repository outcome recording helper --role <agent-name>` (one record per agent, `mode="repromptverse"`, and `--role` set to the teammate's name so the flywheel bridge uses it as the `domain` when building the recipe fingerprint). Score each record with `the root repository outcome evaluation helper`. Without `--role`, all agents on the same `task_type` collapse into the same recipe bucket and the strategy learner can't tell which roles consistently win vs struggle — so always pass it for Repromptverse records.
 
 #### Reprompt quality scorecard (mandatory)
 
@@ -671,7 +671,7 @@ Known pitfalls captured from 4.6 → 4.7 drift in this skill:
 - **`TeamDelete` ordering.** `TeamDelete()` fails if any teammate is still active. Shutdown is async; in-process teammates need a turn yield to approve each `shutdown_request` before cleanup succeeds.
 - **`TeamCreate` precedence.** `Agent(team_name=...)` errors if that team was not created first. Always call `TeamCreate` before any `Agent` with a `team_name` argument.
 
-Canonical signatures Option B depends on. **These are reference documentation, not a schema enforced by the validator.** `npm run validate:tool-refs` is a blocklist — it catches known-bad shapes from this repo's history (obsolete tool names, reordered broadcast calls, hardcoded model pins) but does not positively verify that every call here matches its schema. If you change a signature below, update the linter's check set in `scripts/validate-tool-refs.js` in the same PR (and also any Option B flow that relies on the old shape).
+Canonical signatures Option B depends on. **These are reference documentation, not a schema enforced by the validator.** `npm run validate:tool-refs` is a blocklist — it catches known-bad shapes from this repo's history (obsolete tool names, reordered broadcast calls, hardcoded model pins) but does not positively verify that every call here matches its schema. If you change a signature below, update the linter's check set in `the root repository tool-reference validator` in the same PR (and also any Option B flow that relies on the old shape).
 
 ```text
 TeamCreate(team_name=<string>, description=<string>)
@@ -1215,7 +1215,7 @@ The key borrowed insight is **dual-signal analysis**: Extraktor sends Claude bot
 | Extraction Card | ~100 | Summary table |
 | **Total** | **~650-1300** | **Lighter than Single mode** |
 
-Canonical implementation for structural analysis and classification lives in `scripts/reverse-engineer.js`. If docs and code ever diverge, the script is the source of truth.
+Canonical implementation for structural analysis and classification lives in `the root repository reverse-engineering helper`. If docs and code ever diverge, the script is the source of truth.
 
 ---
 
@@ -1303,7 +1303,7 @@ Before synthesis, evaluate each artifact for:
 
 If gate fails, retry only with delta prompts (max 2 retries).
 
-Implementation note: combine routing + patterns + model policy + context + adapter + evaluator through a single orchestration contract (`scripts/repromptverse-runtime.js`) to keep behavior deterministic across runtimes.
+Implementation note: combine routing + patterns + model policy + context + adapter + evaluator through a single orchestration contract (`the root repository Repromptverse runtime helper`) to keep behavior deterministic across runtimes.
 
 ### Runtime feature flags
 Repromptverse runtime supports deterministic toggles for rollout and troubleshooting:

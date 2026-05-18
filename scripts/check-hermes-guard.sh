@@ -15,14 +15,19 @@ if [[ ! -d "$PACKAGE_DIR" ]]; then
   exit 1
 fi
 
-if [[ ! -f "$HERMES_DIR/tools/skills_guard.py" ]]; then
+if [[ -n "${HERMES_AGENT_DIR:-}" ]]; then
+  if [[ ! -f "$HERMES_DIR/tools/skills_guard.py" ]]; then
+    echo "ERROR: HERMES_AGENT_DIR does not point to a Hermes checkout with tools/skills_guard.py: $HERMES_DIR" >&2
+    exit 1
+  fi
+elif [[ ! -f "$HERMES_DIR/tools/skills_guard.py" ]]; then
   mkdir -p "$(dirname "$HERMES_DIR")"
-  tmp_dir="$HERMES_DIR.tmp"
+  tmp_dir="$DEFAULT_HERMES_DIR.tmp"
   rm -rf "$tmp_dir"
   git clone --filter=blob:none https://github.com/NousResearch/hermes-agent.git "$tmp_dir"
   git -C "$tmp_dir" checkout "$PINNED_HERMES_COMMIT"
-  rm -rf "$HERMES_DIR"
-  mv "$tmp_dir" "$HERMES_DIR"
+  rm -rf "$DEFAULT_HERMES_DIR"
+  mv "$tmp_dir" "$DEFAULT_HERMES_DIR"
 fi
 
 echo "Using Hermes Guard $PINNED_HERMES_VERSION ($PINNED_HERMES_COMMIT)"

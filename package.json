@@ -1,6 +1,6 @@
 {
   "name": "reprompter",
-  "version": "12.5.0",
+  "version": "12.5.1",
   "private": true,
   "description": "Prompt engineering skill for Claude Code, OpenClaw, Codex, Grok CLI, and Hermes Agent",
   "scripts": {

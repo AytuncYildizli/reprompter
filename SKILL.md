@@ -12,12 +12,12 @@ compatibility: |
   Repromptverse mode supports Claude Code (TeamCreate or tmux → Option B/A), OpenClaw (sessions_spawn → Option C), Codex CLI (native subagents or `codex exec` → Option D), Grok CLI 4.3+ (spawn_subagent F1 or `grok -p` F2 → Option F), and Hermes Agent (delegate_task G1, shell-level G2, Kanban G3 → Option G). Sequential fallback (Option E) works with any LLM runtime.
 metadata:
   author: AytuncYildizli
-  version: 12.5.0
+  version: 12.5.1
 ---
 
-# RePrompter v12.5.0
+# RePrompter v12.5.1
 
-> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, or reverse-engineer from great outputs — one skill, four output lanes. **v12.5 adds Hermes Agent runtime support while preserving Claude Code, Codex, OpenClaw, and Grok CLI behavior.**
+> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, or reverse-engineer from great outputs — one skill, four output lanes. **v12.5.1 ships the Hermes install package while preserving Claude Code, Codex, OpenClaw, and Grok CLI behavior.**
 
 ---
 

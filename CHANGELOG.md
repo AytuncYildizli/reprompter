@@ -1,3 +1,27 @@
+## v12.5.1 (2026-05-18) — Hermes install package
+
+### Headline
+
+RePrompter now ships a Hermes-specific install package at `skills/reprompter/` so Hermes Agent v0.14 can install the skill through Skills Guard without `--force`.
+
+The root `SKILL.md` remains canonical for Claude Code, Codex, OpenClaw, Grok CLI, and direct repository browsing. The Hermes package is generated from root content, sanitized only for Hermes Guard, and CI-gated to prevent drift.
+
+### Added
+
+- Generated Hermes package at `skills/reprompter/` with `SKILL.md`, runtime references, and a manifest recording source and sanitizer hashes.
+- Hermes package scripts for generation, drift checks, and pinned Guard verification.
+- CI workflow that verifies the generated package and runs Hermes Skills Guard against it.
+
+### Changed
+
+- README now documents `hermes skills install AytuncYildizli/reprompter/skills/reprompter` as the deterministic Hermes install path.
+- README warns against using the two-part Hermes identifier because it can resolve stale marketplace content.
+
+### Notes
+
+- This release keeps the v12.5.0 runtime behavior intact. It only fixes the Hermes install artifact and Guard compatibility path.
+- Non-Hermes installs still use the root skill layout.
+
 ## v12.5.0 (2026-05-15) — Hermes Agent runtime support
 
 ### Headline

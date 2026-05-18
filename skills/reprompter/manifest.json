@@ -10,15 +10,15 @@
   },
   "source": {
     "root_skill": "SKILL.md",
-    "root_skill_sha256": "cb1a261390c1894e92d860cfacdd2ea12f72e1601540016a59971145a2b00178",
+    "root_skill_sha256": "26abecd8d04635fd60998d7c6f37016f8776d946bf0fb6070b0340c1b92a1834",
     "sanitizer": "scripts/hermes-sanitizer.json",
-    "sanitizer_sha256": "6a59643c8ecd09d678bead513c92853c8c655dfccdbdefb94bad0de47400dfe7"
+    "sanitizer_sha256": "0b5c2094aef400553e62ca950f5fc00bb6672a619382f83c8fde21e841771bf3"
   },
   "files": [
     {
       "path": "SKILL.md",
-      "source_sha256": "cb1a261390c1894e92d860cfacdd2ea12f72e1601540016a59971145a2b00178",
-      "generated_sha256": "3ea3edeb4b89f534ba02bb8ce5faa8ad36c41b392988ac3b47f2985365c92274"
+      "source_sha256": "26abecd8d04635fd60998d7c6f37016f8776d946bf0fb6070b0340c1b92a1834",
+      "generated_sha256": "75decf9dc214229781aedc164c98b026cd1f136ea2d93653408dc14267574243"
     },
     {
       "path": "references/api-template.md",
@@ -101,6 +101,11 @@
       "generated_sha256": "6b3203e9f51eb9903942690c052644a9a521a13833904147d17e56b950247060"
     },
     {
+      "path": "references/runtime/codex-runtime.md",
+      "source_sha256": "ae597e88e8a1e072fd41bdcbcdcae35c6284781abce3795984e61e3e2363da91",
+      "generated_sha256": "9212837311a20de5fc57039d00da8db6caa189d8ffdc95921d62e4657b01de07"
+    },
+    {
       "path": "references/runtime/context-layers.md",
       "source_sha256": "0e60fb2ffd6e8b2391b475034388fd9a1b59cd2351e2eb1fea0841033ebd7583",
       "generated_sha256": "0e60fb2ffd6e8b2391b475034388fd9a1b59cd2351e2eb1fea0841033ebd7583"
@@ -109,6 +114,11 @@
       "path": "references/runtime/evaluation-rubric.md",
       "source_sha256": "aeeba07f9ff732f677ee2ad99ae640278ff62b0ab8c4e73a89969eaa0c2910c5",
       "generated_sha256": "aeeba07f9ff732f677ee2ad99ae640278ff62b0ab8c4e73a89969eaa0c2910c5"
+    },
+    {
+      "path": "references/runtime/grok-cli-runtime.md",
+      "source_sha256": "53fdfce2bf3accfe6a2a2d021bed001da25ca76f553d1fa990cac7b6595c1132",
+      "generated_sha256": "2261c50bc812e59e3815e8f9e91500924acc0e7f2592c32f259476f24727b18d"
     },
     {
       "path": "references/runtime/hermes-agent-runtime.md",
@@ -124,6 +134,11 @@
       "path": "references/swarm-template.md",
       "source_sha256": "2de696f3d057c3b2f088fbe7af0704eea604be92fa0d14dcd1e6f69f7e256edb",
       "generated_sha256": "04bef63f2adab39482c1d0e8e990237c8d759e8f23c43997666f1060cabbd41e"
+    },
+    {
+      "path": "references/team-brief-template.md",
+      "source_sha256": "5730439be9c0c0cdba30df3ffe6cba113fa48aa1fcf479a5e663e60bffced72e",
+      "generated_sha256": "5730439be9c0c0cdba30df3ffe6cba113fa48aa1fcf479a5e663e60bffced72e"
     },
     {
       "path": "references/testing-template.md",

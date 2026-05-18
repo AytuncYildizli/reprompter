@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
 const test = require("node:test");
+const packager = require("./package-hermes-skill.js");
 
 const repoRoot = path.resolve(__dirname, "..");
 const sanitizerPath = "scripts/hermes-sanitizer.json";
@@ -72,4 +73,43 @@ test("generated Hermes package keeps shell snippets syntactically recognizable",
   assert.match(generatedText, /claude --version 2>\/dev\/null \\\| awk .* \\\| grep -Eq/);
   assert.match(generatedText, /done=`expr "\$done" \+ 1`/);
   assert.match(generatedText, /prompt_text=`cat "\$prompt_file"`/);
+});
+
+test("generated Hermes package has no broken package-local path references", () => {
+  const packageRoot = path.join(repoRoot, "skills/reprompter");
+  const markdownFiles = listFiles(packageRoot).filter((file) => file.endsWith(".md"));
+  const localPathPattern = /`((?:references|scripts)\/[^`\s]+)`/g;
+
+  for (const file of markdownFiles) {
+    const text = fs.readFileSync(file, "utf8");
+    for (const match of text.matchAll(localPathPattern)) {
+      const referencedPath = match[1];
+      if (referencedPath.includes("{") || referencedPath.includes("}")) {
+        continue;
+      }
+
+      assert.equal(
+        referencedPath.startsWith("scripts/"),
+        false,
+        `${path.relative(repoRoot, file)} references root-only script ${referencedPath}`,
+      );
+      assert.ok(
+        fs.existsSync(path.join(packageRoot, referencedPath)),
+        `${path.relative(repoRoot, file)} references missing package file ${referencedPath}`,
+      );
+    }
+  }
+});
+
+test("packager rejects output path traversal", () => {
+  assert.throws(() => packager.ensureInsideOutDir("../escape.md"), /Hermes package output directory/);
+  assert.throws(() => packager.ensureInsideOutDir("/tmp/escape.md"), /Hermes package output directory/);
+  assert.match(packager.ensureInsideOutDir("references/example.md"), /skills\/reprompter\/references\/example\.md$/);
+});
+
+test("Hermes Guard check never deletes a custom HERMES_AGENT_DIR", () => {
+  const script = fs.readFileSync(path.join(repoRoot, "scripts/check-hermes-guard.sh"), "utf8");
+
+  assert.match(script, /if \[\[ -n "\$\{HERMES_AGENT_DIR:-\}" \]\]/);
+  assert.equal(script.includes('rm -rf "$HERMES_DIR"'), false);
 });

@@ -16,12 +16,21 @@ function sha256(text) {
   return crypto.createHash("sha256").update(text).digest("hex");
 }
 
-function ensureInsideRepo(relativePath) {
-  const resolved = path.resolve(REPO_ROOT, relativePath);
-  if (!resolved.startsWith(REPO_ROOT + path.sep)) {
-    throw new Error(`Path escapes repository root: ${relativePath}`);
+function ensureInside(baseDir, relativePath, label) {
+  const root = path.resolve(baseDir);
+  const resolved = path.resolve(root, relativePath);
+  if (resolved === root || !resolved.startsWith(root + path.sep)) {
+    throw new Error(`Path escapes ${label}: ${relativePath}`);
   }
   return resolved;
+}
+
+function ensureInsideRepo(relativePath) {
+  return ensureInside(REPO_ROOT, relativePath, "repository root");
+}
+
+function ensureInsideOutDir(relativePath) {
+  return ensureInside(OUT_DIR, relativePath, "Hermes package output directory");
 }
 
 function removeDir(dir) {
@@ -29,7 +38,7 @@ function removeDir(dir) {
 }
 
 function writeFile(relativePath, content) {
-  const target = path.join(OUT_DIR, relativePath);
+  const target = ensureInsideOutDir(relativePath);
   fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.writeFileSync(target, content);
 }
@@ -130,4 +139,12 @@ function main() {
   console.log(`Pinned Hermes Guard: ${config.tested_hermes.version} (${config.tested_hermes.commit})`);
 }
 
-main();
+if (require.main === module) {
+  main();
+}
+
+module.exports = {
+  applyReplacements,
+  ensureInsideRepo,
+  ensureInsideOutDir,
+};
