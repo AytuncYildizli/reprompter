@@ -1531,7 +1531,7 @@ Same audit task, 4 Opus agents:
 
 ## Test scenarios
 
-See [TESTING.md](TESTING.md) for 44 verification scenarios + anti-pattern examples.
+See the root repository TESTING.md for the full verification scenarios and anti-pattern examples.
 
 ---
 

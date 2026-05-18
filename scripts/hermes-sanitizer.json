@@ -122,6 +122,11 @@
     },
     {
       "kind": "literal",
+      "pattern": "See [TESTING.md](TESTING.md) for 44 verification scenarios + anti-pattern examples.",
+      "replacement": "See the root repository TESTING.md for the full verification scenarios and anti-pattern examples."
+    },
+    {
+      "kind": "literal",
       "pattern": "scripts/outcome-record.js",
       "replacement": "the root repository outcome recording helper"
     },

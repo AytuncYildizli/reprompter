@@ -79,6 +79,7 @@ test("generated Hermes package has no broken package-local path references", () 
   const packageRoot = path.join(repoRoot, "skills/reprompter");
   const markdownFiles = listFiles(packageRoot).filter((file) => file.endsWith(".md"));
   const localPathPattern = /`((?:references|scripts)\/[^`\s]+)`/g;
+  const localMarkdownLinkPattern = /\[[^\]]+\]\(([^)#]+(?:\.md)?(?:#[^)]+)?)\)/g;
 
   for (const file of markdownFiles) {
     const text = fs.readFileSync(file, "utf8");
@@ -96,6 +97,23 @@ test("generated Hermes package has no broken package-local path references", () 
       assert.ok(
         fs.existsSync(path.join(packageRoot, referencedPath)),
         `${path.relative(repoRoot, file)} references missing package file ${referencedPath}`,
+      );
+    }
+
+    for (const match of text.matchAll(localMarkdownLinkPattern)) {
+      const target = match[1];
+      if (/^[a-z]+:\/\//i.test(target) || target.startsWith("#")) {
+        continue;
+      }
+
+      const targetPath = target.split("#")[0];
+      if (!targetPath.endsWith(".md")) {
+        continue;
+      }
+
+      assert.ok(
+        fs.existsSync(path.join(path.dirname(file), targetPath)),
+        `${path.relative(repoRoot, file)} links to missing package file ${target}`,
       );
     }
   }
