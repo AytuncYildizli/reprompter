@@ -4,6 +4,7 @@
 *.swo
 node_modules/
 .env
+.cache/
 reprompter-skill.zip
 .reprompter/
 .omx/

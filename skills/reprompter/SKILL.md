@@ -137,7 +137,7 @@ The compression flow is shared, but the two `/goal` surfaces have small behavior
 - **`/goal` requires hooks.** When `disableAllHooks` or `allowManagedHooksOnly` is set in `settings.json`, `/goal` is unavailable. v2.1.139 silently hung in this case; v2.1.140 changed the failure mode to a clear error message but did **not** make `/goal` work under those settings. If you operate in a managed environment that blocks hooks, the `/goal` preflight lane cannot run on Claude Code until hooks are permitted — use Single mode in that case.
 
 **Codex CLI**:
-- `/goal` is an experimental alpha feature gated by `features.goals = true` in `~/.codex/config.toml`. The local alpha binary exposes `Usage: /goal <objective>`, `ThreadGoal.objective`, `tokenBudget`, `/goal pause`, `/goal resume`, and `/goal clear`.
+- `/goal` is an experimental alpha feature gated by `features.goals = true` in `Codex config file`. The local alpha binary exposes `Usage: /goal <objective>`, `ThreadGoal.objective`, `tokenBudget`, `/goal pause`, `/goal resume`, and `/goal clear`.
 - Codex's `/goal` is invoked the same way (`/goal <objective>`), but config-gated — a fresh session is required after enabling.
 
 **Hermes Agent**:
@@ -156,7 +156,7 @@ Pick the block matching the detected runtime.
 **Codex CLI**:
 
 ```bash
-npm install -g @openai/codex@latest
+Install or update Codex CLI using the official package manager instructions.
 codex features list | grep '^goals'
 ```
 
@@ -174,11 +174,11 @@ Then start a fresh Codex session so the slash-command surface reloads.
 ```bash
 claude --version
 # Expect "2.1.139" or later. If older, upgrade:
-#   curl -sL https://claude.ai/install.sh | bash
+#   Use the official Claude Code installer for your platform.
 # or follow the install path you used originally.
 ```
 
-No config flag is required — `/goal` is enabled by default once Claude Code is at v2.1.139 or later. However, `/goal` depends on Claude Code's hooks layer: if `disableAllHooks` or `allowManagedHooksOnly` is set in `~/.claude/settings.json`, the command is unavailable on any version. v2.1.139 silently hung in that case; v2.1.140 surfaces a clear error message instead. Upgrading does **not** re-enable `/goal` under hook-blocking settings — permitting hooks is the only way to use `/goal` on Claude Code. Managed environments that block hooks should use Single mode for goal-shaped work.
+No config flag is required — `/goal` is enabled by default once Claude Code is at v2.1.139 or later. However, `/goal` depends on Claude Code's hooks layer: if `disableAllHooks` or `allowManagedHooksOnly` is set in `Claude Code settings file`, the command is unavailable on any version. v2.1.139 silently hung in that case; v2.1.140 surfaces a clear error message instead. Upgrading does **not** re-enable `/goal` under hook-blocking settings — permitting hooks is the only way to use `/goal` on Claude Code. Managed environments that block hooks should use Single mode for goal-shaped work.
 
 **Hermes Agent**:
 
@@ -210,7 +210,7 @@ max_turns = 20
 6. **Generate + Score** — apply template, show before/after quality metrics. The generated prompt MUST include a `<success_criteria schema_version="1">` block with 3-6 `<criterion>` entries. Each criterion has `id` (kebab-case slug, unique in block), `verification_method` (`rule` | `llm_judge` | `manual`), a one-sentence `<description>`, and — depending on method — an inline `<rule type="regex|predicate">` or `<judge_prompt>` (neither for `manual`). Schema of record: `references/outcome-schema.md`.
 7. **Single-pass evaluator** — run self-eval rubric and do one delta rewrite if score < 7
 
-**Why criteria are emitted:** so every prompt carries its own testable assertions; outcome records produced by `scripts/outcome-record.js` (added in the same PR) join criteria to results for flywheel learning.
+**Why criteria are emitted:** so every prompt carries its own testable assertions; outcome records produced by `the root repository outcome recording helper` (added in the same PR) join criteria to results for flywheel learning.
 
 #### Flywheel bias injection (v3 read-path)
 
@@ -230,7 +230,7 @@ When the flag is set, between the interview and the template pick:
    Or, if no bias applied:
    > Flywheel: no bias (cold start / low confidence)
 6. The bias changes **which template/patterns you start from.** The rest of the pipeline (interview content, generated prompt's XML structure, criteria emission) is unchanged. The flywheel never rewrites Claude's output.
-7. **Attribution (v3 part 3).** When bias is applied, remember the chosen recipe's `hash`, `confidence`, and `sampleCount` until the outcome is recorded for this run. Then stamp them onto the record via `scripts/outcome-record.js --applied-recommendation '{"recipe_hash":"<hash>","confidence":"<low|medium|high>","sample_count":<N>,"applied_at":"prompt_gen"}'`. Use `applied_at="phase_2"` for Repromptverse team-wide bias. **If no bias was applied (flag off, query returned null, or low confidence) OMIT the flag entirely** — the *absence* of `applied_recommendation` on a record is what marks it as the bias-off control group for `npm run flywheel:ab` analysis. Never stamp a zero/placeholder block; absence is the signal.
+7. **Attribution (v3 part 3).** When bias is applied, remember the chosen recipe's `hash`, `confidence`, and `sampleCount` until the outcome is recorded for this run. Then stamp them onto the record via `the root repository outcome recording helper --applied-recommendation '{"recipe_hash":"<hash>","confidence":"<low|medium|high>","sample_count":<N>,"applied_at":"prompt_gen"}'`. Use `applied_at="phase_2"` for Repromptverse team-wide bias. **If no bias was applied (flag off, query returned null, or low confidence) OMIT the flag entirely** — the *absence* of `applied_recommendation` on a record is what marks it as the bias-off control group for `npm run flywheel:ab` analysis. Never stamp a zero/placeholder block; absence is the signal.
 
 ### ⚠️ MUST GENERATE AFTER INTERVIEW
 
@@ -438,7 +438,7 @@ Domain profile auto-load rules (lazy-load, on demand):
 
 Then merge with `references/repromptverse-template.md` for routing/termination/evaluation contract and add task-specific constraints.
 
-Canonical implementation for deterministic routing lives in `scripts/intent-router.js`.
+Canonical implementation for deterministic routing lives in `the root repository intent routing helper`.
 If docs and code ever diverge, the script is the source of truth for benchmark/testing paths.
 
 ### Phase 1: Team plan (~45 seconds)
@@ -608,7 +608,7 @@ For EACH agent:
 
 Write all to `/tmp/rpt-agent-prompts-{taskname}.md`
 
-**Flywheel hook (per-agent):** after Phase 3 execution, each agent's artifact at `/tmp/rpt-{taskname}-{agent-domain}.md` can be recorded separately with `scripts/outcome-record.js --role <agent-name>` (one record per agent, `mode="repromptverse"`, and `--role` set to the teammate's name so the flywheel bridge uses it as the `domain` when building the recipe fingerprint). Score each record with `scripts/evaluate-outcome.js`. Without `--role`, all agents on the same `task_type` collapse into the same recipe bucket and the strategy learner can't tell which roles consistently win vs struggle — so always pass it for Repromptverse records.
+**Flywheel hook (per-agent):** after Phase 3 execution, each agent's artifact at `/tmp/rpt-{taskname}-{agent-domain}.md` can be recorded separately with `the root repository outcome recording helper --role <agent-name>` (one record per agent, `mode="repromptverse"`, and `--role` set to the teammate's name so the flywheel bridge uses it as the `domain` when building the recipe fingerprint). Score each record with `the root repository outcome evaluation helper`. Without `--role`, all agents on the same `task_type` collapse into the same recipe bucket and the strategy learner can't tell which roles consistently win vs struggle — so always pass it for Repromptverse records.
 
 #### Reprompt quality scorecard (mandatory)
 
@@ -647,7 +647,7 @@ If the user explicitly named an option in their request (e.g. "use tmux", "run i
 | 2 | `delegate_task` is present **and** at least two of `terminal`, `process`, `read_file`, `write_file`, `patch`, `search_files`, `todo`, `skills_list`, or `skill_view` are in the current toolset (Hermes Agent signature). | **Option G** — Hermes Agent native parallel (G1: `delegate_task` batch; G2: shell-level `hermes -z` / `hermes chat -q` then `wait`; G3: Kanban only for durable workflows). Full contract and gotchas in `references/runtime/hermes-agent-runtime.md`. |
 | 3 | **All four** of `TeamCreate`, `Agent`, `SendMessage`, and `TeamDelete` are listed in your current toolset. (Gating on `TeamCreate` alone is not enough — Option B's spawn/shutdown path needs the whole set; without it the run fails mid-execution rather than falling through to another option.) | **Option B** — native Claude Code teams; teammates can message each other; no tmux init or send-keys timing risk |
 | 4 | `sessions_spawn` tool is listed in your current toolset | **Option C** — OpenClaw |
-| 5 | `bash -c 'command -v tmux && { v=$(claude --version 2>/dev/null \| awk "{print \$1}"); [[ "$v" =~ ^(2\.[1-9]\|[3-9]) ]]; }'` exits 0. (Binary presence alone is insufficient — Option A needs `claude` ≥ 2.1 so `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is honoured; older CLIs accept the env var but don't enable team mode.) | **Option A** — tmux + child `claude --model opus`, visible panes |
+| 5 | `bash -c 'command -v tmux && { claude --version 2>/dev/null \| awk "{print \$1}" \| grep -Eq "^(2\.[1-9]\|[3-9])"; }'` exits 0. (Binary presence alone is insufficient — Option A needs `claude` ≥ 2.1 so `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is honoured; older CLIs accept the env var but don't enable team mode.) | **Option A** — tmux + child `claude --model opus`, visible panes |
 | 6 | Running inside Codex (parallel sessions available) | **Option D** |
 | 7 | None of the above | **Option E** — sequential fallback (works with any LLM) |
 
@@ -671,7 +671,7 @@ Known pitfalls captured from 4.6 → 4.7 drift in this skill:
 - **`TeamDelete` ordering.** `TeamDelete()` fails if any teammate is still active. Shutdown is async; in-process teammates need a turn yield to approve each `shutdown_request` before cleanup succeeds.
 - **`TeamCreate` precedence.** `Agent(team_name=...)` errors if that team was not created first. Always call `TeamCreate` before any `Agent` with a `team_name` argument.
 
-Canonical signatures Option B depends on. **These are reference documentation, not a schema enforced by the validator.** `npm run validate:tool-refs` is a blocklist — it catches known-bad shapes from this repo's history (obsolete tool names, reordered broadcast calls, hardcoded model pins) but does not positively verify that every call here matches its schema. If you change a signature below, update the linter's check set in `scripts/validate-tool-refs.js` in the same PR (and also any Option B flow that relies on the old shape).
+Canonical signatures Option B depends on. **These are reference documentation, not a schema enforced by the validator.** `npm run validate:tool-refs` is a blocklist — it catches known-bad shapes from this repo's history (obsolete tool names, reordered broadcast calls, hardcoded model pins) but does not positively verify that every call here matches its schema. If you change a signature below, update the linter's check set in `the root repository tool-reference validator` in the same PR (and also any Option B flow that relies on the old shape).
 
 ```text
 TeamCreate(team_name=<string>, description=<string>)
@@ -853,7 +853,7 @@ See `references/runtime/codex-runtime.md` for the full runtime contract (invocat
 
 **D1 — Native subagents (Codex 0.121.0+; `multi_agent` feature flag stabilized in 0.115.0 on 2026-03-16)**
 
-Enable in `~/.codex/config.toml`:
+Enable in `Codex config file`:
 
 ```toml
 [features]
@@ -865,7 +865,7 @@ max_depth = 1         # no sub-subagents by default
 job_max_runtime_seconds = 1800
 ```
 
-Define each repromptverse role once as `~/.codex/agents/<name>.toml`:
+Define each repromptverse role once as `Codex agents directory/<name>.toml`:
 
 ```toml
 name = "rpt_audit_explorer"
@@ -924,7 +924,7 @@ for agent in planner critic synthesizer; do
     --ephemeral \
     --sandbox workspace-write \
     --output-last-message "/tmp/rpt-{taskname}-${agent}.log" \
-    "$(cat /tmp/rpt-{taskname}-${agent}.prompt.md)" \
+    "`cat /tmp/rpt-{taskname}-${agent}.prompt.md`" \
     > "/tmp/rpt-{taskname}-${agent}.stdout" 2>&1 &
 done
 
@@ -947,10 +947,10 @@ done=0
 for f in /tmp/rpt-{taskname}-*.md; do
   [ -e "$f" ] || continue             # glob returned literal (no matches)
   case "$f" in *.prompt.md) continue ;; esac
-  done=$((done + 1))
+  done=`expr "$done" + 1`
 done
 total=3
-echo "Agents: ✅ $done/$total  ⏳ $((total-done))/$total"
+echo "Agents: ✅ $done/$total  ⏳ `expr "$total" - "$done"`/$total"
 ```
 
 **Retries:** Re-run `codex exec` for the failing agent with the delta prompt (Phase 4). Do NOT re-run the whole fleet.
@@ -965,7 +965,7 @@ echo "Agents: ✅ $done/$total  ⏳ $((total-done))/$total"
 
 | Situation | Pick |
 |---|---|
-| Agents share context; one summary output expected | D1 |
+| Agents coordinate from the same task brief; one summary output expected | D1 |
 | Need per-agent log files or model/profile overrides | D2 |
 | Orchestrating from CI or shell script outside Codex | D2 |
 | You want fresh context per worker without re-ingesting the codebase | D1 |
@@ -1026,7 +1026,7 @@ REPROMPTER_PROMPT
     printf 'Use file:line citations. Do not speculate.\n'
   } > "$prompt_file"
 
-  prompt_text="$(cat "$prompt_file")"
+  prompt_text=`cat "$prompt_file"`
   hermes -z "$prompt_text" \
     --toolsets terminal,file,web,skills \
     > "/tmp/rpt-${TASKNAME}-${role}.stdout" 2>&1 &
@@ -1215,7 +1215,7 @@ The key borrowed insight is **dual-signal analysis**: Extraktor sends Claude bot
 | Extraction Card | ~100 | Summary table |
 | **Total** | **~650-1300** | **Lighter than Single mode** |
 
-Canonical implementation for structural analysis and classification lives in `scripts/reverse-engineer.js`. If docs and code ever diverge, the script is the source of truth.
+Canonical implementation for structural analysis and classification lives in `the root repository reverse-engineering helper`. If docs and code ever diverge, the script is the source of truth.
 
 ---
 
@@ -1273,9 +1273,9 @@ Prefill assistant response start to enforce format:
 - `| Column |` → forces table format
 
 ### Context engineering
-Generated prompts should COMPLEMENT runtime context (CLAUDE.md, skills, MCP tools), not duplicate it. Before generating:
+Generated prompts should COMPLEMENT runtime context (project memory file, skills, MCP tools), not duplicate it. Before generating:
 1. Check what context is already loaded (project files, skills, MCP servers)
-2. Reference existing context: "Using the project structure from CLAUDE.md..."
+2. Reference existing context: "Using the project structure from project memory file..."
 3. Add ONLY what's missing — avoid restating what the model already knows
 
 ### Capability policy routing (OpenClaw + multi-LLM)
@@ -1303,7 +1303,7 @@ Before synthesis, evaluate each artifact for:
 
 If gate fails, retry only with delta prompts (max 2 retries).
 
-Implementation note: combine routing + patterns + model policy + context + adapter + evaluator through a single orchestration contract (`scripts/repromptverse-runtime.js`) to keep behavior deterministic across runtimes.
+Implementation note: combine routing + patterns + model policy + context + adapter + evaluator through a single orchestration contract (`the root repository Repromptverse runtime helper`) to keep behavior deterministic across runtimes.
 
 ### Runtime feature flags
 Repromptverse runtime supports deterministic toggles for rollout and troubleshooting:
@@ -1399,7 +1399,7 @@ Always include explicit permission for the model to express uncertainty rather t
 
 > Note: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is an experimental flag that may change in future Claude Code versions. Check [Claude Code docs](https://docs.anthropic.com/en/docs/claude-code) for current status.
 
-In `~/.claude/settings.json`:
+In `Claude Code settings file`:
 ```json
 {
   "env": {
@@ -1422,10 +1422,10 @@ In `~/.claude/settings.json`:
 
 ### Codex CLI
 
-Install the skill under `~/.codex/skills/reprompter/` (same structure as `~/.claude/skills/`). Codex reads config from `~/.codex/config.toml`:
+Install the skill under `Codex skills directory/reprompter/` (same structure as `Claude Code skills directory/`). Codex reads config from `Codex config file`:
 
 ```toml
-# ~/.codex/config.toml
+# Codex config file
 model = "gpt-5.4"          # default model for agent runs
 approval_policy = "never"  # for interactive Codex TUI only; `codex exec` already defaults to never in headless
 
@@ -1462,8 +1462,8 @@ If Codex CLI is the only runtime available, skip the Claude Code block above —
 Install the skill under Hermes' default skill directory. Run this from the parent directory that contains the RePrompter checkout as `reprompter/`:
 
 ```bash
-mkdir -p ~/.hermes/skills
-cp -R reprompter ~/.hermes/skills/
+mkdir -p Hermes skills directory
+cp -R reprompter Hermes skills directory/
 ```
 
 Hermes also supports external skill directories through its skills configuration. RePrompter only needs the skill directory to be visible to Hermes; no JS adapter or npm dependency is required.
@@ -1531,7 +1531,7 @@ Same audit task, 4 Opus agents:
 
 ## Test scenarios
 
-See [TESTING.md](TESTING.md) for 44 verification scenarios + anti-pattern examples.
+See the root repository TESTING.md for the full verification scenarios and anti-pattern examples.
 
 ---
 
@@ -1592,7 +1592,7 @@ This section is purely additive. The Phase 3 "Runtime auto-pick" decision tree (
 
 The rest of the skill remains unchanged for every other runtime. Non-Hermes users (Claude Code, Codex, OpenClaw, Grok CLI) see zero difference in behaviour or output.
 
-Hermes users can install this skill by copying the directory to `~/.hermes/skills/reprompter/` or by adding the repo path to Hermes' external skill directories.
+Hermes users can install this skill by copying the directory to `Hermes skills directory/reprompter/` or by adding the repo path to Hermes' external skill directories.
 
 ## Grok CLI Support (Additive Section — Zero Impact on Claude, Codex, OpenClaw, Hermes)
 
@@ -1611,7 +1611,7 @@ In this environment:
     ```
   - Recommended parameters for `spawn_subagent`:
     - `subagent_type`: "general-purpose" (full capability) or "explore" / "plan" for specialized workers
-    - `persona`: "implementer", "researcher", "reviewer", "security-auditor", or a custom persona defined in `~/.grok/personas/*.toml`
+    - `persona`: "implementer", "researcher", "reviewer", "security-auditor", or a custom persona defined in `Grok personas directory/*.toml`
     - `fork_context`: true (strongly recommended — the worker receives the original user task, Smart/Dimension Interview answers, team plan, and interviewContext without repetition)
     - `capability_mode`: "execute" (default for general-purpose) or "read-only" / "read-write"
     - `prompt`: the full per-agent reprompted XML document produced in Phase 2
@@ -1621,7 +1621,7 @@ In this environment:
     Agents: ✅ 3/5  ⏳ 1/5  🔄 1/5 (retry 1)
     ```
 
-- Full invocation examples, `~/.grok/config.toml` [subagents] settings, sandbox profile interaction, model-compatible headless flags, concurrency recommendations, retry patterns, and the complete list of "What Grok CLI does NOT provide" (no native TeamCreate/SendMessage/TeamDelete cross-messaging between workers, no /goal surface, no automatically shared TaskList across subagents, only partial hook matcher aliases for Claude tool names, etc.) are documented in:
+- Full invocation examples, `Grok config file` [subagents] settings, sandbox profile interaction, model-compatible headless flags, concurrency recommendations, retry patterns, and the complete list of "What Grok CLI does NOT provide" (no native TeamCreate/SendMessage/TeamDelete cross-messaging between workers, no /goal surface, no automatically shared TaskList across subagents, only partial hook matcher aliases for Claude tool names, etc.) are documented in:
 
   `references/runtime/grok-cli-runtime.md`
 
@@ -1631,4 +1631,4 @@ This section is purely additive. The Phase 3 "Runtime auto-pick" decision tree (
 
 The rest of the skill (Single, `/goal` preflight, Reverse, all templates, scoring, flywheel, etc.) is completely unchanged for every other runtime. Non-Grok users (Claude Code, Codex, OpenClaw, Hermes Agent) see zero difference in behaviour or output.
 
-Grok users can install this skill by copying the directory to `~/.grok/skills/reprompter/` (or continue using the existing `~/.claude/skills/reprompter/` location — Grok automatically loads skills from the Claude compatibility path).
+Grok users can install this skill by copying the directory to `Grok skills directory/reprompter/` (or continue using the existing `Claude Code skills directory/reprompter/` location — Grok automatically loads skills from the Claude compatibility path).
