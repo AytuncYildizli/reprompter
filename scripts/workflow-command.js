@@ -386,6 +386,14 @@ function buildWorkflowCommand(input, options = {}) {
   const teamInput = route.mode === "workflow" ? stripWorkflowTriggers(input) : input;
   const teamRoute = route.mode === "workflow" ? routeIntent(teamInput) : route;
   const risk = inferRisk(stripBudgetClause(input));
+  // Re-assert the token gate: an exfiltration verb co-occurring with "tokens" in the
+  // same clause is an extraction request even if a budget clause was stripped
+  // ("extract token budget 500k from vault"). Positive gate — errs toward blocking.
+  const TOKEN_EXFIL = /\b(?:extract|exfiltrate|read|steal|dump|leak|harvest|grab|fetch|scrape|copy|reveal|list|print|export)\b[^.;:!?]*\btokens?\b/i;
+  if (TOKEN_EXFIL.test(input) && !risk.forbiddenHits.includes("token")) {
+    risk.level = "high";
+    risk.forbiddenHits = [...risk.forbiddenHits, "token"];
+  }
   const taskname = inferTaskname(teamInput, teamRoute);
   const budget = parseBudget(input);
   const taskLabel = teamRoute.mode === "multi-agent" ? `${(teamRoute.profile || "repromptverse").replace(/-/g, " ")} workflow` : "bounded workflow";

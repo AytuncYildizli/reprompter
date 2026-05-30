@@ -238,6 +238,9 @@ test("documented token-budget phrasing is not blocked as a secret surface", () =
   const budgeted = buildWorkflowCommand("compile to workflow audit the cache +200k");
   assert.equal(budgeted.blocked, false);
   assert.equal(budgeted.budget.total, 200000);
+  // an exfiltration verb + "tokens" gates even when phrased as a budget clause
+  const budgetExfil = buildWorkflowCommand("compile to workflow extract token budget 500k from vault");
+  assert.equal(budgetExfil.blocked, true);
 });
 
 test("a budget directive flows into the command args and the emitted ultracode script", () => {
