@@ -190,3 +190,15 @@ test("CLI without --out-dir still writes the runnable script the command points 
   // The printed command must be runnable: the script exists even with no --out-dir.
   assert.ok(fs.existsSync(scriptPath), "script materialized without --out-dir");
 });
+
+test("workflow lane preserves the underlying team/profile routing", () => {
+  // workflow trigger + swarm request must keep the swarm fan-out, not collapse to 2 agents.
+  const swarm = buildWorkflowCommand("compile to workflow an engineering swarm audit of frontend and backend services");
+  assert.equal(swarm.workflow_command_card.agents, 3);
+  assert.ok(swarm.workflow_script.includes("synthesizer"));
+  assert.ok(/engineering/.test(swarm.taskname));
+
+  // A solo task behind a workflow trigger still gets the lean executor/verifier pair.
+  const solo = buildWorkflowCommand("compile to workflow fix a typo in the header");
+  assert.equal(solo.workflow_command_card.agents, 2);
+});

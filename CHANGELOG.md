@@ -21,7 +21,7 @@ Fully additive — no behavior change for Codex, Grok CLI, Hermes Agent, OpenCla
 - `scripts/goal-command.js` — exports `hasBoundaryMarkerNear` so the workflow compiler reuses the same boundary-aware risk logic (also carries the in-flight negation-aware risk refinement).
 - `scripts/hermes-sanitizer.json` — packages the two new reference docs and rewrites `scripts/workflow-command.js` references for the Hermes skill artifact.
 - `package.json` — `test:workflow-command` registered and added to the `check` gate; version `12.6.0`.
-- `README.md` — Workflow preflight lane, Option H compatibility row + parallel-path note, test table (Workflow command = 12; total 236).
+- `README.md` — Workflow preflight lane, Option H compatibility row + parallel-path note, test table (Workflow command = 13; total 237).
 
 ### Notes
 

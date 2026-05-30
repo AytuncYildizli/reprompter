@@ -22,7 +22,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
-const { routeIntent } = require("./intent-router");
+const { routeIntent, WORKFLOW_LANE_TRIGGERS } = require("./intent-router");
 const { evaluateArtifact } = require("./artifact-evaluator");
 const { fingerprint } = require("./recipe-fingerprint");
 const {
@@ -326,16 +326,31 @@ function buildWorkflowScript({ taskname, description, agents, ultracode }) {
   return L.join("\n");
 }
 
+// The workflow-lane trigger short-circuits routeIntent to mode "workflow" before
+// profile detection. Strip the trigger phrases and re-route to recover the
+// underlying team/profile ("...an engineering swarm audit...") so the agent roster
+// reflects the requested fan-out instead of the generic executor/verifier pair.
+function teamRouteFor(input) {
+  const route = routeIntent(input);
+  if (route.mode !== "workflow") return route;
+  let stripped = String(input || "");
+  for (const trigger of WORKFLOW_LANE_TRIGGERS) {
+    stripped = stripped.replace(new RegExp(trigger.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig"), " ");
+  }
+  return routeIntent(stripped);
+}
+
 function buildWorkflowCommand(input, options = {}) {
   const ultracode = Boolean(options.ultracode);
   const route = routeIntent(input);
+  const teamRoute = teamRouteFor(input);
   const risk = inferRisk(input);
-  const taskname = inferTaskname(input, route);
+  const taskname = inferTaskname(input, teamRoute);
   const budget = parseBudget(input);
-  const taskLabel = route.mode === "multi-agent" ? `${(route.profile || "repromptverse").replace(/-/g, " ")} workflow` : "bounded workflow";
+  const taskLabel = teamRoute.mode === "multi-agent" ? `${(teamRoute.profile || "repromptverse").replace(/-/g, " ")} workflow` : "bounded workflow";
   const criteria = buildWorkflowSuccessCriteria(taskLabel);
-  const expandedPrompt = buildExpandedPrompt(input, "claude-workflow", route, risk, taskLabel, criteria, options.repo);
-  const agents = buildDefaultAgents(input, route);
+  const expandedPrompt = buildExpandedPrompt(input, "claude-workflow", teamRoute, risk, taskLabel, criteria, options.repo);
+  const agents = buildDefaultAgents(input, teamRoute);
 
   // Keep the embedded command path in sync with where writeArtifacts() actually
   // writes the script: derive from --out-dir when no explicit --script-path is given.
@@ -362,7 +377,7 @@ function buildWorkflowCommand(input, options = {}) {
   const recipe = fingerprint({
     templateId: "workflow-command-card",
     patterns: ["constraint-normalizer", "success-criteria", "schema-returns", ultracode ? "adversarial-verify" : "delta-retry"],
-    capabilityTier: route.mode === "multi-agent" ? "multi_agent" : "single_agent",
+    capabilityTier: teamRoute.mode === "multi-agent" ? "multi_agent" : "single_agent",
     domain: taskLabel,
     contextLayers: 4,
     qualityScore: quality.overallScore,
