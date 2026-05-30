@@ -256,7 +256,7 @@ export const meta = {
   ],
 }
 
-const taskname = (args && args.taskname) || "rpt-{taskname}"
+const taskname = (args && args.taskname) || "{taskname}"   // bare fallback == command args; only meta.name is prefixed (resume id stability)
 const runId = (args && args.runId) || taskname
 
 const FINDINGS_SCHEMA = {
