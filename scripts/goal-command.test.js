@@ -66,6 +66,13 @@ test("a negated verb near a forbidden surface does NOT clear the risk gate", () 
   assert.ok(p2.risk.forbiddenHits.includes("merge") && p2.risk.forbiddenHits.includes("prod"));
 });
 
+test("imperative 'block <surface>' is NOT a boundary marker and stays gated", () => {
+  // "block auth ..." is a command to work on auth, not a constraint excluding it.
+  const p = buildGoalCommand("block auth middleware bypass and harden the login flow", { target: "codex" });
+  assert.equal(p.blocked, true);
+  assert.ok(p.risk.forbiddenHits.includes("auth"));
+});
+
 test("CLI writes machine-readable goal artifacts", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "reprompter-goal-"));
   const result = spawnSync(process.execPath, [

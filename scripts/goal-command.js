@@ -75,8 +75,6 @@ const BOUNDARY_MARKERS = new Set([
   "excluding",
   "forbid",
   "forbidden",
-  "block",
-  "blocked",
   "never",
   "constraint",
   "constraints",
