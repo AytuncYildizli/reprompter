@@ -84,6 +84,8 @@ test("ultracode mode emits adversarial-verify + completeness critic, still deter
   assert.equal(packet.ultracode, true);
   assert.ok(packet.workflow_script.includes("Default refuted=true if uncertain"));
   assert.ok(packet.workflow_script.includes("completeness-critic"));
+  assert.ok(packet.workflow_script.includes("VERIFY_CAP"), "verifier fan-out is capped");
+  assert.ok(packet.workflow_script.includes("maxItems: 20"), "findings array is bounded");
   assertPhasesMatch(packet.workflow_script, ["Plan", "Execute", "Evaluate"]);
   assertDeterministic(packet.workflow_script);
   assertValidSyntax(packet.workflow_script);
