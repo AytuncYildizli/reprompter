@@ -291,7 +291,9 @@ function buildWorkflowScript({ taskname, description, agents, ultracode }) {
     L.push('  properties: { gaps: { type: "array", items: { type: "string" } } },');
     L.push("}");
     L.push("// Budget-scaled (H3): run the extra completeness critic only with token headroom.");
-    L.push("const hasHeadroom = !budgetTotal || budget.remaining() > 30000");
+    L.push("// Gate on the LIVE budget (the only one with a real remaining()); the parsed");
+    L.push("// args budget is recorded for visibility but has no run-level spend counter.");
+    L.push("const hasHeadroom = !budget.total || budget.remaining() > 30000");
     L.push("const critic = hasHeadroom");
     L.push("  ? await agent(`Given these confirmed findings, list concrete gaps still missing: ${JSON.stringify(confirmed.map((c) => c.finding))}`,");
     L.push('      { label: "completeness-critic", phase: "Evaluate", schema: CRITIC_SCHEMA })');
@@ -306,6 +308,7 @@ function buildWorkflowScript({ taskname, description, agents, ultracode }) {
     L.push("  gaps: (critic && critic.gaps) || [],");
     L.push("  missing: AGENTS.length - results.length,");
     L.push("  scores: results.map((r) => ({ role: r.role, score: r.self_score })),");
+    L.push("  budget: budgetTotal,");
     L.push("}");
   } else {
     L.push("// Evaluate: bounded delta-retry (max 2 per role) for anything below the accept bar.");
@@ -333,6 +336,7 @@ function buildWorkflowScript({ taskname, description, agents, ultracode }) {
     L.push("  missing: AGENTS.length - final.length,");
     L.push("  retries: totalRetries,");
     L.push("  scores: final.map((f) => ({ role: f.role, score: f.self_score })),");
+    L.push("  budget: budgetTotal,");
     L.push("}");
   }
   L.push("");
