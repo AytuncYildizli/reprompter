@@ -109,7 +109,10 @@ function tokenizeWithClauses(input) {
 // other forbidden surfaces + list connectors; a marker immediately governing the
 // run clears it. A filler/verb OR a clause break in between means the hit stands.
 function occurrenceGoverned(tokens, index) {
-  for (let back = index - 1, hops = 0; back >= 0 && hops < 6; back -= 1, hops += 1) {
+  // No fixed hop cap: the walk terminates naturally at a clause break, a governing
+  // marker, a non-list filler token, or the start — so even long same-clause
+  // exclusion lists ("no a/b/c/.../password") resolve to their governing marker.
+  for (let back = index - 1; back >= 0; back -= 1) {
     const tok = tokens[back];
     if (tok === CLAUSE_BREAK) break;
     if (BOUNDARY_MARKERS.has(tok)) return true;

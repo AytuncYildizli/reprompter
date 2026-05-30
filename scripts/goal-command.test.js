@@ -104,6 +104,14 @@ test("a boundary marker does not bridge a clause break to a later action", () =>
   assert.deepEqual(ok.risk.forbiddenHits, []);
 });
 
+test("a long same-clause exclusion list clears entirely (no hop cap)", () => {
+  const p = buildGoalCommand(
+    "no prod/merge/deploy/auth/browser/cookie/session/payment/secret/token/password",
+    { target: "codex" }
+  );
+  assert.deepEqual(p.risk.forbiddenHits, []);
+});
+
 test("CLI writes machine-readable goal artifacts", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "reprompter-goal-"));
   const result = spawnSync(process.execPath, [
