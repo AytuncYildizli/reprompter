@@ -11,7 +11,7 @@ Fully additive — no behavior change for Codex, Grok CLI, Hermes Agent, OpenCla
 - **Workflow preflight lane (Lane 5)** in `SKILL.md` — triggers, runtime detection, Process, a 12-row Workflow Command Card, the emitted-script shape, the expanded-prompt XML basis, and the schema-truth / parent-mirror reconciliation.
 - **Repromptverse Option H** — new Order-4 row in the Phase-3 auto-pick tree (just below Option B; the Workflow tool has no mid-run cross-agent messaging), plus an Option H subsection with the H1/H2/H3 pattern table.
 - `scripts/workflow-command.js` — the compiler (`buildWorkflowCommand`, `buildWorkflowScript`, `parseBudget`) emitting a `reprompter.workflow_command.v1` packet and a determinism-safe script (pure-literal `meta`, `runId`/`taskname` from `args`, `model` omitted, `filter(Boolean)`, bounded delta-retry; ultracode adds adversarial verify + completeness critic). Reuses `goal-command` risk logic; high-risk forbidden surfaces block emission.
-- `scripts/workflow-command.test.js` — 11 tests (versioned packet, risk gate, boundary handling, phase-title/no-drift, determinism, ultracode body, CLI artifacts; emitted scripts syntax-checked inside the workflow async wrapper).
+- `scripts/workflow-command.test.js` — 20 tests (versioned packet, risk gate, boundary handling, phase-title/no-drift, determinism, ultracode body, budget wiring, CLI artifacts incl. out-dir/script-path consistency + symlink guard; emitted scripts syntax-checked inside the workflow async wrapper).
 - `references/runtime/claude-workflow-runtime.md` — runtime contract (when-to-pick vs A/B, invocation/resume, concurrency, retries, gotchas, schema-vs-file reconciliation, ultracode, what-it-does-not-provide).
 - `references/workflow-template.md` — dual-block (expanded-prompt XML + compiled `.workflow.js` skeleton).
 
@@ -23,10 +23,26 @@ Fully additive — no behavior change for Codex, Grok CLI, Hermes Agent, OpenCla
 - `package.json` — `test:workflow-command` registered and added to the `check` gate; version `12.6.0`.
 - `README.md` — Workflow preflight lane, Option H compatibility row + parallel-path note, test table (Workflow command = 20; total 248).
 
+### Ultracode & budget scaling
+
+Ultracode is a **compile-time switch** (`REPROMPTER_ULTRACODE` / `--ultracode`, off via `--no-ultracode`) that selects which body `buildWorkflowScript` emits — it does not run anything itself. As shipped:
+
+- **Lean body (off-ramp):** `parallel()` fan-out → bounded delta-retry (≤2 per role). For trivial reprompts.
+- **Ultracode body:** fan-out → **adversarial / perspective-diverse verify** → **completeness critic**. Each surviving finding is judged by three *distinct* lenses (`correctness` / `completeness` / `risk`) returning a `VERDICT_SCHEMA {refuted, reason}`; a finding is kept only on **≥2/3 non-refutation**, and verifiers "default `refuted=true` if uncertain".
+- **Agent-count safety (respects the Workflow 1000-agent lifetime cap):** each role's findings are bounded by `maxItems: 20`; the verify panel is capped at `VERIFY_CAP = 24` (≤72 verify agents). A broad audit (~334 findings × 3 = ~1000) would otherwise exhaust the run before the critic — truncation is `log()`'d, never silent.
+- **Budget scaling (H3, as shipped):** the completeness critic runs only with token headroom — gated on `!budget.total || budget.remaining() > 30000` — so the extra thoroughness pass dials *off* near the ceiling. (The compiler does **not** scale the fleet size by budget; the roster is fixed to the reprompted roles. The caps + critic-gate are the scaling levers.)
+- **Budget flow:** `parseBudget` recognizes only **unambiguous cues** — the `+Nk` form or the literal `budget:` / `token budget` keyword — clamped to `BUDGET_MAX` (100M). A bare `Nk tokens` is intentionally **not** a cue (ambiguous with token exfiltration). The parsed total rides the emitted command as `args.budget`; the script sources `budgetTotal = budget.total || args.budget`, **preferring the live Workflow `budget` global** (real run-level spend tracking) over the args hint, and surfaces it in the returned `reprompter.workflow_outcome.v1` payload.
+
+### Review hardening (21 droid + Codex cycles)
+
+- **Risk gate** (shared `inferRisk`, used by both `/goal` and the Workflow lane): occurrence-aware governance (a boundary marker clears a forbidden surface only when it *directly governs* it); plural surfaces (`cookies`/`tokens`/`secrets`); `block`/`blocked` dropped as markers (imperative, not constraint); clause breaks (`; : . ! ?` and comma) stop the governance walk; long same-clause exclusion lists clear (no hop cap); and an **exfiltration re-check** (`extract`/`read`/`steal`/… co-occurring with `tokens` forces high-risk even after budget stripping).
+- **CLI / safety:** the emitted `script_path` always matches where the script is actually written (out-dir, both-flags, and no-out-dir paths); atomic `O_NOFOLLOW` write (mode `0600`) closes the predictable-`/tmp` symlink-clobber/TOCTOU vector; task names carry a deterministic hash suffix so distinct jobs don't overwrite each other or resume the wrong run; the in-script taskname fallback equals the bare `args` value (resume id stability); and the workflow lane preserves the underlying team/profile routing instead of collapsing to a generic pair.
+
 ### Notes
 
 - `Workflow`-tool detection is by tool presence; absent it, RePrompter falls back to Repromptverse Option B/A or the `/goal` preflight lane.
-- Design rationale lives in `docs/dynamic-workflow-expansion.md`.
+- Design rationale lives in `docs/dynamic-workflow-expansion.md`; runtime contract in `references/runtime/claude-workflow-runtime.md`.
+- **Fix:** the v12.6.0 trigger additions pushed the SKILL.md frontmatter `description` to 1198 chars; runtimes with a 1024 cap (e.g. Codex) silently skipped the skill. Trimmed to 888 chars, and `validate:tool-refs` now fails if the (root or packaged) description exceeds 1024 so it can't regress.
 
 ## v12.5.1 (2026-05-18) — Hermes install package
 

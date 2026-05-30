@@ -2,9 +2,9 @@
 name: reprompter
 description: |
   Transform rough prompts into structured, high-scoring prompts for coding agents.
-  Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", "before /goal", "for /goal", "/goal preflight", "Codex /goal", "Codex goal prompt", "Claude Code /goal", "Hermes /goal", "reprompter teams", "repromptverse", "smart run", "smart agents", "campaign swarm", "engineering swarm", "ops swarm", "research swarm", "workflow preflight", "compile to workflow", "build a workflow script", "dynamic workflow", "run via workflow tool", "make a workflow", multi-agent tasks, audits, parallel work, "reverse reprompt", "learn from this", "extract prompt from", "prompt dna", "prompt genome".
+  Use when: "reprompt", "clean up this prompt", "before /goal", "Codex /goal", "Claude Code /goal", "Hermes /goal", "repromptverse", "reprompter teams", "smart run", "engineering/ops/research/marketing swarm", "compile to workflow", "workflow preflight", "dynamic workflow", multi-agent tasks, audits, parallel work, "reverse reprompt", "prompt dna", "extract prompt from".
   Don't use for simple Q&A, casual chat, or execution-only tasks.
-  Outputs: structured XML/Markdown prompt, before/after score, /goal command card with compressed summary of the expanded prompt for Codex CLI, Claude Code CLI v2.1.139+, or Hermes Agent, optional team brief + per-agent prompts, Agent Cards, Extraction Card, Workflow Command Card + runnable .workflow.js (Workflow preflight lane / Option H).
+  Outputs: structured XML/Markdown prompt + before/after score; /goal command card (Codex/Claude Code/Hermes); optional team brief + per-agent prompts + Agent Cards; Reverse Extraction Card; Workflow Command Card + runnable .workflow.js (Workflow preflight lane / Option H).
   Target score: Single and Goal preflight >= 7/10; Repromptverse per-agent >= 8/10; Reverse >= 7/10.
 compatibility: |
   Single mode works on Claude surfaces, OpenClaw, Codex, Grok CLI, and Hermes Agent.
@@ -256,7 +256,7 @@ export const meta = {
   ],
 }
 
-const taskname = (args && args.taskname) || "rpt-{taskname}"
+const taskname = (args && args.taskname) || "{taskname}"   // bare fallback == command args; only meta.name is prefixed (resume id stability)
 const runId = (args && args.runId) || taskname
 
 const FINDINGS_SCHEMA = {
@@ -1130,11 +1130,11 @@ Each Phase-2 reprompted prompt becomes an `agent(prompt, { schema })` call. Thre
 |---|---|---|
 | **H1: `pipeline()` default** | Sequential dependencies (fetch → transform → deploy); each item independent, no barrier | `pipeline(items, stage1, stage2)` |
 | **H2: `parallel()` barrier** | Independent-domain agents whose results are synthesized/evaluated together (the common Repromptverse shape) | `(await parallel(roles.map(r => () => agent(r.prompt, { schema })))).filter(Boolean)` then synthesize |
-| **H3: budget-loop / loop-until-dry** | Unknown-size discovery or `+Nk` budget directive | `while (budget.total && budget.remaining() > 50000) { ... }` / loop until K dry rounds |
+| **H3: budget-aware depth** | A `+Nk` budget directive | **As the compiler emits it:** a fixed roster + agent-count caps (`maxItems: 20`, `VERIFY_CAP: 24`) and a completeness critic gated on `!budget.total \|\| budget.remaining() > 30000` — depth dials off near the ceiling, no roster scaling. (A literal `while (budget.remaining() > N) { … }` loop-until-budget is a valid *hand-authored* shape, but the compiler does not emit one.) |
 
 Hard rules for the emitted script (full contract: `references/runtime/claude-workflow-runtime.md`): `meta` is a pure literal with `phase()` titles matching `meta.phases`; `runId`/`taskname` come from `args` (never generated in-script — wall-clock and randomness throw and break resume); `model` is omitted so agents inherit the main-loop model; `filter(Boolean)` after every `parallel()`/`pipeline()`. **Schema-validated returns are the single source of truth** — the script never reads the `/tmp/rpt-*.md` files back; the parent writes that compatibility mirror **after** the run returns (so Status Line / Phase-4 / flywheel keep working). High-risk forbidden surfaces (prod/auth/secret/...) block script emission (`blocked: true`, `script: null`); there is no in-tool override, so rescope the task to proceed.
 
-**Ultracode:** when ultracode is on, the emitted script defaults to the thorough body — adversarial / perspective-diverse verify per finding, a completeness critic, and budget-scaled fleets; a lean off-ramp (`REPROMPTER_ULTRACODE=0` / `--no-ultracode`) keeps trivial reprompts cheap. Compiler: `scripts/workflow-command.js`.
+**Ultracode:** when ultracode is on, the emitted script defaults to the thorough body — adversarial / perspective-diverse verify (3 distinct lenses: correctness/completeness/risk, a finding kept only on ≥2/3 non-refutation) plus a completeness critic. **Agent-count caps** keep it under the Workflow 1000-agent lifetime cap: `maxItems: 20` findings per role and `VERIFY_CAP = 24` (≤72 verify agents), with truncation logged. **Budget scaling (H3, as shipped):** the critic is gated on `!budget.total || budget.remaining() > 30000` so the extra pass dials off near the token ceiling — the roster itself is *not* budget-scaled. A budget directive (`+Nk` / `budget:` only — clamped to 100M; a bare `Nk tokens` is ambiguous with exfiltration and is **not** a cue) rides the command as `args.budget`, while the script prefers the live `budget` global. Lean off-ramp (`REPROMPTER_ULTRACODE=0` / `--no-ultracode`) keeps trivial reprompts cheap. Compiler: `scripts/workflow-command.js`.
 
 #### Option G: Hermes Agent
 

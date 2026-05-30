@@ -10,15 +10,15 @@
   },
   "source": {
     "root_skill": "SKILL.md",
-    "root_skill_sha256": "f511d892ea6dd8733f54f6c7f98b0317e6ed2f22ae6b1eaa73bcd5e0c576e543",
+    "root_skill_sha256": "6b903fcff1480bf4143cfca57740d21008cef18f7c010318f01abb19fbebf693",
     "sanitizer": "scripts/hermes-sanitizer.json",
     "sanitizer_sha256": "6c101955d07f6b16da8e65eeb70e1ef60e7d6f73b173549cae6982df1eb9236e"
   },
   "files": [
     {
       "path": "SKILL.md",
-      "source_sha256": "f511d892ea6dd8733f54f6c7f98b0317e6ed2f22ae6b1eaa73bcd5e0c576e543",
-      "generated_sha256": "84d747ed1fc3482e71562e13c8f75b6f6632143c3600500e389eba4c27a3a3eb"
+      "source_sha256": "6b903fcff1480bf4143cfca57740d21008cef18f7c010318f01abb19fbebf693",
+      "generated_sha256": "00c8bb85ad02da2ed85b8cb1d88cfb065de8995b8235eb4cb70f132cce19e854"
     },
     {
       "path": "references/api-template.md",
@@ -122,8 +122,8 @@
     },
     {
       "path": "references/runtime/claude-workflow-runtime.md",
-      "source_sha256": "15bb75e96c0d77980c4434051a2d9bcf8f3f3b12a608b5aa5e5cea22ed73d2ce",
-      "generated_sha256": "15bb75e96c0d77980c4434051a2d9bcf8f3f3b12a608b5aa5e5cea22ed73d2ce"
+      "source_sha256": "700bc4ae7b40f52a32a02f4f0c82ae54b2b0b5b9ba729d651a803710a1d69ea5",
+      "generated_sha256": "700bc4ae7b40f52a32a02f4f0c82ae54b2b0b5b9ba729d651a803710a1d69ea5"
     },
     {
       "path": "references/runtime/hermes-agent-runtime.md",
@@ -157,8 +157,8 @@
     },
     {
       "path": "references/workflow-template.md",
-      "source_sha256": "800e3ba59dd9a82fecac815ace32cece6dd24bebc435139eb0cceb321846914c",
-      "generated_sha256": "8e017a4a864bd313628059495090e8890bdd5ad41f84b0fa06ae9508b2b495c3"
+      "source_sha256": "a3e05202a64eafed03acb6b88bbbd6d13abad8bb8fc52340ea6f8cdb17c506e8",
+      "generated_sha256": "7a86113976d2832c5966c374e41d40d21d2847b00745f9f93b76723d5db9641f"
     }
   ]
 }

@@ -75,9 +75,11 @@ The script returns a `reprompter.workflow_outcome.v1` payload (`runId`, `results
 
 When ultracode is on, the compiled script defaults to the thorough emission:
 
-- **Adversarial / perspective-diverse verify** — each finding is judged by independent lenses (correctness, completeness, risk); a finding survives only on majority non-refutation.
-- **Completeness critic** — a final agent asks "what is missing — an un-run angle, an unverified claim, an unread source?" and its gaps feed the next round.
-- **Budget-scaled fleets** — `budget.remaining()` gates loop depth (`while (budget.total && budget.remaining() > 50000) { ... }`); with no directive, a small static fleet is used so trivial reprompts do not fan out.
+- **Adversarial / perspective-diverse verify** — each surviving finding is judged by three *distinct* lenses (`correctness` / `completeness` / `risk`) returning a `{refuted, reason}` verdict; a finding is kept only on **≥2/3 non-refutation**. Verifiers are told to default `refuted=true` when uncertain (conservative kill).
+- **Agent-count caps** (the run has a **1000-agent lifetime cap**) — each role's findings are bounded `maxItems: 20`, and the verify panel is capped at `VERIFY_CAP = 24` (≤ 72 verify agents). A broad audit (~334 findings × 3 lenses ≈ 1000) would otherwise exhaust the run before the critic. Truncation beyond the cap is `log()`'d, never silent.
+- **Completeness critic** — a final agent asks "what is missing — an un-run angle, an unverified claim, an unread source?", but runs **only with token headroom** (see budget scaling).
+- **Budget scaling (H3, as shipped)** — the critic is gated on `!budget.total || budget.remaining() > 30000`, so the extra thoroughness pass dials *off* as the run nears its token ceiling. Note: the emitted script does **not** scale the *fleet size* by budget — the roster is fixed to the reprompted roles; the caps above plus this critic-gate are the actual scaling levers. The script sources `const budgetTotal = budget.total || (args && args.budget) || null`, **preferring the live Workflow `budget` global** (real run-level spend tracking via `budget.remaining()`) over the directive carried in `args.budget`, and returns it in the outcome payload.
+- **Budget cues** — `parseBudget` treats only the **`+Nk`** form and the literal **`budget:` / `token budget`** keyword as directives (clamped to 100M). A bare `Nk tokens` is **not** a budget cue — it is ambiguous with token exfiltration (`extract 200k tokens`) and reaches the secret-surface gate instead.
 
 Pattern-library mapping (RePrompter → Workflow):
 
