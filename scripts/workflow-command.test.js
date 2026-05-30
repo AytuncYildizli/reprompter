@@ -1,0 +1,149 @@
+"use strict";
+
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
+const { spawnSync } = require("node:child_process");
+const { buildWorkflowCommand, buildWorkflowScript, parseBudget } = require("./workflow-command");
+
+const FORBIDDEN_TOKENS = ["Date.now(", "Math.random(", "new Date("];
+
+function assertDeterministic(script) {
+  for (const token of FORBIDDEN_TOKENS) {
+    assert.ok(!script.includes(token), `emitted script must not contain ${token}`);
+  }
+}
+
+function assertPhasesMatch(script, titles) {
+  for (const title of titles) {
+    assert.ok(script.includes(`{ title: "${title}" }`), `meta.phases must declare ${title}`);
+    assert.ok(script.includes(`phase("${title}")`), `body must call phase("${title}")`);
+  }
+}
+
+function assertValidSyntax(script) {
+  // Workflow scripts run inside an async wrapper the harness provides, so
+  // top-level await/return are legal there but not in a bare module. Model
+  // that wrapper: demote the meta export to a const and wrap the body so
+  // `node --check` validates the syntax the way the runtime executes it.
+  const wrapped =
+    "async function __wf(args, budget, agent, parallel, pipeline, phase, log, workflow) {\n" +
+    script.replace(/^export\s+const\s+meta\s*=/m, "const meta =") +
+    "\n}\n";
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "reprompter-wf-syntax-"));
+  const file = path.join(dir, "candidate.js");
+  fs.writeFileSync(file, wrapped);
+  const result = spawnSync(process.execPath, ["--check", file], { encoding: "utf8" });
+  assert.equal(result.status, 0, `emitted script must parse inside the workflow async wrapper:\n${result.stderr}`);
+}
+
+test("buildWorkflowCommand emits a versioned packet with a runnable script", () => {
+  const packet = buildWorkflowCommand("audit the billing and reporting modules across frontend and backend services", {
+    repo: "/tmp/demo",
+  });
+
+  assert.equal(packet.schema_version, "reprompter.workflow_command.v1");
+  assert.equal(packet.mode, "workflow_preflight");
+  assert.equal(packet.blocked, false);
+  assert.ok(packet.command.startsWith("Workflow({ scriptPath:"));
+  assert.ok(packet.workflow_script.includes("export const meta"));
+  assert.ok(packet.expanded_prompt.includes("<success_criteria schema_version=\"1\">"));
+  assert.ok(packet.quality_score.after >= 7);
+  assertPhasesMatch(packet.workflow_script, ["Plan", "Execute", "Evaluate"]);
+  assertDeterministic(packet.workflow_script);
+  assertValidSyntax(packet.workflow_script);
+});
+
+test("high-risk forbidden surfaces block the script", () => {
+  const packet = buildWorkflowCommand("deploy prod auth cookie fix");
+
+  assert.equal(packet.blocked, true);
+  assert.equal(packet.command, null);
+  assert.equal(packet.workflow_script, null);
+  assert.deepEqual(packet.risk.forbiddenHits.sort(), ["auth", "cookie", "deploy", "prod"]);
+});
+
+test("boundary-only forbidden surfaces stay executable (shared inferRisk/hasBoundaryMarkerNear)", () => {
+  const packet = buildWorkflowCommand(
+    "compile to workflow a Whip compatibility check; no prod/merge/deploy; no secrets/session material; verify before green"
+  );
+
+  assert.equal(packet.blocked, false);
+  assert.ok(packet.command.startsWith("Workflow({ scriptPath:"));
+  assert.deepEqual(packet.risk.forbiddenHits, []);
+  assert.equal(packet.workflow_command_card.risk_level, "medium");
+});
+
+test("ultracode mode emits adversarial-verify + completeness critic, still deterministic", () => {
+  const packet = buildWorkflowCommand("research tradeoffs and compare options for the cache layer", {
+    ultracode: true,
+  });
+
+  assert.equal(packet.ultracode, true);
+  assert.ok(packet.workflow_script.includes("Default refuted=true if uncertain"));
+  assert.ok(packet.workflow_script.includes("completeness-critic"));
+  assertPhasesMatch(packet.workflow_script, ["Plan", "Execute", "Evaluate"]);
+  assertDeterministic(packet.workflow_script);
+  assertValidSyntax(packet.workflow_script);
+});
+
+test("buildWorkflowScript meta phase titles never drift from phase() calls", () => {
+  const script = buildWorkflowScript({
+    taskname: "drift-check",
+    description: "any task",
+    agents: [{ role: "a", label: "a", prompt: "do a" }],
+    ultracode: false,
+  });
+  assertPhasesMatch(script, ["Plan", "Execute", "Evaluate"]);
+  assertDeterministic(script);
+  assertValidSyntax(script);
+});
+
+test("parseBudget reads a directive and falls back cleanly", () => {
+  assert.deepEqual(parseBudget("be thorough +500k please"), { total: 500000, mode: "directive" });
+  assert.deepEqual(parseBudget("budget: 200000 tokens"), { total: 200000, mode: "directive" });
+  assert.deepEqual(parseBudget("inherit the budget"), { total: null, mode: "inherit" });
+  assert.deepEqual(parseBudget("just do the task"), { total: null, mode: "none" });
+});
+
+test("parseBudget ignores version-ish tokens and clamps absurd values", () => {
+  // "+18" has no k/m unit -> not a budget directive (was a false match)
+  assert.deepEqual(parseBudget("upgrade to react +18 features"), { total: null, mode: "none" });
+  assert.deepEqual(parseBudget("+2m budget"), { total: 2000000, mode: "directive" });
+  assert.equal(parseBudget("budget: 999999999999999999999").total, 100000000);
+});
+
+test("hostile input stays escape-safe and deterministic in the emitted script", () => {
+  // backslashes (Windows path / regex), a stray quote, and literal forbidden-call
+  // tokens must not break the emitted JS string literal or trip the determinism scan.
+  const nasty = 'audit C:\\srv\\app\\ and refactor the new Date( wrapper plus the Math.random( seed "now"';
+  const packet = buildWorkflowCommand(nasty);
+  assert.equal(packet.blocked, false);
+  assertValidSyntax(packet.workflow_script);
+  assertDeterministic(packet.workflow_script);
+});
+
+test("operator-supplied script path with a quote yields a well-formed command", () => {
+  const packet = buildWorkflowCommand("compile to workflow an audit", { scriptPath: '/tmp/a"b.workflow.js' });
+  assert.ok(packet.command.includes('scriptPath: "/tmp/a\\"b.workflow.js"'));
+});
+
+test("CLI writes the four workflow artifacts", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "reprompter-workflow-"));
+  const result = spawnSync(process.execPath, [
+    path.join(__dirname, "workflow-command.js"),
+    "--input", "compile to workflow an audit of the gateway health pipeline",
+    "--out-dir", dir,
+  ], { encoding: "utf8" });
+
+  assert.equal(result.status, 0, result.stderr);
+  const packet = JSON.parse(fs.readFileSync(path.join(dir, "workflow-command.json"), "utf8"));
+  assert.equal(packet.schema_version, "reprompter.workflow_command.v1");
+  assert.ok(fs.existsSync(path.join(dir, `rpt-${packet.taskname}.workflow.js`)));
+  assert.ok(fs.existsSync(path.join(dir, "workflow-command-card.json")));
+  assert.ok(fs.existsSync(path.join(dir, "reprompter-expanded-prompt.md")));
+  const emitted = fs.readFileSync(path.join(dir, `rpt-${packet.taskname}.workflow.js`), "utf8");
+  assertDeterministic(emitted);
+});

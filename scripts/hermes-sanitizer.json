@@ -27,12 +27,14 @@
     "references/runtime/context-layers.md",
     "references/runtime/evaluation-rubric.md",
     "references/runtime/grok-cli-runtime.md",
+    "references/runtime/claude-workflow-runtime.md",
     "references/runtime/hermes-agent-runtime.md",
     "references/security-template.md",
     "references/swarm-template.md",
     "references/team-brief-template.md",
     "references/testing-template.md",
-    "references/ui-template.md"
+    "references/ui-template.md",
+    "references/workflow-template.md"
   ],
   "replacements": [
     {
@@ -154,6 +156,11 @@
       "kind": "literal",
       "pattern": "scripts/repromptverse-runtime.js",
       "replacement": "the root repository Repromptverse runtime helper"
+    },
+    {
+      "kind": "literal",
+      "pattern": "scripts/workflow-command.js",
+      "replacement": "the root repository workflow compiler"
     },
     {
       "kind": "literal",

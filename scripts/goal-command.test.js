@@ -34,6 +34,26 @@ test("high-risk Codex goal emits blocked card without executable command", () =>
   assert.deepEqual(packet.risk.forbiddenHits.sort(), ["auth", "cookie", "deploy", "prod"]);
 });
 
+test("boundary-only forbidden surfaces stay executable for Whip intake", () => {
+  const packet = buildGoalCommand(
+    "Whip içinde RePrompter uyumluluğunu kanıtla; no prod/merge/deploy; no secrets/session material; verify before green",
+    { target: "codex", repo: "/tmp/whip" }
+  );
+
+  assert.equal(packet.blocked, false);
+  assert.ok(packet.goal_command.startsWith("/goal "));
+  assert.deepEqual(packet.risk.forbiddenHits, []);
+  assert.equal(packet.goal_command_card.risk_level, "medium");
+});
+
+test("actual forbidden action still blocks even when another surface is bounded", () => {
+  const packet = buildGoalCommand("deploy prod now, but no browser", { target: "codex" });
+
+  assert.equal(packet.blocked, true);
+  assert.equal(packet.goal_command, null);
+  assert.deepEqual(packet.risk.forbiddenHits.sort(), ["deploy", "prod"]);
+});
+
 test("CLI writes machine-readable goal artifacts", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "reprompter-goal-"));
   const result = spawnSync(process.execPath, [

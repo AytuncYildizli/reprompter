@@ -158,3 +158,41 @@ test("reverse triggers take priority over multi-agent triggers", () => {
   assert.equal(result.mode, "reverse");
   assert.equal(result.profile, "reverse");
 });
+
+// --- Workflow-preflight lane tests ---
+
+test("routes workflow-preflight triggers to workflow mode", () => {
+  for (const phrase of [
+    "compile to workflow this audit",
+    "workflow preflight for the cache migration",
+    "build a workflow script for the gateway check",
+    "run via workflow tool",
+    "make a workflow for the billing rollup",
+    "set up a dynamic workflow for research",
+  ]) {
+    const result = routeIntent(phrase);
+    assert.equal(result.mode, "workflow", `"${phrase}" should route to workflow`);
+    assert.equal(result.profile, "workflow");
+    assert.equal(result.reason, "workflow-lane-trigger");
+  }
+});
+
+test("workflow lane wins over multi-agent but not reverse or forceSingle", () => {
+  const wins = routeIntent("compile to workflow an engineering swarm audit");
+  assert.equal(wins.mode, "workflow");
+
+  const reverseStillWins = routeIntent("reverse reprompt this; then build a workflow script");
+  assert.equal(reverseStillWins.mode, "reverse");
+
+  const forced = routeIntent("compile to workflow this", { forceSingle: true });
+  assert.equal(forced.mode, "single");
+});
+
+test("existing multi-agent and parallel routing is unaffected by workflow triggers", () => {
+  const swarm = routeIntent("engineering swarm: refactor and migrate api contract");
+  assert.equal(swarm.mode, "multi-agent");
+  assert.equal(swarm.profile, "engineering-swarm");
+
+  const parallelStill = routeIntent("run frontend and backend investigations in parallel");
+  assert.equal(parallelStill.mode, "multi-agent");
+});

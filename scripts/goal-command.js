@@ -66,9 +66,43 @@ function compact(text, max = 720) {
   return `${cleaned.slice(0, max - 1).trim()}.`;
 }
 
+const BOUNDARY_MARKERS = new Set([
+  "no",
+  "not",
+  "without",
+  "avoid",
+  "exclude",
+  "excluding",
+  "forbid",
+  "forbidden",
+  "block",
+  "blocked",
+  "never",
+  "constraint",
+  "constraints",
+  "restriction",
+  "restrictions",
+]);
+
+function hasBoundaryMarkerNear(input, pattern) {
+  const tokens = String(input || "").toLowerCase().match(/[a-z0-9ğüşöçıİ]+/g) || [];
+  for (let index = 0; index < tokens.length; index += 1) {
+    if (tokens[index] !== pattern) continue;
+    const windowBefore = tokens.slice(Math.max(0, index - 5), index);
+    const windowAfter = tokens.slice(index + 1, index + 2);
+    if (windowBefore.concat(windowAfter).some((token) => BOUNDARY_MARKERS.has(token))) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function inferRisk(input) {
   const low = String(input || "").toLowerCase();
-  const hits = FORBIDDEN_PATTERNS.filter((pattern) => new RegExp(`\\b${pattern}\\b`, "i").test(low));
+  const hits = FORBIDDEN_PATTERNS.filter((pattern) => {
+    const present = new RegExp(`\\b${pattern}\\b`, "i").test(low);
+    return present && !hasBoundaryMarkerNear(low, pattern);
+  });
   return {
     level: hits.length > 0 ? "high" : "medium",
     forbiddenHits: hits,
@@ -265,6 +299,7 @@ module.exports = {
   buildCompressedSummary,
   buildExpandedPrompt,
   inferRisk,
+  hasBoundaryMarkerNear,
 };
 
 if (require.main === module) {

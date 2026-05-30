@@ -8,9 +8,9 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-12.5.1-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-12.6.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-209%20passing-2da44e)](#testing)
+[![Tests](https://img.shields.io/badge/tests-224%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 
 RePrompter is a prompt engineering skill for AI coding agents. It takes rough, low-quality prompts and transforms them into structured, high-scoring prompts that produce dramatically better results. Works with Claude Code, OpenClaw, Codex, Grok CLI, Hermes Agent, or any LLM that accepts structured prompts.
@@ -22,7 +22,7 @@ RePrompter is a prompt engineering skill for AI coding agents. It takes rough, l
 
 ---
 
-## Four Output Lanes
+## Five Output Lanes
 
 | Lane | What it does | Trigger |
 |------|-------------|---------|
@@ -30,6 +30,7 @@ RePrompter is a prompt engineering skill for AI coding agents. It takes rough, l
 | **`/goal` preflight** | Codex CLI, Claude Code CLI v2.1.139+, or Hermes Agent: infer intent, build the expanded prompt, then compress it into `/goal <summary of expanded prompt>` | `before /goal`, `for /goal`, `Codex /goal`, `Claude Code /goal`, `Hermes /goal`, `/goal preflight` |
 | **Repromptverse** | Plan a team of 2-5 agents, reprompt each one, execute in parallel, evaluate, retry | `reprompter teams`, `repromptverse`, `smart run` |
 | **Reverse** | Show a great output, extract the prompt DNA that produced it | `reverse reprompt`, `learn from this`, `prompt dna` |
+| **Workflow preflight** | Compile a reprompted task into a runnable Claude `.workflow.js` (pure-literal `meta`, schema returns, bounded retry; ultracode adds adversarial verify + completeness critic); also Repromptverse Option H | `compile to workflow`, `workflow preflight`, `build a workflow script`, `dynamic workflow` |
 
 ---
 
@@ -255,7 +256,7 @@ Rough prompt → Input guard → Quick mode gate → Interview (2-5 questions)
 ```
 Phase 1: Score prompt, interview if needed, plan team, show Plan Cards → user approves
 Phase 2: Write XML prompt per agent (target 8+/10), show quality scorecard
-Phase 3: Execute (tmux / TeamCreate / OpenClaw / Codex / Grok CLI / Hermes Agent / sequential fallback)
+Phase 3: Execute (tmux / TeamCreate / Workflow tool / OpenClaw / Codex / Grok CLI / Hermes Agent / sequential fallback)
 Phase 4: Show Result Cards, evaluate, retry with delta prompts if needed (max 2)
 ```
 
@@ -291,13 +292,13 @@ Exemplar output → EXTRACT structure → ANALYZE task type + domain + tone
 ## Testing
 
 ```bash
-npm run check    # 209 tests + 4 benchmarks
+npm run check    # 224 tests + 4 benchmarks
 npm run test:reverse-engineer  # individual suite example
 ```
 
 | Suite | Tests |
 |-------|------:|
-| Intent router | 22 |
+| Intent router | 25 |
 | Reverse engineer | 43 |
 | Outcome collector | 43 |
 | Strategy learner | 36 |
@@ -309,10 +310,11 @@ npm run test:reverse-engineer  # individual suite example
 | Flywheel E2E | 5 |
 | Context builder | 3 |
 | Artifact evaluator | 4 |
-| Goal command | 3 |
+| Goal command | 5 |
+| Workflow command | 10 |
 | Telemetry schema/store | 6 |
 | Observability report | 2 |
-| **Total** | **209** |
+| **Total** | **224** |
 
 All benchmarks at 100%: swarm routing (9/9), real-world routing (64/64), artifacts (84/84), flywheel (13/13), provider (9/9).
 
@@ -327,6 +329,7 @@ All benchmarks at 100%: swarm routing (9/9), real-world routing (64/64), artifac
 | Reverse mode | yes | yes | yes | yes | yes | yes |
 | Multi-agent parallel | yes | yes | yes | yes | yes | - |
 | Multi-agent sequential | yes | yes | yes | yes | yes | yes |
+| Workflow preflight / Option H | yes³ | - | - | - | - | - |
 
 ¹ Claude Code `/goal` requires CLI v2.1.139+ (shipped 2026-05-11) and depends on the hooks layer. Under `disableAllHooks` or `allowManagedHooksOnly` in `settings.json`, `/goal` is unavailable on any version — v2.1.140 only upgraded the failure mode from a silent hang to a clear error message. No config flag needed beyond the version pin in environments that permit hooks; managed environments that block hooks must use Single mode for goal-shaped work.
 
@@ -337,6 +340,8 @@ Codex parallel paths: **D1 native subagents** (Codex CLI 0.121.0+, `multi_agent`
 Grok parallel paths: **F1 native subagents** (`spawn_subagent`) or **F2 shell-level** (`grok -p ... &` + `wait`). Grok does not expose `/goal`.
 
 Hermes parallel paths: **G1 `delegate_task` batch** for normal Repromptverse, **G2 shell-level** (`hermes -z` / `hermes chat -q` + background + `wait`) for external orchestration, or **G3 Kanban** for durable multi-profile workflows. See `references/runtime/hermes-agent-runtime.md`.
+
+³ Claude dynamic Workflow tool (**Option H** + the **Workflow preflight** lane): RePrompter compiles the reprompted task into a runnable `.workflow.js` (JS-scripted background fan-out — `agent()`/`parallel()`/`pipeline()` with schema-validated returns and `resumeFromRunId`). Picked at Order 4, just below Option B, because the Workflow tool has no mid-run cross-agent messaging. First-class ultracode (adversarial verify + completeness critic + budget-scaled fleets) with a `--no-ultracode` off-ramp. See `references/runtime/claude-workflow-runtime.md`. Compiler: `scripts/workflow-command.js`.
 
 ---
 

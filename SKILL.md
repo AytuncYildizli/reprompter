@@ -2,26 +2,27 @@
 name: reprompter
 description: |
   Transform rough prompts into structured, high-scoring prompts for coding agents.
-  Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", "before /goal", "for /goal", "/goal preflight", "Codex /goal", "Codex goal prompt", "Claude Code /goal", "Hermes /goal", "reprompter teams", "repromptverse", "smart run", "smart agents", "campaign swarm", "engineering swarm", "ops swarm", "research swarm", multi-agent tasks, audits, parallel work, "reverse reprompt", "learn from this", "extract prompt from", "prompt dna", "prompt genome".
+  Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", "before /goal", "for /goal", "/goal preflight", "Codex /goal", "Codex goal prompt", "Claude Code /goal", "Hermes /goal", "reprompter teams", "repromptverse", "smart run", "smart agents", "campaign swarm", "engineering swarm", "ops swarm", "research swarm", "workflow preflight", "compile to workflow", "build a workflow script", "dynamic workflow", "run via workflow tool", "make a workflow", multi-agent tasks, audits, parallel work, "reverse reprompt", "learn from this", "extract prompt from", "prompt dna", "prompt genome".
   Don't use for simple Q&A, casual chat, or execution-only tasks.
-  Outputs: structured XML/Markdown prompt, before/after score, /goal command card with compressed summary of the expanded prompt for Codex CLI, Claude Code CLI v2.1.139+, or Hermes Agent, optional team brief + per-agent prompts, Agent Cards, Extraction Card.
+  Outputs: structured XML/Markdown prompt, before/after score, /goal command card with compressed summary of the expanded prompt for Codex CLI, Claude Code CLI v2.1.139+, or Hermes Agent, optional team brief + per-agent prompts, Agent Cards, Extraction Card, Workflow Command Card + runnable .workflow.js (Workflow preflight lane / Option H).
   Target score: Single and Goal preflight >= 7/10; Repromptverse per-agent >= 8/10; Reverse >= 7/10.
 compatibility: |
   Single mode works on Claude surfaces, OpenClaw, Codex, Grok CLI, and Hermes Agent.
   `/goal` preflight mode works on Codex CLI (any version exposing the `goals` feature), Claude Code CLI v2.1.139+, and Hermes Agent; all three runtimes accept the same `/goal <objective>` shape. Disabled on Claude surfaces without `/goal` support, OpenClaw, and Grok CLI.
   Repromptverse mode supports Claude Code (TeamCreate or tmux → Option B/A), OpenClaw (sessions_spawn → Option C), Codex CLI (native subagents or `codex exec` → Option D), Grok CLI 4.3+ (spawn_subagent F1 or `grok -p` F2 → Option F), and Hermes Agent (delegate_task G1, shell-level G2, Kanban G3 → Option G). Sequential fallback (Option E) works with any LLM runtime.
+  Workflow preflight lane + Repromptverse Option H target Claude Code's dynamic `Workflow` tool (JS-scripted background fan-out with schema-validated returns and resume); additive, detected by tool presence, with first-class ultracode.
 metadata:
   author: AytuncYildizli
-  version: 12.5.1
+  version: 12.6.0
 ---
 
-# RePrompter v12.5.1
+# RePrompter v12.6.0
 
-> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, or reverse-engineer from great outputs — one skill, four output lanes. **v12.5.1 ships the Hermes install package while preserving Claude Code, Codex, OpenClaw, and Grok CLI behavior.**
+> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.6.0 adds the Workflow preflight lane + Repromptverse Option H (Claude dynamic Workflow tool) with first-class ultracode, preserving all prior Claude Code, Codex, OpenClaw, Grok CLI, and Hermes behavior.**
 
 ---
 
-## Four output lanes
+## Five output lanes
 
 | Lane | Trigger | What happens |
 |------|---------|-------------|
@@ -29,6 +30,7 @@ metadata:
 | **`/goal` preflight** | "before /goal", "for /goal", "Codex /goal", "Claude Code /goal", "Hermes /goal", "/goal preflight", "Codex goal prompt" | Codex CLI, Claude Code CLI v2.1.139+, or Hermes Agent: infer user intent → build expanded prompt → compress into exact `/goal <summary of expanded prompt>` command |
 | **Repromptverse** | "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "campaign swarm", "engineering swarm", "ops swarm", "research swarm" | Dimension Interview → Plan team → Agent Cards → reprompt each agent → execute → Result Cards → evaluate → retry |
 | **Reverse** | "reverse reprompt", "reprompt from example", "learn from this", "extract prompt from", "prompt dna", "prompt genome" | Analyze exemplar → classify → extract prompt DNA → generate XML prompt → score → inject into flywheel |
+| **Workflow preflight** | "workflow preflight", "compile to workflow", "build a workflow script", "dynamic workflow", "run via workflow tool", "make a workflow" | Reprompt task → build expanded prompt → compile to a runnable `.workflow.js` (pure-literal `meta`, schema returns, bounded retry; ultracode adds adversarial verify + completeness critic) → emit Workflow Command Card. Also Repromptverse Phase-3 **Option H**. |
 
 Auto-detection: if task mentions 2+ systems, "audit", or "parallel" → ask: "This looks like a multi-agent task. Want to use Repromptverse mode?"
 
@@ -193,6 +195,149 @@ No feature flag is required for normal `/goal` use. Optional tuning lives in Her
 [goals]
 max_turns = 20
 ```
+
+---
+
+## Lane: Workflow preflight
+
+When the user says "compile to workflow", "build a workflow script", "workflow preflight", "make a workflow", "run via workflow tool", or "dynamic workflow", reprompt the task and compile it into a runnable Claude dynamic Workflow script. This is the execution-compilation sibling of the `/goal` preflight lane: RePrompter builds the expanded prompt first, then emits a `.workflow.js` the user runs via the `Workflow` tool — RePrompter does not run it.
+
+This lane is the same surface as Repromptverse **Option H**; use this lane when the user wants the compiled script directly, and Option H when Phase 3 auto-picks the Workflow tool during a Repromptverse run.
+
+### Compatibility
+
+Single Claude-native surface: requires the `Workflow` tool in the current toolset. There is no `/goal`-style command — the output is a `Workflow({ scriptPath, args })` invocation. Other runtimes (Codex, Grok, Hermes, OpenClaw) use their own Repromptverse options (D/F/G/C) and the `/goal` preflight lane instead.
+
+### Runtime detection
+
+| Signal | Runtime |
+|---|---|
+| A tool named `Workflow` is present in the current toolset | **Claude dynamic Workflow tool** — proceed with this lane |
+| No `Workflow` tool | Fall back to Repromptverse (Option B/A/etc.) or `/goal` preflight |
+
+### Process
+
+1. Treat the input as a team task. Run `routeIntent` — a workflow-lane trigger returns `mode: "workflow"`.
+2. Infer the real intent and build the rich expanded prompt (the XML basis below) with all eight base tags + `<success_criteria>`.
+3. Reprompt one prompt per role (each owns ONE domain, no overlap), exactly as Repromptverse Phase 2.
+4. Compile to a `.workflow.js` via `scripts/workflow-command.js` (`buildWorkflowCommand`): pure-literal `meta`, schema-validated `agent()` returns, `parallel()`/`pipeline()` per the H1/H2 heuristic, `runId`/`taskname` from `args`, `model` omitted, `filter(Boolean)`, bounded delta-retry (max 2/role).
+5. Render the **Workflow Command Card** first, then the emitted script, then the expanded-prompt basis.
+6. High-risk forbidden surfaces (prod/auth/secret/...) block emission — set `blocked: true`, `script: null` — unless explicitly approved (same gate as `/goal`).
+7. Tell the user to run `Workflow({ scriptPath, args })`; resume an interrupted run with `resumeFromRunId` (cached `agent()` prefix short-circuits).
+
+### Workflow Command Card
+
+| Field | Content |
+|---|---|
+| Workflow Command | Exact `Workflow({ scriptPath, args: { taskname, runId } })` invocation |
+| Compiled From | `Expanded RePrompter prompt` |
+| Objective | One sentence naming the reprompted intent |
+| Runtime | `Claude dynamic Workflow tool` |
+| Mode | `Workflow preflight` |
+| Paste Into | `Workflow tool (scriptPath + args), as-is` |
+| Script Path | `/tmp/reprompter-workflow/rpt-{taskname}.workflow.js` |
+| Execution Pattern | `parallel fan-out + bounded delta-retry` (ultracode: `+ adversarial verify + completeness critic`) |
+| Budget | directive total / `inherit` / `none` |
+| Risk Level | `low` / `medium` / `high` |
+| Missing Inputs | Up to 3 unknowns, or `none` |
+| Verification | 2-4 checks the run should surface (per-role scores, missing roles) |
+| Quality | Before score → after score |
+
+Then output the emitted script:
+
+```js
+export const meta = {
+  name: "rpt-{taskname}",
+  description: "{one-line objective}",
+  phases: [
+    { title: "Plan" },
+    { title: "Execute" },
+    { title: "Evaluate" },
+  ],
+}
+
+const taskname = (args && args.taskname) || "rpt-{taskname}"
+const runId = (args && args.runId) || taskname
+
+const FINDINGS_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["role", "findings", "self_score"],
+  properties: {
+    role: { type: "string" },
+    findings: { type: "array", items: { type: "string" } },
+    self_score: { type: "integer", minimum: 1, maximum: 10 },
+  },
+}
+
+const AGENTS = [ /* one reprompted prompt per role; model omitted */ ]
+
+phase("Plan")
+log(`Workflow ${runId}: dispatching ${AGENTS.length} reprompted agents`)
+
+phase("Execute")
+const results = (await parallel(
+  AGENTS.map((a) => () => agent(a.prompt, { label: a.label, phase: "Execute", schema: FINDINGS_SCHEMA }))
+)).filter(Boolean)
+
+phase("Evaluate")
+const ACCEPT = 8
+const final = []
+for (const r of results) {
+  let current = r, attempts = 0
+  while (current && current.self_score < ACCEPT && attempts < 2) {
+    attempts += 1
+    current = await agent(`Previous ${current.role} attempt scored ${current.self_score}/10 (need ${ACCEPT}). Fix the gaps; return the improved structured result.`,
+      { label: `retry:${current.role}`, phase: "Evaluate", schema: FINDINGS_SCHEMA })
+  }
+  if (current) final.push(current)
+}
+
+return {
+  schema_version: "reprompter.workflow_outcome.v1",
+  runId, taskname,
+  results: final,
+  missing: AGENTS.length - final.length,
+  scores: final.map((f) => ({ role: f.role, score: f.self_score })),
+}
+```
+
+Then the expanded-prompt basis (the reprompted XML that authors the workflow):
+
+```xml
+<role>{Workflow architect for this domain}</role>
+<context>
+- Raw operator request, target = Claude dynamic Workflow tool, route mode/profile
+</context>
+<task>{Compile the request into a runnable .workflow.js fan-out.}</task>
+<motivation>{Why this matters}</motivation>
+<requirements>
+- One reprompted agent per role; schema returns are the source of truth.
+- meta pure-literal; runId/taskname from args; bounded retry.
+</requirements>
+<constraints>
+- No wall-clock/randomness in-script; model omitted; filter(Boolean).
+- High-risk forbidden surfaces block emission unless approved.
+</constraints>
+<output_format>A .workflow.js script + a Workflow Command Card.</output_format>
+<success_criteria schema_version="1">
+  <criterion id="schema-returns-source-of-truth" verification_method="manual">
+    <description>In-run data flows through schema-validated agent() returns; tmp files are never read back as a handoff.</description>
+  </criterion>
+</success_criteria>
+```
+
+### Schema-truth + parent-written mirror
+
+The emitted script returns a `reprompter.workflow_outcome.v1` payload; it never reads `/tmp/rpt-{taskname}-{role}.md` back. The **parent** writes those tmp artifacts from the returned objects after the run completes, so the existing Status Line count, Phase-4 evaluation, and `outcome-record.js --role` flywheel path keep working unchanged — and the throwing wall-clock/randomness calls stay out of the sandbox.
+
+### Setup check
+
+Confirm the `Workflow` tool is present in the current toolset (Claude dynamic Workflow runtime). If absent, use Repromptverse Option B/A or the `/goal` preflight lane instead.
+
+Compile with the workflow compiler (`scripts/workflow-command.js`) on the rough task with an `--out-dir`: it writes `workflow-command.json`, the runnable `rpt-{taskname}.workflow.js`, `workflow-command-card.json`, and `reprompter-expanded-prompt.md`. Add `--ultracode` / `--no-ultracode` to force the emission tier.
+
+See `references/workflow-template.md` and `references/runtime/claude-workflow-runtime.md` for the full template and runtime contract.
 
 ---
 
@@ -412,7 +557,7 @@ Raw task in → quality output out. Every agent gets a reprompted prompt.
 
 Phase 1: Score raw prompt, dimension interview if needed, plan team, show Agent Cards (YOU do this, ~45s)
 Phase 2: Write XML-structured prompt per agent (YOU do this, ~2min)
-Phase 3: Launch agents (tmux, TeamCreate, sessions_spawn, Codex, or sequential) (AUTOMATED)
+Phase 3: Launch agents (tmux, TeamCreate, Workflow tool, sessions_spawn, Codex, or sequential) (AUTOMATED)
 Phase 4: Show Result Cards, score, retry if needed (YOU do this)
 ```
 
@@ -646,22 +791,25 @@ If the user explicitly named an option in their request (e.g. "use tmux", "run i
 | 1 | `spawn_subagent` is present **and** at least two of `run_command`, `todo_write`, `ask_user_question` are in the current toolset (unambiguous Grok 4.3+ signature). | **Option F** — Grok CLI native parallel (F1: `spawn_subagent` with `fork_context=true`, `persona`, `capability_mode`; F2: shell-level `grok -p "..." --yolo --sandbox workspace &` then `wait`). Full contract and gotchas in `references/runtime/grok-cli-runtime.md`. |
 | 2 | `delegate_task` is present **and** at least two of `terminal`, `process`, `read_file`, `write_file`, `patch`, `search_files`, `todo`, `skills_list`, or `skill_view` are in the current toolset (Hermes Agent signature). | **Option G** — Hermes Agent native parallel (G1: `delegate_task` batch; G2: shell-level `hermes -z` / `hermes chat -q` then `wait`; G3: Kanban only for durable workflows). Full contract and gotchas in `references/runtime/hermes-agent-runtime.md`. |
 | 3 | **All four** of `TeamCreate`, `Agent`, `SendMessage`, and `TeamDelete` are listed in your current toolset. (Gating on `TeamCreate` alone is not enough — Option B's spawn/shutdown path needs the whole set; without it the run fails mid-execution rather than falling through to another option.) | **Option B** — native Claude Code teams; teammates can message each other; no tmux init or send-keys timing risk |
-| 4 | `sessions_spawn` tool is listed in your current toolset | **Option C** — OpenClaw |
-| 5 | `bash -c 'command -v tmux && { v=$(claude --version 2>/dev/null \| awk "{print \$1}"); [[ "$v" =~ ^(2\.[1-9]\|[3-9]) ]]; }'` exits 0. (Binary presence alone is insufficient — Option A needs `claude` ≥ 2.1 so `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is honoured; older CLIs accept the env var but don't enable team mode.) | **Option A** — tmux + child `claude --model opus`, visible panes |
-| 6 | Running inside Codex (parallel sessions available) | **Option D** |
-| 7 | None of the above | **Option E** — sequential fallback (works with any LLM) |
+| 4 | A tool named `Workflow` is present in the current toolset (Claude dynamic Workflow runtime) — JS-scripted background orchestration with `agent()`/`parallel()`/`pipeline()` and schema-validated returns. Sits **below** Option B because the Workflow tool has **no** mid-run cross-agent messaging. | **Option H** — Claude dynamic Workflow tool; deterministic background fan-out via `pipeline`/`parallel` with schema-return handoffs and resumable runs; no mid-run cross-agent messaging. Full contract in `references/runtime/claude-workflow-runtime.md`. |
+| 5 | `sessions_spawn` tool is listed in your current toolset | **Option C** — OpenClaw |
+| 6 | `bash -c 'command -v tmux && { v=$(claude --version 2>/dev/null \| awk "{print \$1}"); [[ "$v" =~ ^(2\.[1-9]\|[3-9]) ]]; }'` exits 0. (Binary presence alone is insufficient — Option A needs `claude` ≥ 2.1 so `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is honoured; older CLIs accept the env var but don't enable team mode.) | **Option A** — tmux + child `claude --model opus`, visible panes |
+| 7 | Running inside Codex (parallel sessions available) | **Option D** |
+| 8 | None of the above | **Option E** — sequential fallback (works with any LLM) |
 
 After picking, announce the selected option in one short line before starting Phase 3 work, so the user can redirect. Use this shape with the actual option and runtime you selected:
 
-> Auto-picked **Option {letter}** ({runtime}) — {short detection reason}. Override by saying "use Option B", "use Option A (tmux)", "use Option D", "use Option G (Hermes)", or "use Option E" (sequential).
+> Auto-picked **Option {letter}** ({runtime}) — {short detection reason}. Override by saying "use Option B", "use Option H (Workflow)", "use Option A (tmux)", "use Option D", "use Option G (Hermes)", or "use Option E" (sequential).
 
 Why F is first for Grok: when an unambiguous Grok signature is detected (`spawn_subagent` + at least two of the supporting tools), Repromptverse must use Grok-native execution (Option F) to honour the "full Grok runtime support" claim. This check is intentionally strict to prevent false positives on other runtimes. Option B (Claude native teams with cross-agent `SendMessage`) is preferred on Claude Code surfaces because it offers richer inter-agent messaging than Grok subagents currently provide. The rest of the priority order is unchanged.
 
 Why G is next for Hermes: `delegate_task` is a Hermes-specific fork/join primitive. When that tool appears with Hermes' file, terminal, skills, or todo tools, Repromptverse should use the native Hermes path instead of falling through to OpenClaw, tmux, Codex, or sequential mode. Hermes workers receive fresh context, so the parent must pass the full per-agent prompt and artifact path in each task's `context`.
 
+Why H sits just below B on Claude surfaces: both are Claude-native, but the dynamic Workflow tool has **no mid-run cross-agent messaging** — workers cannot talk; data flows only through `pipeline()`/`parallel()` return values. So Option B stays the default when teammates must negotiate during the run (review/audit teams), and Option H wins when you want deterministic background fan-out, schema-validated return handoffs, and resumable runs (the script's `agent()` prefix is cached on `resumeFromRunId`). Full contract in `references/runtime/claude-workflow-runtime.md`.
+
 #### Tool-schema guard (all options)
 
-Before invoking any tool named in Options A–G, verify it appears in your current toolset and that the call signature matches the schema loaded for the current runtime. Modern CLI runtimes reject calls against an unknown tool or a non-matching signature instead of inferring intent. If a named tool is unfamiliar, halt and report back rather than substituting a similar-looking one.
+Before invoking any tool named in Options A–H, verify it appears in your current toolset and that the call signature matches the schema loaded for the current runtime. Modern CLI runtimes reject calls against an unknown tool or a non-matching signature instead of inferring intent. If a named tool is unfamiliar, halt and report back rather than substituting a similar-looking one.
 
 Known pitfalls captured from 4.6 → 4.7 drift in this skill:
 
@@ -971,6 +1119,22 @@ echo "Agents: ✅ $done/$total  ⏳ $((total-done))/$total"
 | You want fresh context per worker without re-ingesting the codebase | D1 |
 | Codex < 0.121.0 or `multi_agent` feature disabled | D2 |
 | Cross-agent messaging required mid-run | Neither — use Option B (TeamCreate in Claude Code) |
+
+#### Option H: Claude dynamic Workflow tool
+
+When a tool named `Workflow` is present in the current toolset (Claude dynamic Workflow runtime), Phase 3 can compile the Phase-2 per-agent prompts into a single runnable `.workflow.js` and run it via `Workflow({ scriptPath, args })`. Picked at Order 4 — **below Option B**, because the Workflow tool has **no mid-run cross-agent messaging**; data flows only through `pipeline()`/`parallel()` return values.
+
+Each Phase-2 reprompted prompt becomes an `agent(prompt, { schema })` call. Three emission patterns:
+
+| Pattern | When | Shape |
+|---|---|---|
+| **H1: `pipeline()` default** | Sequential dependencies (fetch → transform → deploy); each item independent, no barrier | `pipeline(items, stage1, stage2)` |
+| **H2: `parallel()` barrier** | Independent-domain agents whose results are synthesized/evaluated together (the common Repromptverse shape) | `(await parallel(roles.map(r => () => agent(r.prompt, { schema })))).filter(Boolean)` then synthesize |
+| **H3: budget-loop / loop-until-dry** | Unknown-size discovery or `+Nk` budget directive | `while (budget.total && budget.remaining() > 50000) { ... }` / loop until K dry rounds |
+
+Hard rules for the emitted script (full contract: `references/runtime/claude-workflow-runtime.md`): `meta` is a pure literal with `phase()` titles matching `meta.phases`; `runId`/`taskname` come from `args` (never generated in-script — wall-clock and randomness throw and break resume); `model` is omitted so agents inherit the main-loop model; `filter(Boolean)` after every `parallel()`/`pipeline()`. **Schema-validated returns are the single source of truth** — the script never reads the `/tmp/rpt-*.md` files back; the parent writes that compatibility mirror **after** the run returns (so Status Line / Phase-4 / flywheel keep working). High-risk forbidden surfaces (prod/auth/secret/...) block script emission unless explicitly approved.
+
+**Ultracode:** when ultracode is on, the emitted script defaults to the thorough body — adversarial / perspective-diverse verify per finding, a completeness critic, and budget-scaled fleets; a lean off-ramp (`REPROMPTER_ULTRACODE=0` / `--no-ultracode`) keeps trivial reprompts cheap. Compiler: `scripts/workflow-command.js`.
 
 #### Option G: Hermes Agent
 

@@ -28,6 +28,17 @@ const REVERSE_MODE_TRIGGERS = [
   "prompt genome",
 ];
 
+// Workflow-preflight lane (Lane 5). Multi-word phrases ONLY — never the bare
+// word "workflow" (too broad) or "parallel" (already a complexity trigger).
+const WORKFLOW_LANE_TRIGGERS = [
+  "workflow preflight",
+  "compile to workflow",
+  "make a workflow",
+  "build a workflow script",
+  "run via workflow tool",
+  "dynamic workflow",
+];
+
 const MULTI_AGENT_TRIGGERS = [
   "repromptverse",
   "reprompter teams",
@@ -305,6 +316,19 @@ function routeIntent(input, options = {}) {
     };
   }
 
+  // Workflow-preflight lane — explicit, like reverse: wins over multi-agent so
+  // "compile to workflow an engineering swarm audit" routes to the workflow lane.
+  const workflowHit = WORKFLOW_LANE_TRIGGERS.find((trigger) => hasPhrase(text, trigger));
+  if (workflowHit) {
+    return {
+      mode: "workflow",
+      profile: "workflow",
+      score: 100,
+      hits: [workflowHit],
+      reason: "workflow-lane-trigger",
+    };
+  }
+
   const explicitProfile = detectExplicitProfile(text);
   if (explicitProfile) {
     return {
@@ -351,6 +375,7 @@ function routeIntent(input, options = {}) {
 module.exports = {
   PROFILE_PRIORITY,
   REVERSE_MODE_TRIGGERS,
+  WORKFLOW_LANE_TRIGGERS,
   ROUTING_RULES,
   routeIntent,
 };
