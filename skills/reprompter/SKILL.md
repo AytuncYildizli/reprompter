@@ -2,9 +2,9 @@
 name: reprompter
 description: |
   Transform rough prompts into structured, high-scoring prompts for coding agents.
-  Use when: "reprompt", "reprompt this", "clean up this prompt", "structure my prompt", "before /goal", "for /goal", "/goal preflight", "Codex /goal", "Codex goal prompt", "Claude Code /goal", "Hermes /goal", "reprompter teams", "repromptverse", "smart run", "smart agents", "campaign swarm", "engineering swarm", "ops swarm", "research swarm", "workflow preflight", "compile to workflow", "build a workflow script", "dynamic workflow", "run via workflow tool", "make a workflow", multi-agent tasks, audits, parallel work, "reverse reprompt", "learn from this", "extract prompt from", "prompt dna", "prompt genome".
+  Use when: "reprompt", "clean up this prompt", "before /goal", "Codex /goal", "Claude Code /goal", "Hermes /goal", "repromptverse", "reprompter teams", "smart run", "engineering/ops/research/marketing swarm", "compile to workflow", "workflow preflight", "dynamic workflow", multi-agent tasks, audits, parallel work, "reverse reprompt", "prompt dna", "extract prompt from".
   Don't use for simple Q&A, casual chat, or execution-only tasks.
-  Outputs: structured XML/Markdown prompt, before/after score, /goal command card with compressed summary of the expanded prompt for Codex CLI, Claude Code CLI v2.1.139+, or Hermes Agent, optional team brief + per-agent prompts, Agent Cards, Extraction Card, Workflow Command Card + runnable .workflow.js (Workflow preflight lane / Option H).
+  Outputs: structured XML/Markdown prompt + before/after score; /goal command card (Codex/Claude Code/Hermes); optional team brief + per-agent prompts + Agent Cards; Reverse Extraction Card; Workflow Command Card + runnable .workflow.js (Workflow preflight lane / Option H).
   Target score: Single and Goal preflight >= 7/10; Repromptverse per-agent >= 8/10; Reverse >= 7/10.
 compatibility: |
   Single mode works on Claude surfaces, OpenClaw, Codex, Grok CLI, and Hermes Agent.

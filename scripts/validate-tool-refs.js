@@ -122,6 +122,26 @@ function findAll(content, pattern) {
   return hits;
 }
 
+// Runtimes (notably Codex) reject a SKILL.md whose frontmatter `description`
+// exceeds 1024 chars and silently skip the skill (regression in v12.6.0:
+// 978 -> 1198 chars). Guard both the root and the packaged Hermes copy.
+const SKILL_DESC_CAP = 1024;
+
+function descriptionLength(relPath) {
+  const full = path.join(REPO_ROOT, relPath);
+  if (!fs.existsSync(full)) return null;
+  const lines = fs.readFileSync(full, "utf8").split("\n");
+  const i = lines.findIndex((l) => /^description:/.test(l));
+  if (i < 0) return null;
+  const head = lines[i].replace(/^description:\s*/, "");
+  if (head && !/^[|>]/.test(head)) return head.replace(/^["']|["']$/g, "").length; // inline scalar
+  const desc = [];
+  for (let j = i + 1; j < lines.length && !/^[A-Za-z_]+:/.test(lines[j]); j += 1) {
+    desc.push(lines[j].replace(/^ {2}/, ""));
+  }
+  return desc.join("\n").length;
+}
+
 function main() {
   console.log("Validating tool references in SKILL.md + references/ + scripts/ ...\n");
 
@@ -150,11 +170,19 @@ function main() {
     }
   }
 
+  for (const skill of ["SKILL.md", "skills/reprompter/SKILL.md"]) {
+    const len = descriptionLength(skill);
+    if (len !== null && len > SKILL_DESC_CAP) {
+      console.log(`FAIL: ${skill} description is ${len} chars (max ${SKILL_DESC_CAP}); runtimes like Codex skip the skill above this. Trim the description.\n`);
+      failCount += 1;
+    }
+  }
+
   if (failCount === 0) {
     console.log("OK: no tool-reference drift detected.");
     process.exit(0);
   }
-  console.log(`FAIL: ${failCount} drift match(es). Fix the matches above.`);
+  console.log(`FAIL: ${failCount} issue(s). Fix the matches above.`);
   process.exit(1);
 }
 

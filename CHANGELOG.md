@@ -42,6 +42,7 @@ Ultracode is a **compile-time switch** (`REPROMPTER_ULTRACODE` / `--ultracode`, 
 
 - `Workflow`-tool detection is by tool presence; absent it, RePrompter falls back to Repromptverse Option B/A or the `/goal` preflight lane.
 - Design rationale lives in `docs/dynamic-workflow-expansion.md`; runtime contract in `references/runtime/claude-workflow-runtime.md`.
+- **Fix:** the v12.6.0 trigger additions pushed the SKILL.md frontmatter `description` to 1198 chars; runtimes with a 1024 cap (e.g. Codex) silently skipped the skill. Trimmed to 888 chars, and `validate:tool-refs` now fails if the (root or packaged) description exceeds 1024 so it can't regress.
 
 ## v12.5.1 (2026-05-18) — Hermes install package
 
