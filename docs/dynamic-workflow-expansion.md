@@ -448,6 +448,16 @@ Ultracode is a standing opt-in that flips the compiler defaults via a single tog
 
 The ultracode deep pattern catalog lives in `references/runtime/claude-workflow-runtime.md`, so `SKILL.md` gains only one sentence in the Option H subsection and the published surface stays small.
 
+### As shipped (v12.6.0) — reconciliation with the design above
+
+The sections above describe the *design*. The merged implementation simplified the budget axis and made the safety axis stricter, after 21 droid + Codex review cycles. Treat the following as authoritative:
+
+- **No budget-scaled fleet.** The compiler does **not** size the fan-out by `Math.floor(budget.total / 100000)`. The roster is fixed to the reprompted roles. Budget scaling is expressed two ways instead: hard **agent-count caps** (`maxItems: 20` findings per role, `VERIFY_CAP = 24` → ≤72 verify agents) keep a wide audit under the 1000-agent lifetime cap, and the **completeness critic is gated** on `!budget.total || budget.remaining() > 30000` so the extra pass dials off near the ceiling. There is no `while`-loop-until-budget in the emitted script.
+- **Verify shape:** exactly **3 perspective-diverse lenses** per finding (`correctness` / `completeness` / `risk`), kept on **≥2/3 non-refutation**; verifiers default `refuted=true` when uncertain. No `loop-until-dry` finder rounds shipped.
+- **Budget cues are explicit-only.** `parseBudget` accepts the `+Nk` form and the `budget:` / `token budget` keyword (clamped to 100M). A bare `Nk tokens` is deliberately **not** a budget cue — it is ambiguous with token exfiltration (`extract 200k tokens`) and must reach the secret-surface gate. The parsed total rides the command as `args.budget`; the script sources `budgetTotal = budget.total || args.budget`, preferring the live Workflow `budget` global over the args hint.
+- **Risk-gate hardening (shared `inferRisk`):** occurrence-aware governance, plural surfaces, `block`/`blocked` dropped as markers, clause breaks (`; : . ! ?` + comma) stop the walk, no hop cap on same-clause lists, and an exfiltration re-check (`extract`/`read`/`steal` + `tokens` ⇒ high-risk even after budget stripping).
+- **CLI/safety:** `script_path` always matches where the script is written; atomic `O_NOFOLLOW` (0600) write guards predictable-`/tmp` symlink clobber; hash-suffixed task names prevent overwrite / wrong-run resume; the in-script taskname fallback equals the bare `args` value; the lane preserves underlying team/profile routing.
+
 ---
 
 ## 9. Artifact-contract decision: schema returns as source of truth
