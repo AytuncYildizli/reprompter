@@ -219,6 +219,12 @@ test("inputs sharing the first four words still get distinct task names", () => 
   assert.notEqual(a.script_path, b.script_path);
 });
 
+test("the trigger phrase does not leak into the emitted script (agents use the stripped task)", () => {
+  const packet = buildWorkflowCommand("compile to workflow fix the pagination bug on the results page");
+  assert.ok(!packet.workflow_script.includes("compile to workflow"), "trigger must not appear in the script");
+  assert.ok(/pagination/.test(packet.workflow_script), "actual task terms must reach the agents");
+});
+
 test("writeScript refuses to follow a symlink at the script path (/tmp clobber guard)", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "reprompter-wf-sym-"));
   const victim = path.join(dir, "victim.txt");

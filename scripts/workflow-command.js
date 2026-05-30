@@ -171,7 +171,7 @@ function buildWorkflowSuccessCriteria(taskLabel) {
       id: "safety-boundaries-held",
       verification_method: "rule",
       description:
-        "The run does not perform forbidden prod/auth/browser/cookie/payment/secret actions without explicit approval.",
+        "High-risk forbidden surfaces (prod/auth/browser/cookie/payment/secret) block script emission rather than producing a runnable workflow; there is no in-tool approval override.",
       rule: { type: "regex_absent", pattern: "\\b(prod deploy|read cookies|extract token|payment charge)\\b" },
     },
     {
@@ -355,7 +355,7 @@ function buildWorkflowCommand(input, options = {}) {
   const taskLabel = teamRoute.mode === "multi-agent" ? `${(teamRoute.profile || "repromptverse").replace(/-/g, " ")} workflow` : "bounded workflow";
   const criteria = buildWorkflowSuccessCriteria(taskLabel);
   const expandedPrompt = buildExpandedPrompt(input, "claude-workflow", teamRoute, risk, taskLabel, criteria, options.repo);
-  const agents = buildDefaultAgents(input, teamRoute);
+  const agents = buildDefaultAgents(teamInput, teamRoute);
 
   // Keep the embedded command path in sync with where writeArtifacts() actually
   // writes the script: derive from --out-dir when no explicit --script-path is given.
@@ -366,7 +366,7 @@ function buildWorkflowCommand(input, options = {}) {
   const blocked = risk.level === "high";
   const script = blocked
     ? null
-    : buildWorkflowScript({ taskname, description: input, agents, ultracode });
+    : buildWorkflowScript({ taskname, description: teamInput, agents, ultracode });
 
   // Surface which forbidden surfaces were neutralized by a boundary marker vs left active.
   const boundaryNotes = FORBIDDEN_PATTERNS
@@ -456,16 +456,16 @@ function buildWorkflowCommand(input, options = {}) {
 function writeScript(packet) {
   if (!packet.workflow_script || !packet.script_path) return;
   fs.mkdirSync(path.dirname(packet.script_path), { recursive: true, mode: 0o700 });
-  // Predictable-/tmp-path hardening: refuse to follow a pre-existing symlink at the
-  // target so an attacker can't redirect the write to clobber another file.
+  // Atomic no-follow write (predictable-/tmp clobber guard): O_NOFOLLOW makes open()
+  // fail with ELOOP if the final path component is a symlink, closing the TOCTOU race
+  // that a separate lstat-then-write would leave open.
+  const flags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_TRUNC | fs.constants.O_NOFOLLOW;
+  const fd = fs.openSync(packet.script_path, flags, 0o600);
   try {
-    if (fs.lstatSync(packet.script_path).isSymbolicLink()) {
-      throw new Error(`refusing to write workflow script through a symlink: ${packet.script_path}`);
-    }
-  } catch (e) {
-    if (e.code !== "ENOENT") throw e;
+    fs.writeFileSync(fd, `${packet.workflow_script}\n`);
+  } finally {
+    fs.closeSync(fd);
   }
-  fs.writeFileSync(packet.script_path, `${packet.workflow_script}\n`);
 }
 
 // The JSON/card/expanded-prompt bundle is --out-dir-only. The script itself is
