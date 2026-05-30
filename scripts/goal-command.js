@@ -84,14 +84,27 @@ const BOUNDARY_MARKERS = new Set([
   "restrictions",
 ]);
 
+const BOUNDARY_CONNECTORS = new Set(["or", "and", "nor"]);
+
+function isForbiddenSurfaceToken(token) {
+  return FORBIDDEN_PATTERNS.some((p) => token.includes(p));
+}
+
+// A boundary marker only CLEARS a forbidden surface when it GOVERNS that surface
+// directly: walking back from the forbidden token, everything in between must be
+// another forbidden surface or a list connector (the "no prod/merge/deploy" shape).
+// A filler or verb in between (e.g. "do not skip the prod deploy") means the
+// negation governs the verb, not the surface, so the hit must stand. This avoids
+// the risk-gate bypass where any nearby negation silently un-blocked prod/auth/etc.
 function hasBoundaryMarkerNear(input, pattern) {
   const tokens = String(input || "").toLowerCase().match(/[a-z0-9ğüşöçıİ]+/g) || [];
   for (let index = 0; index < tokens.length; index += 1) {
     if (tokens[index] !== pattern) continue;
-    const windowBefore = tokens.slice(Math.max(0, index - 5), index);
-    const windowAfter = tokens.slice(index + 1, index + 2);
-    if (windowBefore.concat(windowAfter).some((token) => BOUNDARY_MARKERS.has(token))) {
-      return true;
+    for (let back = index - 1, hops = 0; back >= 0 && hops < 6; back -= 1, hops += 1) {
+      const tok = tokens[back];
+      if (BOUNDARY_MARKERS.has(tok)) return true;
+      if (isForbiddenSurfaceToken(tok) || BOUNDARY_CONNECTORS.has(tok)) continue;
+      break;
     }
   }
   return false;

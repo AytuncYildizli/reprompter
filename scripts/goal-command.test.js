@@ -54,6 +54,18 @@ test("actual forbidden action still blocks even when another surface is bounded"
   assert.deepEqual(packet.risk.forbiddenHits.sort(), ["deploy", "prod"]);
 });
 
+test("a negated verb near a forbidden surface does NOT clear the risk gate", () => {
+  // "not" governs the verb "skip", not the surface "prod deploy" — must stay blocked.
+  const p1 = buildGoalCommand("do not skip the prod deploy step, run it", { target: "codex" });
+  assert.equal(p1.blocked, true);
+  assert.ok(p1.risk.forbiddenHits.includes("prod") && p1.risk.forbiddenHits.includes("deploy"));
+
+  // "never" governs "hesitate", not "merge"/"prod".
+  const p2 = buildGoalCommand("never hesitate to merge to prod", { target: "codex" });
+  assert.equal(p2.blocked, true);
+  assert.ok(p2.risk.forbiddenHits.includes("merge") && p2.risk.forbiddenHits.includes("prod"));
+});
+
 test("CLI writes machine-readable goal artifacts", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "reprompter-goal-"));
   const result = spawnSync(process.execPath, [
