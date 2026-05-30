@@ -433,9 +433,13 @@ function buildWorkflowCommand(input, options = {}) {
 function writeArtifacts(packet, outDir) {
   fs.mkdirSync(outDir, { recursive: true });
   fs.writeFileSync(path.join(outDir, "workflow-command.json"), `${JSON.stringify(packet, null, 2)}\n`);
-  const scriptName = `rpt-${packet.taskname}.workflow.js`;
+  // Write the runnable script to the exact path the emitted command references
+  // (packet.script_path), so an explicit --script-path can't diverge from where
+  // the file actually lands. Other artifacts stay in the out-dir.
+  const scriptTarget = packet.script_path || path.join(outDir, `rpt-${packet.taskname}.workflow.js`);
+  fs.mkdirSync(path.dirname(scriptTarget), { recursive: true });
   fs.writeFileSync(
-    path.join(outDir, scriptName),
+    scriptTarget,
     packet.workflow_script ? `${packet.workflow_script}\n` : `// BLOCKED: high-risk forbidden surfaces ${packet.risk.forbiddenHits.join(",")}\n`
   );
   fs.writeFileSync(path.join(outDir, "workflow-command-card.json"), `${JSON.stringify(packet.workflow_command_card, null, 2)}\n`);

@@ -153,3 +153,23 @@ test("CLI writes the four workflow artifacts", () => {
   const emitted = fs.readFileSync(writtenScript, "utf8");
   assertDeterministic(emitted);
 });
+
+test("CLI with both --out-dir and --script-path writes the script where the command points", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "reprompter-wf-od-"));
+  const scriptDir = fs.mkdtempSync(path.join(os.tmpdir(), "reprompter-wf-sp-"));
+  const scriptPath = path.join(scriptDir, "custom.workflow.js");
+  const result = spawnSync(process.execPath, [
+    path.join(__dirname, "workflow-command.js"),
+    "--input", "compile to workflow an audit of the gateway",
+    "--out-dir", dir,
+    "--script-path", scriptPath,
+  ], { encoding: "utf8" });
+
+  assert.equal(result.status, 0, result.stderr);
+  const packet = JSON.parse(fs.readFileSync(path.join(dir, "workflow-command.json"), "utf8"));
+  // The explicit --script-path must be both where the command points AND where the file lands.
+  assert.equal(packet.script_path, scriptPath);
+  assert.ok(packet.command.includes(scriptPath));
+  assert.ok(fs.existsSync(scriptPath), "runnable script written to the explicit --script-path");
+  assert.ok(fs.existsSync(path.join(dir, "workflow-command-card.json")), "other artifacts still in out-dir");
+});
