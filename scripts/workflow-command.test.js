@@ -144,6 +144,12 @@ test("CLI writes the four workflow artifacts", () => {
   assert.ok(fs.existsSync(path.join(dir, `rpt-${packet.taskname}.workflow.js`)));
   assert.ok(fs.existsSync(path.join(dir, "workflow-command-card.json")));
   assert.ok(fs.existsSync(path.join(dir, "reprompter-expanded-prompt.md")));
-  const emitted = fs.readFileSync(path.join(dir, `rpt-${packet.taskname}.workflow.js`), "utf8");
+  // The embedded command must point at the script that was actually written into --out-dir
+  // (not the default /tmp path). Otherwise the pasted Workflow({ scriptPath }) targets a missing file.
+  const writtenScript = path.join(dir, `rpt-${packet.taskname}.workflow.js`);
+  assert.equal(packet.script_path, writtenScript);
+  assert.ok(packet.command.includes(writtenScript));
+  assert.ok(fs.existsSync(packet.script_path));
+  const emitted = fs.readFileSync(writtenScript, "utf8");
   assertDeterministic(emitted);
 });

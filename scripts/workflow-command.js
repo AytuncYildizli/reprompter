@@ -337,7 +337,12 @@ function buildWorkflowCommand(input, options = {}) {
   const expandedPrompt = buildExpandedPrompt(input, "claude-workflow", route, risk, taskLabel, criteria, options.repo);
   const agents = buildDefaultAgents(input, route);
 
-  const scriptPath = options.scriptPath || `/tmp/reprompter-workflow/rpt-${taskname}.workflow.js`;
+  // Keep the embedded command path in sync with where writeArtifacts() actually
+  // writes the script: derive from --out-dir when no explicit --script-path is given.
+  const scriptPath = options.scriptPath
+    || (options.outDir
+      ? path.join(options.outDir, `rpt-${taskname}.workflow.js`)
+      : `/tmp/reprompter-workflow/rpt-${taskname}.workflow.js`);
   const blocked = risk.level === "high";
   const script = blocked
     ? null
@@ -451,6 +456,7 @@ function main() {
     repo: args.repo,
     ultracode: args.ultracode,
     scriptPath: args.scriptPath,
+    outDir: args.outDir,
   });
   if (args.outDir) writeArtifacts(packet, args.outDir);
   if (args.format === "text") {
