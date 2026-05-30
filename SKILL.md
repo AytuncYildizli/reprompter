@@ -222,7 +222,7 @@ Single Claude-native surface: requires the `Workflow` tool in the current toolse
 3. Reprompt one prompt per role (each owns ONE domain, no overlap), exactly as Repromptverse Phase 2.
 4. Compile to a `.workflow.js` via `scripts/workflow-command.js` (`buildWorkflowCommand`): pure-literal `meta`, schema-validated `agent()` returns, `parallel()`/`pipeline()` per the H1/H2 heuristic, `runId`/`taskname` from `args`, `model` omitted, `filter(Boolean)`, bounded delta-retry (max 2/role).
 5. Render the **Workflow Command Card** first, then the emitted script, then the expanded-prompt basis.
-6. High-risk forbidden surfaces (prod/auth/secret/...) block emission — set `blocked: true`, `script: null` — unless explicitly approved (same gate as `/goal`).
+6. High-risk forbidden surfaces (prod/auth/secret/...) block emission — set `blocked: true`, `script: null`. There is **no in-tool override**; rescope the task (remove the high-risk surface) to compile a script. Same block-gate as `/goal`.
 7. Tell the user to run `Workflow({ scriptPath, args })`; resume an interrupted run with `resumeFromRunId` (cached `agent()` prefix short-circuits).
 
 ### Workflow Command Card
@@ -317,7 +317,7 @@ Then the expanded-prompt basis (the reprompted XML that authors the workflow):
 </requirements>
 <constraints>
 - No wall-clock/randomness in-script; model omitted; filter(Boolean).
-- High-risk forbidden surfaces block emission unless approved.
+- High-risk forbidden surfaces block emission (no in-tool override; rescope to proceed).
 </constraints>
 <output_format>A .workflow.js script + a Workflow Command Card.</output_format>
 <success_criteria schema_version="1">
@@ -1132,7 +1132,7 @@ Each Phase-2 reprompted prompt becomes an `agent(prompt, { schema })` call. Thre
 | **H2: `parallel()` barrier** | Independent-domain agents whose results are synthesized/evaluated together (the common Repromptverse shape) | `(await parallel(roles.map(r => () => agent(r.prompt, { schema })))).filter(Boolean)` then synthesize |
 | **H3: budget-loop / loop-until-dry** | Unknown-size discovery or `+Nk` budget directive | `while (budget.total && budget.remaining() > 50000) { ... }` / loop until K dry rounds |
 
-Hard rules for the emitted script (full contract: `references/runtime/claude-workflow-runtime.md`): `meta` is a pure literal with `phase()` titles matching `meta.phases`; `runId`/`taskname` come from `args` (never generated in-script — wall-clock and randomness throw and break resume); `model` is omitted so agents inherit the main-loop model; `filter(Boolean)` after every `parallel()`/`pipeline()`. **Schema-validated returns are the single source of truth** — the script never reads the `/tmp/rpt-*.md` files back; the parent writes that compatibility mirror **after** the run returns (so Status Line / Phase-4 / flywheel keep working). High-risk forbidden surfaces (prod/auth/secret/...) block script emission unless explicitly approved.
+Hard rules for the emitted script (full contract: `references/runtime/claude-workflow-runtime.md`): `meta` is a pure literal with `phase()` titles matching `meta.phases`; `runId`/`taskname` come from `args` (never generated in-script — wall-clock and randomness throw and break resume); `model` is omitted so agents inherit the main-loop model; `filter(Boolean)` after every `parallel()`/`pipeline()`. **Schema-validated returns are the single source of truth** — the script never reads the `/tmp/rpt-*.md` files back; the parent writes that compatibility mirror **after** the run returns (so Status Line / Phase-4 / flywheel keep working). High-risk forbidden surfaces (prod/auth/secret/...) block script emission (`blocked: true`, `script: null`); there is no in-tool override, so rescope the task to proceed.
 
 **Ultracode:** when ultracode is on, the emitted script defaults to the thorough body — adversarial / perspective-diverse verify per finding, a completeness critic, and budget-scaled fleets; a lean off-ramp (`REPROMPTER_ULTRACODE=0` / `--no-ultracode`) keeps trivial reprompts cheap. Compiler: `scripts/workflow-command.js`.
 

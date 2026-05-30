@@ -10,15 +10,15 @@
   },
   "source": {
     "root_skill": "SKILL.md",
-    "root_skill_sha256": "b5bbc0ec19198f691031c1a7d07b235e0da7175fea945fcd29abdfe08b97f02f",
+    "root_skill_sha256": "f511d892ea6dd8733f54f6c7f98b0317e6ed2f22ae6b1eaa73bcd5e0c576e543",
     "sanitizer": "scripts/hermes-sanitizer.json",
     "sanitizer_sha256": "6c101955d07f6b16da8e65eeb70e1ef60e7d6f73b173549cae6982df1eb9236e"
   },
   "files": [
     {
       "path": "SKILL.md",
-      "source_sha256": "b5bbc0ec19198f691031c1a7d07b235e0da7175fea945fcd29abdfe08b97f02f",
-      "generated_sha256": "1ddea02546a6d3a3ae7258fc7678eec0a70b000d21a62586856ff14f2916beb5"
+      "source_sha256": "f511d892ea6dd8733f54f6c7f98b0317e6ed2f22ae6b1eaa73bcd5e0c576e543",
+      "generated_sha256": "84d747ed1fc3482e71562e13c8f75b6f6632143c3600500e389eba4c27a3a3eb"
     },
     {
       "path": "references/api-template.md",
@@ -157,8 +157,8 @@
     },
     {
       "path": "references/workflow-template.md",
-      "source_sha256": "ccf79440f0885137bd099c6e7c47dfe40d552ad53885891f1946c87b5c4b3daa",
-      "generated_sha256": "2da99e1b35442480a27399ce29e61e01eb2f21e6c2c558d35ae08c6abaede46f"
+      "source_sha256": "800e3ba59dd9a82fecac815ace32cece6dd24bebc435139eb0cceb321846914c",
+      "generated_sha256": "8e017a4a864bd313628059495090e8890bdd5ad41f84b0fa06ae9508b2b495c3"
     }
   ]
 }

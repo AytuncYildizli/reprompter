@@ -211,3 +211,26 @@ test("distinct workflow inputs get distinct task names (no /tmp overwrite/resume
   // task terms survive (not just the trigger/profile)
   assert.ok(a.taskname.includes("billing") && b.taskname.includes("reporting"));
 });
+
+test("inputs sharing the first four words still get distinct task names", () => {
+  const a = buildWorkflowCommand("compile to workflow audit the billing module for invoices");
+  const b = buildWorkflowCommand("compile to workflow audit the billing module for refunds");
+  assert.notEqual(a.taskname, b.taskname);
+  assert.notEqual(a.script_path, b.script_path);
+});
+
+test("writeScript refuses to follow a symlink at the script path (/tmp clobber guard)", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "reprompter-wf-sym-"));
+  const victim = path.join(dir, "victim.txt");
+  fs.writeFileSync(victim, "do not overwrite");
+  const scriptPath = path.join(dir, "link.workflow.js");
+  fs.symlinkSync(victim, scriptPath);
+  const result = spawnSync(process.execPath, [
+    path.join(__dirname, "workflow-command.js"),
+    "--input", "compile to workflow an audit of the gateway",
+    "--script-path", scriptPath,
+  ], { encoding: "utf8" });
+
+  assert.notEqual(result.status, 0, "should error rather than follow the symlink");
+  assert.equal(fs.readFileSync(victim, "utf8"), "do not overwrite", "victim file must be untouched");
+});

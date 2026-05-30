@@ -22,6 +22,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const crypto = require("node:crypto");
 const { routeIntent, WORKFLOW_LANE_TRIGGERS } = require("./intent-router");
 const { evaluateArtifact } = require("./artifact-evaluator");
 const { fingerprint } = require("./recipe-fingerprint");
@@ -112,14 +113,16 @@ function slugify(text, fallback = "task") {
   return slug || fallback;
 }
 
-// `input` here is the trigger-stripped task text. Slug the actual task terms so
-// distinct jobs get distinct names (the profile alone collapses them, which would
-// overwrite the default /tmp script and mis-target resumeFromRunId).
+// `input` here is the trigger-stripped task text. Slug the actual task terms AND
+// append a short deterministic hash of the full normalized input, so jobs that
+// share the first four slug words still get distinct names/script paths/runIds
+// (no /tmp overwrite or wrong-run resume). Same input -> same name (resume-safe).
 function inferTaskname(input, route) {
-  const base = slugify(input, "");
-  if (base) return base;
-  if (route && route.profile && route.profile !== "single") return slugify(route.profile);
-  return "task";
+  const normalized = String(input || "").toLowerCase().replace(/\s+/g, " ").trim();
+  let base = slugify(input, "");
+  if (!base) base = route && route.profile && route.profile !== "single" ? slugify(route.profile) : "task";
+  const suffix = crypto.createHash("sha1").update(normalized).digest("hex").slice(0, 6);
+  return `${base}-${suffix}`;
 }
 
 // Parse an optional budget directive ("+500k", "budget: 500000", "200k tokens").
@@ -452,7 +455,16 @@ function buildWorkflowCommand(input, options = {}) {
 // Workflow({ scriptPath }) is runnable in every mode. No-op when blocked (no script).
 function writeScript(packet) {
   if (!packet.workflow_script || !packet.script_path) return;
-  fs.mkdirSync(path.dirname(packet.script_path), { recursive: true });
+  fs.mkdirSync(path.dirname(packet.script_path), { recursive: true, mode: 0o700 });
+  // Predictable-/tmp-path hardening: refuse to follow a pre-existing symlink at the
+  // target so an attacker can't redirect the write to clobber another file.
+  try {
+    if (fs.lstatSync(packet.script_path).isSymbolicLink()) {
+      throw new Error(`refusing to write workflow script through a symlink: ${packet.script_path}`);
+    }
+  } catch (e) {
+    if (e.code !== "ENOENT") throw e;
+  }
   fs.writeFileSync(packet.script_path, `${packet.workflow_script}\n`);
 }
 

@@ -33,7 +33,7 @@ Use this template for the **Workflow preflight** lane (Lane 5) and Repromptverse
 - No wall-clock or randomness inside the script (they throw and break resume).
 - model omitted on every agent() call (inherit main-loop model; keeps the model-pin linter green).
 - filter(Boolean) after every parallel()/pipeline().
-- High-risk forbidden surfaces (prod/auth/secret/...) block emission unless explicitly approved.
+- High-risk forbidden surfaces (prod/auth/secret/...) block emission (`blocked: true`, `script: null`); there is no in-tool override, so rescope the task to compile a script.
 </constraints>
 
 <output_format>A single .workflow.js script string plus a Workflow Command Card (12 fields).</output_format>
