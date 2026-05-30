@@ -91,6 +91,15 @@ test("ultracode mode emits adversarial-verify + completeness critic, still deter
   assertValidSyntax(packet.workflow_script);
 });
 
+test("emitted taskname fallback matches the command args (resume id stability)", () => {
+  const packet = buildWorkflowCommand("compile to workflow audit the billing module");
+  assert.ok(packet.command.includes(`taskname: "${packet.taskname}"`), "command passes bare taskname");
+  assert.ok(
+    packet.workflow_script.includes(`const taskname = (args && args.taskname) || "${packet.taskname}"`),
+    "in-script fallback equals the bare args value (no rpt- drift on resume)"
+  );
+});
+
 test("buildWorkflowScript meta phase titles never drift from phase() calls", () => {
   const script = buildWorkflowScript({
     taskname: "drift-check",

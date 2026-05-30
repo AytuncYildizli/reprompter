@@ -242,7 +242,9 @@ function buildWorkflowScript({ taskname, description, agents, ultracode }) {
   L.push("}");
   L.push("");
   L.push("// runId + taskname come from args — never generated in-script (wall-clock/randomness throw here).");
-  L.push('const taskname = (args && args.taskname) || "rpt-' + taskname + '"');
+  // Fallback MUST equal the bare value the command passes in args.taskname, so a
+  // resume without args keeps the same ids (no /tmp mirror / status drift).
+  L.push('const taskname = (args && args.taskname) || "' + taskname + '"');
   L.push("const runId = (args && args.runId) || taskname");
   L.push("// Budget directive (from the reprompt) flows in via args.budget; prefer the live");
   L.push("// budget global the harness sets from the run's own +Nk directive when present.");
