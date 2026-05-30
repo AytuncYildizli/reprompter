@@ -94,6 +94,16 @@ test("a forbidden surface stays gated if ANY occurrence is unbounded (occurrence
   assert.ok(p2.risk.forbiddenHits.includes("token"));
 });
 
+test("a boundary marker does not bridge a clause break to a later action", () => {
+  // "no prod" governs only its own clause; the separate "deploy now" must gate.
+  const p = buildGoalCommand("no prod; deploy now", { target: "codex" });
+  assert.equal(p.blocked, true);
+  assert.ok(p.risk.forbiddenHits.includes("deploy"));
+  // sanity: the legitimate same-clause list still clears
+  const ok = buildGoalCommand("ship it; no prod/merge/deploy please", { target: "codex" });
+  assert.deepEqual(ok.risk.forbiddenHits, []);
+});
+
 test("CLI writes machine-readable goal artifacts", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "reprompter-goal-"));
   const result = spawnSync(process.execPath, [

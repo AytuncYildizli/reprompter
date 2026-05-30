@@ -94,12 +94,24 @@ function isForbiddenSurfaceToken(token) {
 // A filler or verb in between (e.g. "do not skip the prod deploy") means the
 // negation governs the verb, not the surface, so the hit must stand. This avoids
 // the risk-gate bypass where any nearby negation silently un-blocked prod/auth/etc.
+// Clause/sentence breaks are preserved as a sentinel token so a boundary clause
+// cannot govern a later action across them ("no prod; deploy now" must gate deploy).
+const CLAUSE_BREAK = "||";
+
+function tokenizeWithClauses(input) {
+  return String(input || "")
+    .toLowerCase()
+    .replace(/[;:.!?\n]+/g, ` ${CLAUSE_BREAK} `)
+    .match(/[a-z0-9ğüşöçıİ]+|\|\|/g) || [];
+}
+
 // Does the boundary marker govern the forbidden surface at `index`? Walk back over
 // other forbidden surfaces + list connectors; a marker immediately governing the
-// run clears it, a filler/verb in between does not.
+// run clears it. A filler/verb OR a clause break in between means the hit stands.
 function occurrenceGoverned(tokens, index) {
   for (let back = index - 1, hops = 0; back >= 0 && hops < 6; back -= 1, hops += 1) {
     const tok = tokens[back];
+    if (tok === CLAUSE_BREAK) break;
     if (BOUNDARY_MARKERS.has(tok)) return true;
     if (isForbiddenSurfaceToken(tok) || BOUNDARY_CONNECTORS.has(tok)) continue;
     break;
@@ -108,7 +120,7 @@ function occurrenceGoverned(tokens, index) {
 }
 
 function surfaceOccurrences(input, pattern) {
-  const tokens = String(input || "").toLowerCase().match(/[a-z0-9ğüşöçıİ]+/g) || [];
+  const tokens = tokenizeWithClauses(input);
   const idxs = [];
   for (let i = 0; i < tokens.length; i += 1) {
     if (tokens[i] === pattern || tokens[i] === `${pattern}s`) idxs.push(i);
