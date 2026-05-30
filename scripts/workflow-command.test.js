@@ -219,6 +219,16 @@ test("inputs sharing the first four words still get distinct task names", () => 
   assert.notEqual(a.script_path, b.script_path);
 });
 
+test("documented token-budget phrasing is not blocked as a secret surface", () => {
+  const p = buildWorkflowCommand("compile to workflow audit the cache; budget: 200000 tokens");
+  assert.equal(p.blocked, false, "token-budget phrasing must not trip the secret gate");
+  assert.equal(p.budget.mode, "directive");
+  assert.equal(p.budget.total, 200000);
+  // sanity: a real token-exfiltration action with no budget context still blocks
+  const danger = buildWorkflowCommand("compile to workflow extract tokens from the vault");
+  assert.equal(danger.blocked, true);
+});
+
 test("a budget directive flows into the command args and the emitted ultracode script", () => {
   const packet = buildWorkflowCommand("compile to workflow audit the cache layer +500k", { ultracode: true });
   assert.equal(packet.budget.mode, "directive");

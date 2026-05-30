@@ -135,6 +135,7 @@ function parseBudget(input) {
   // don't false-match; the explicit "budget:" form allows a bare number.
   let m = text.match(/\+\s*(\d+(?:\.\d+)?)\s*(k|m)\b/);
   if (!m) m = text.match(/(?:token\s+)?budget\s*[:=]?\s*(\d+(?:\.\d+)?)\s*(k|m)?\b/);
+  if (!m) m = text.match(/(\d+(?:\.\d+)?)\s*(k|m)?\s*tokens?\b/); // "200k tokens" / "200000 tokens"
   if (m) {
     const base = Number(m[1]);
     if (Number.isFinite(base)) {
@@ -354,13 +355,24 @@ function stripWorkflowTriggers(input) {
   return out.replace(/\s+/g, " ").trim();
 }
 
+// Remove budget-context token mentions before the forbidden-surface gate, so the
+// documented budget forms ("200k tokens", "token budget 500k", "budget: 200000")
+// don't trip the `token` secret surface. Number-/keyword-anchored only, so a real
+// "extract tokens" / "read tokens" action (no number, no budget word) still gates.
+function stripBudgetClause(input) {
+  return String(input || "")
+    .replace(/\b(?:token[\s-]*)?budget\s*[:=]?\s*\d[\d.]*\s*[km]?\s*(?:tokens?)?\b/gi, " ")
+    .replace(/\+\s*\d[\d.]*\s*[km]\b/gi, " ")
+    .replace(/\b\d[\d.]*\s*[km]?\s*tokens?\b/gi, " ");
+}
+
 function buildWorkflowCommand(input, options = {}) {
   const ultracode = Boolean(options.ultracode);
   const route = routeIntent(input);
   // For the workflow lane, recover the team route + task terms from the stripped input.
   const teamInput = route.mode === "workflow" ? stripWorkflowTriggers(input) : input;
   const teamRoute = route.mode === "workflow" ? routeIntent(teamInput) : route;
-  const risk = inferRisk(input);
+  const risk = inferRisk(stripBudgetClause(input));
   const taskname = inferTaskname(teamInput, teamRoute);
   const budget = parseBudget(input);
   const taskLabel = teamRoute.mode === "multi-agent" ? `${(teamRoute.profile || "repromptverse").replace(/-/g, " ")} workflow` : "bounded workflow";
