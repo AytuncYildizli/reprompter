@@ -202,3 +202,12 @@ test("workflow lane preserves the underlying team/profile routing", () => {
   const solo = buildWorkflowCommand("compile to workflow fix a typo in the header");
   assert.equal(solo.workflow_command_card.agents, 2);
 });
+
+test("distinct workflow inputs get distinct task names (no /tmp overwrite/resume clash)", () => {
+  const a = buildWorkflowCommand("compile to workflow audit the billing module");
+  const b = buildWorkflowCommand("compile to workflow audit the reporting module");
+  assert.notEqual(a.taskname, b.taskname);
+  assert.notEqual(a.script_path, b.script_path);
+  // task terms survive (not just the trigger/profile)
+  assert.ok(a.taskname.includes("billing") && b.taskname.includes("reporting"));
+});

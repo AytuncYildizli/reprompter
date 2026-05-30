@@ -112,11 +112,14 @@ function slugify(text, fallback = "task") {
   return slug || fallback;
 }
 
+// `input` here is the trigger-stripped task text. Slug the actual task terms so
+// distinct jobs get distinct names (the profile alone collapses them, which would
+// overwrite the default /tmp script and mis-target resumeFromRunId).
 function inferTaskname(input, route) {
-  if (route.mode === "multi-agent" && route.profile && route.profile !== "repromptverse") {
-    return slugify(route.profile);
-  }
-  return slugify(input);
+  const base = slugify(input, "");
+  if (base) return base;
+  if (route && route.profile && route.profile !== "single") return slugify(route.profile);
+  return "task";
 }
 
 // Parse an optional budget directive ("+500k", "budget: 500000", "200k tokens").
@@ -327,25 +330,24 @@ function buildWorkflowScript({ taskname, description, agents, ultracode }) {
 }
 
 // The workflow-lane trigger short-circuits routeIntent to mode "workflow" before
-// profile detection. Strip the trigger phrases and re-route to recover the
-// underlying team/profile ("...an engineering swarm audit...") so the agent roster
-// reflects the requested fan-out instead of the generic executor/verifier pair.
-function teamRouteFor(input) {
-  const route = routeIntent(input);
-  if (route.mode !== "workflow") return route;
-  let stripped = String(input || "");
+// profile detection. Strip the trigger phrases so we can recover the underlying
+// team/profile and slug task-specific terms (not just the profile/trigger).
+function stripWorkflowTriggers(input) {
+  let out = String(input || "");
   for (const trigger of WORKFLOW_LANE_TRIGGERS) {
-    stripped = stripped.replace(new RegExp(trigger.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig"), " ");
+    out = out.replace(new RegExp(trigger.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig"), " ");
   }
-  return routeIntent(stripped);
+  return out.replace(/\s+/g, " ").trim();
 }
 
 function buildWorkflowCommand(input, options = {}) {
   const ultracode = Boolean(options.ultracode);
   const route = routeIntent(input);
-  const teamRoute = teamRouteFor(input);
+  // For the workflow lane, recover the team route + task terms from the stripped input.
+  const teamInput = route.mode === "workflow" ? stripWorkflowTriggers(input) : input;
+  const teamRoute = route.mode === "workflow" ? routeIntent(teamInput) : route;
   const risk = inferRisk(input);
-  const taskname = inferTaskname(input, teamRoute);
+  const taskname = inferTaskname(teamInput, teamRoute);
   const budget = parseBudget(input);
   const taskLabel = teamRoute.mode === "multi-agent" ? `${(teamRoute.profile || "repromptverse").replace(/-/g, " ")} workflow` : "bounded workflow";
   const criteria = buildWorkflowSuccessCriteria(taskLabel);

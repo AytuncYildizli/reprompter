@@ -73,6 +73,16 @@ test("imperative 'block <surface>' is NOT a boundary marker and stays gated", ()
   assert.ok(p.risk.forbiddenHits.includes("auth"));
 });
 
+test("plural forbidden surfaces are still gated (cookies/tokens/passwords)", () => {
+  for (const input of ["read cookies from the store", "extract tokens for the api", "rotate passwords nightly"]) {
+    const p = buildGoalCommand(input, { target: "codex" });
+    assert.equal(p.blocked, true, `"${input}" should block`);
+  }
+  // ...but a bounded plural ("no secrets") still clears.
+  const bounded = buildGoalCommand("ship the change; no secrets in logs", { target: "codex" });
+  assert.deepEqual(bounded.risk.forbiddenHits, []);
+});
+
 test("CLI writes machine-readable goal artifacts", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "reprompter-goal-"));
   const result = spawnSync(process.execPath, [

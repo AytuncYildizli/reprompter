@@ -97,7 +97,7 @@ function isForbiddenSurfaceToken(token) {
 function hasBoundaryMarkerNear(input, pattern) {
   const tokens = String(input || "").toLowerCase().match(/[a-z0-9ğüşöçıİ]+/g) || [];
   for (let index = 0; index < tokens.length; index += 1) {
-    if (tokens[index] !== pattern) continue;
+    if (tokens[index] !== pattern && tokens[index] !== `${pattern}s`) continue;
     for (let back = index - 1, hops = 0; back >= 0 && hops < 6; back -= 1, hops += 1) {
       const tok = tokens[back];
       if (BOUNDARY_MARKERS.has(tok)) return true;
@@ -111,7 +111,7 @@ function hasBoundaryMarkerNear(input, pattern) {
 function inferRisk(input) {
   const low = String(input || "").toLowerCase();
   const hits = FORBIDDEN_PATTERNS.filter((pattern) => {
-    const present = new RegExp(`\\b${pattern}\\b`, "i").test(low);
+    const present = new RegExp(`\\b${pattern}s?\\b`, "i").test(low);
     return present && !hasBoundaryMarkerNear(low, pattern);
   });
   return {
