@@ -227,6 +227,9 @@ test("documented token-budget phrasing is not blocked as a secret surface", () =
   // sanity: a real token-exfiltration action with no budget context still blocks
   const danger = buildWorkflowCommand("compile to workflow extract tokens from the vault");
   assert.equal(danger.blocked, true);
+  // and a NUMBERED token-extraction (no budget cue) must also stay gated
+  const numbered = buildWorkflowCommand("compile to workflow extract 200 tokens from the vault");
+  assert.equal(numbered.blocked, true);
 });
 
 test("a budget directive flows into the command args and the emitted ultracode script", () => {
