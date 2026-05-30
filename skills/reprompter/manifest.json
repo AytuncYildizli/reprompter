@@ -157,8 +157,8 @@
     },
     {
       "path": "references/workflow-template.md",
-      "source_sha256": "800e3ba59dd9a82fecac815ace32cece6dd24bebc435139eb0cceb321846914c",
-      "generated_sha256": "8e017a4a864bd313628059495090e8890bdd5ad41f84b0fa06ae9508b2b495c3"
+      "source_sha256": "a3e05202a64eafed03acb6b88bbbd6d13abad8bb8fc52340ea6f8cdb17c506e8",
+      "generated_sha256": "7a86113976d2832c5966c374e41d40d21d2847b00745f9f93b76723d5db9641f"
     }
   ]
 }
