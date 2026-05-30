@@ -94,25 +94,49 @@ function isForbiddenSurfaceToken(token) {
 // A filler or verb in between (e.g. "do not skip the prod deploy") means the
 // negation governs the verb, not the surface, so the hit must stand. This avoids
 // the risk-gate bypass where any nearby negation silently un-blocked prod/auth/etc.
-function hasBoundaryMarkerNear(input, pattern) {
-  const tokens = String(input || "").toLowerCase().match(/[a-z0-9ğüşöçıİ]+/g) || [];
-  for (let index = 0; index < tokens.length; index += 1) {
-    if (tokens[index] !== pattern && tokens[index] !== `${pattern}s`) continue;
-    for (let back = index - 1, hops = 0; back >= 0 && hops < 6; back -= 1, hops += 1) {
-      const tok = tokens[back];
-      if (BOUNDARY_MARKERS.has(tok)) return true;
-      if (isForbiddenSurfaceToken(tok) || BOUNDARY_CONNECTORS.has(tok)) continue;
-      break;
-    }
+// Does the boundary marker govern the forbidden surface at `index`? Walk back over
+// other forbidden surfaces + list connectors; a marker immediately governing the
+// run clears it, a filler/verb in between does not.
+function occurrenceGoverned(tokens, index) {
+  for (let back = index - 1, hops = 0; back >= 0 && hops < 6; back -= 1, hops += 1) {
+    const tok = tokens[back];
+    if (BOUNDARY_MARKERS.has(tok)) return true;
+    if (isForbiddenSurfaceToken(tok) || BOUNDARY_CONNECTORS.has(tok)) continue;
+    break;
   }
   return false;
+}
+
+function surfaceOccurrences(input, pattern) {
+  const tokens = String(input || "").toLowerCase().match(/[a-z0-9ğüşöçıİ]+/g) || [];
+  const idxs = [];
+  for (let i = 0; i < tokens.length; i += 1) {
+    if (tokens[i] === pattern || tokens[i] === `${pattern}s`) idxs.push(i);
+  }
+  return { tokens, idxs };
+}
+
+// Occurrence-aware: the pattern stays high-risk if ANY single occurrence is
+// unbounded, even when another occurrence sits inside a boundary clause
+// (e.g. "deploy now; no deploy after midnight" must still gate).
+function hasUnboundedOccurrence(input, pattern) {
+  const { tokens, idxs } = surfaceOccurrences(input, pattern);
+  if (idxs.length === 0) return false;
+  return idxs.some((i) => !occurrenceGoverned(tokens, i));
+}
+
+// Cosmetic boundary note (exported / used by the workflow lane): the surface
+// appears and at least one occurrence is governed by a boundary marker.
+function hasBoundaryMarkerNear(input, pattern) {
+  const { tokens, idxs } = surfaceOccurrences(input, pattern);
+  return idxs.some((i) => occurrenceGoverned(tokens, i));
 }
 
 function inferRisk(input) {
   const low = String(input || "").toLowerCase();
   const hits = FORBIDDEN_PATTERNS.filter((pattern) => {
     const present = new RegExp(`\\b${pattern}s?\\b`, "i").test(low);
-    return present && !hasBoundaryMarkerNear(low, pattern);
+    return present && hasUnboundedOccurrence(low, pattern);
   });
   return {
     level: hits.length > 0 ? "high" : "medium",

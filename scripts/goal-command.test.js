@@ -83,6 +83,17 @@ test("plural forbidden surfaces are still gated (cookies/tokens/passwords)", () 
   assert.deepEqual(bounded.risk.forbiddenHits, []);
 });
 
+test("a forbidden surface stays gated if ANY occurrence is unbounded (occurrence-aware)", () => {
+  // first "deploy" is an unbounded action; the later bounded clause must not clear it.
+  const p1 = buildGoalCommand("deploy now; no deploy after midnight", { target: "codex" });
+  assert.equal(p1.blocked, true);
+  assert.ok(p1.risk.forbiddenHits.includes("deploy"));
+
+  const p2 = buildGoalCommand("read tokens and ensure no tokens in logs", { target: "codex" });
+  assert.equal(p2.blocked, true);
+  assert.ok(p2.risk.forbiddenHits.includes("token"));
+});
+
 test("CLI writes machine-readable goal artifacts", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "reprompter-goal-"));
   const result = spawnSync(process.execPath, [
