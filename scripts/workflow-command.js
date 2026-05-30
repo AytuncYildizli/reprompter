@@ -240,6 +240,9 @@ function buildWorkflowScript({ taskname, description, agents, ultracode }) {
   L.push("// runId + taskname come from args — never generated in-script (wall-clock/randomness throw here).");
   L.push('const taskname = (args && args.taskname) || "rpt-' + taskname + '"');
   L.push("const runId = (args && args.runId) || taskname");
+  L.push("// Budget directive (from the reprompt) flows in via args.budget; prefer the live");
+  L.push("// budget global the harness sets from the run's own +Nk directive when present.");
+  L.push("const budgetTotal = budget.total || (args && args.budget) || null");
   L.push("");
   L.push("const FINDINGS_SCHEMA = {");
   L.push('  type: "object",');
@@ -287,8 +290,12 @@ function buildWorkflowScript({ taskname, description, agents, ultracode }) {
     L.push('  type: "object", additionalProperties: false, required: ["gaps"],');
     L.push('  properties: { gaps: { type: "array", items: { type: "string" } } },');
     L.push("}");
-    L.push("const critic = await agent(`Given these confirmed findings, list concrete gaps still missing: ${JSON.stringify(confirmed.map((c) => c.finding))}`,");
-    L.push('  { label: "completeness-critic", phase: "Evaluate", schema: CRITIC_SCHEMA })');
+    L.push("// Budget-scaled (H3): run the extra completeness critic only with token headroom.");
+    L.push("const hasHeadroom = !budgetTotal || budget.remaining() > 30000");
+    L.push("const critic = hasHeadroom");
+    L.push("  ? await agent(`Given these confirmed findings, list concrete gaps still missing: ${JSON.stringify(confirmed.map((c) => c.finding))}`,");
+    L.push('      { label: "completeness-critic", phase: "Evaluate", schema: CRITIC_SCHEMA })');
+    L.push('  : { gaps: ["(completeness critic skipped: near token budget)"] }');
     L.push("");
     L.push("return {");
     L.push('  schema_version: "reprompter.workflow_outcome.v1",');
@@ -390,7 +397,7 @@ function buildWorkflowCommand(input, options = {}) {
 
   const command = blocked
     ? null
-    : `Workflow({ scriptPath: ${JSON.stringify(scriptPath)}, args: { taskname: ${JSON.stringify(taskname)}, runId: ${JSON.stringify(taskname)} } })`;
+    : `Workflow({ scriptPath: ${JSON.stringify(scriptPath)}, args: { taskname: ${JSON.stringify(taskname)}, runId: ${JSON.stringify(taskname)}, budget: ${budget.total == null ? "null" : budget.total} } })`;
 
   return {
     schema_version: "reprompter.workflow_command.v1",

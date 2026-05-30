@@ -219,6 +219,15 @@ test("inputs sharing the first four words still get distinct task names", () => 
   assert.notEqual(a.script_path, b.script_path);
 });
 
+test("a budget directive flows into the command args and the emitted ultracode script", () => {
+  const packet = buildWorkflowCommand("compile to workflow audit the cache layer +500k", { ultracode: true });
+  assert.equal(packet.budget.mode, "directive");
+  assert.equal(packet.budget.total, 500000);
+  assert.ok(packet.command.includes("budget: 500000"), "command args carry the parsed budget");
+  assert.ok(packet.workflow_script.includes("budgetTotal"), "script sources a budget");
+  assert.ok(packet.workflow_script.includes("budget.remaining()"), "ultracode body is budget-scaled");
+});
+
 test("the trigger phrase does not leak into the emitted script (agents use the stripped task)", () => {
   const packet = buildWorkflowCommand("compile to workflow fix the pagination bug on the results page");
   assert.ok(!packet.workflow_script.includes("compile to workflow"), "trigger must not appear in the script");
