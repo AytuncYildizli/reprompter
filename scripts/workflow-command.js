@@ -133,9 +133,12 @@ function parseBudget(input) {
   const text = String(input || "").toLowerCase();
   // The "+N" shorthand REQUIRES a k/m unit so version-ish tokens ("react +18")
   // don't false-match; the explicit "budget:" form allows a bare number.
+  // Budget directives require an UNAMBIGUOUS cue: the "+Nk" form or the literal
+  // "budget"/"token budget" keyword. A bare "Nk tokens" is intentionally NOT a
+  // budget cue — it is ambiguous with token exfiltration ("extract 200k tokens")
+  // and must reach the secret-surface gate.
   let m = text.match(/\+\s*(\d+(?:\.\d+)?)\s*(k|m)\b/);
   if (!m) m = text.match(/(?:token\s+)?budget\s*[:=]?\s*(\d+(?:\.\d+)?)\s*(k|m)?\b/);
-  if (!m) m = text.match(/(\d+(?:\.\d+)?)\s*(k|m)\s*tokens?\b/); // "200k tokens" (unit required)
   if (m) {
     const base = Number(m[1]);
     if (Number.isFinite(base)) {
@@ -368,10 +371,12 @@ function stripWorkflowTriggers(input) {
 function stripBudgetClause(input) {
   // Budget/limit CONTEXTS only (the "+Nk" form and the budget/token-budget keyword
   // form). A bare "N tokens" is NOT stripped, so "extract 200 tokens" still gates.
+  // Strip ONLY unambiguous budget cues (the "+Nk" form and the budget/token-budget
+  // keyword form). A bare "Nk tokens" is left intact so exfiltration phrasing like
+  // "extract 200k tokens" still reaches the secret-surface gate.
   return String(input || "")
     .replace(/\b(?:token[\s-]*)?budget\s*[:=]?\s*\d[\d.]*\s*[km]?\s*(?:tokens?)?\b/gi, " ")
-    .replace(/\+\s*\d[\d.]*\s*[km]\b/gi, " ")
-    .replace(/\b\d[\d.]*\s*[km]\s*tokens?\b/gi, " "); // "200k tokens" (unit required; "200 tokens" stays gated)
+    .replace(/\+\s*\d[\d.]*\s*[km]\b/gi, " ");
 }
 
 function buildWorkflowCommand(input, options = {}) {
