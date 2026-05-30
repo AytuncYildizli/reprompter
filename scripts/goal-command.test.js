@@ -102,6 +102,10 @@ test("a boundary marker does not bridge a clause break to a later action", () =>
   // sanity: the legitimate same-clause list still clears
   const ok = buildGoalCommand("ship it; no prod/merge/deploy please", { target: "codex" });
   assert.deepEqual(ok.risk.forbiddenHits, []);
+  // a comma is also a clause boundary: "no prod, deploy now" must gate the deploy
+  const comma = buildGoalCommand("no prod, deploy now", { target: "codex" });
+  assert.equal(comma.blocked, true);
+  assert.ok(comma.risk.forbiddenHits.includes("deploy"));
 });
 
 test("a long same-clause exclusion list clears entirely (no hop cap)", () => {

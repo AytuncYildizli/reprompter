@@ -232,6 +232,10 @@ test("documented token-budget phrasing is not blocked as a secret surface", () =
   // and a NUMBERED token-extraction (no budget cue) must also stay gated
   const numbered = buildWorkflowCommand("compile to workflow extract 200 tokens from the vault");
   assert.equal(numbered.blocked, true);
+  // a bare unit'd "200k tokens" IS a budget directive (not blocked); "200 tokens" above stays gated
+  const bare = buildWorkflowCommand("compile to workflow audit cache with 200k tokens");
+  assert.equal(bare.blocked, false);
+  assert.equal(bare.budget.total, 200000);
 });
 
 test("a budget directive flows into the command args and the emitted ultracode script", () => {

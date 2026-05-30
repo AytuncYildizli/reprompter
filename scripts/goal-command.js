@@ -101,7 +101,7 @@ const CLAUSE_BREAK = "||";
 function tokenizeWithClauses(input) {
   return String(input || "")
     .toLowerCase()
-    .replace(/[;:.!?\n]+/g, ` ${CLAUSE_BREAK} `)
+    .replace(/[;:.!?,\n]+/g, ` ${CLAUSE_BREAK} `)
     .match(/[a-z0-9ğüşöçıİ]+|\|\|/g) || [];
 }
 

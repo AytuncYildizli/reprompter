@@ -135,6 +135,7 @@ function parseBudget(input) {
   // don't false-match; the explicit "budget:" form allows a bare number.
   let m = text.match(/\+\s*(\d+(?:\.\d+)?)\s*(k|m)\b/);
   if (!m) m = text.match(/(?:token\s+)?budget\s*[:=]?\s*(\d+(?:\.\d+)?)\s*(k|m)?\b/);
+  if (!m) m = text.match(/(\d+(?:\.\d+)?)\s*(k|m)\s*tokens?\b/); // "200k tokens" (unit required)
   if (m) {
     const base = Number(m[1]);
     if (Number.isFinite(base)) {
@@ -369,7 +370,8 @@ function stripBudgetClause(input) {
   // form). A bare "N tokens" is NOT stripped, so "extract 200 tokens" still gates.
   return String(input || "")
     .replace(/\b(?:token[\s-]*)?budget\s*[:=]?\s*\d[\d.]*\s*[km]?\s*(?:tokens?)?\b/gi, " ")
-    .replace(/\+\s*\d[\d.]*\s*[km]\b/gi, " ");
+    .replace(/\+\s*\d[\d.]*\s*[km]\b/gi, " ")
+    .replace(/\b\d[\d.]*\s*[km]\s*tokens?\b/gi, " "); // "200k tokens" (unit required; "200 tokens" stays gated)
 }
 
 function buildWorkflowCommand(input, options = {}) {
