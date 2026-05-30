@@ -173,3 +173,20 @@ test("CLI with both --out-dir and --script-path writes the script where the comm
   assert.ok(fs.existsSync(scriptPath), "runnable script written to the explicit --script-path");
   assert.ok(fs.existsSync(path.join(dir, "workflow-command-card.json")), "other artifacts still in out-dir");
 });
+
+test("CLI without --out-dir still writes the runnable script the command points at", () => {
+  const scriptDir = fs.mkdtempSync(path.join(os.tmpdir(), "reprompter-wf-noout-"));
+  const scriptPath = path.join(scriptDir, "x.workflow.js");
+  const result = spawnSync(process.execPath, [
+    path.join(__dirname, "workflow-command.js"),
+    "--input", "compile to workflow an audit of the gateway",
+    "--script-path", scriptPath,
+  ], { encoding: "utf8" });
+
+  assert.equal(result.status, 0, result.stderr);
+  const packet = JSON.parse(result.stdout);
+  assert.equal(packet.script_path, scriptPath);
+  assert.ok(packet.command.includes(scriptPath));
+  // The printed command must be runnable: the script exists even with no --out-dir.
+  assert.ok(fs.existsSync(scriptPath), "script materialized without --out-dir");
+});

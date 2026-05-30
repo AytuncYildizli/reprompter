@@ -430,18 +430,20 @@ function buildWorkflowCommand(input, options = {}) {
   };
 }
 
+// Always materialize the runnable script at the exact path the emitted command
+// references (packet.script_path), independent of --out-dir, so the printed
+// Workflow({ scriptPath }) is runnable in every mode. No-op when blocked (no script).
+function writeScript(packet) {
+  if (!packet.workflow_script || !packet.script_path) return;
+  fs.mkdirSync(path.dirname(packet.script_path), { recursive: true });
+  fs.writeFileSync(packet.script_path, `${packet.workflow_script}\n`);
+}
+
+// The JSON/card/expanded-prompt bundle is --out-dir-only. The script itself is
+// written by writeScript() (above), so the command path and the file never diverge.
 function writeArtifacts(packet, outDir) {
   fs.mkdirSync(outDir, { recursive: true });
   fs.writeFileSync(path.join(outDir, "workflow-command.json"), `${JSON.stringify(packet, null, 2)}\n`);
-  // Write the runnable script to the exact path the emitted command references
-  // (packet.script_path), so an explicit --script-path can't diverge from where
-  // the file actually lands. Other artifacts stay in the out-dir.
-  const scriptTarget = packet.script_path || path.join(outDir, `rpt-${packet.taskname}.workflow.js`);
-  fs.mkdirSync(path.dirname(scriptTarget), { recursive: true });
-  fs.writeFileSync(
-    scriptTarget,
-    packet.workflow_script ? `${packet.workflow_script}\n` : `// BLOCKED: high-risk forbidden surfaces ${packet.risk.forbiddenHits.join(",")}\n`
-  );
   fs.writeFileSync(path.join(outDir, "workflow-command-card.json"), `${JSON.stringify(packet.workflow_command_card, null, 2)}\n`);
   fs.writeFileSync(path.join(outDir, "reprompter-expanded-prompt.md"), `${packet.expanded_prompt}\n`);
 }
@@ -462,6 +464,7 @@ function main() {
     scriptPath: args.scriptPath,
     outDir: args.outDir,
   });
+  writeScript(packet);
   if (args.outDir) writeArtifacts(packet, args.outDir);
   if (args.format === "text") {
     process.stdout.write(`${packet.workflow_command || "BLOCKED"}\n`);
