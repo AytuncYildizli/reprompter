@@ -66,9 +66,93 @@ function compact(text, max = 720) {
   return `${cleaned.slice(0, max - 1).trim()}.`;
 }
 
+const BOUNDARY_MARKERS = new Set([
+  "no",
+  "not",
+  "without",
+  "avoid",
+  "exclude",
+  "excluding",
+  "forbid",
+  "forbidden",
+  "never",
+  "constraint",
+  "constraints",
+  "restriction",
+  "restrictions",
+]);
+
+const BOUNDARY_CONNECTORS = new Set(["or", "and", "nor"]);
+
+function isForbiddenSurfaceToken(token) {
+  return FORBIDDEN_PATTERNS.some((p) => token.includes(p));
+}
+
+// A boundary marker only CLEARS a forbidden surface when it GOVERNS that surface
+// directly: walking back from the forbidden token, everything in between must be
+// another forbidden surface or a list connector (the "no prod/merge/deploy" shape).
+// A filler or verb in between (e.g. "do not skip the prod deploy") means the
+// negation governs the verb, not the surface, so the hit must stand. This avoids
+// the risk-gate bypass where any nearby negation silently un-blocked prod/auth/etc.
+// Clause/sentence breaks are preserved as a sentinel token so a boundary clause
+// cannot govern a later action across them ("no prod; deploy now" must gate deploy).
+const CLAUSE_BREAK = "||";
+
+function tokenizeWithClauses(input) {
+  return String(input || "")
+    .toLowerCase()
+    .replace(/[;:.!?,\n]+/g, ` ${CLAUSE_BREAK} `)
+    .match(/[a-z0-9ğüşöçıİ]+|\|\|/g) || [];
+}
+
+// Does the boundary marker govern the forbidden surface at `index`? Walk back over
+// other forbidden surfaces + list connectors; a marker immediately governing the
+// run clears it. A filler/verb OR a clause break in between means the hit stands.
+function occurrenceGoverned(tokens, index) {
+  // No fixed hop cap: the walk terminates naturally at a clause break, a governing
+  // marker, a non-list filler token, or the start — so even long same-clause
+  // exclusion lists ("no a/b/c/.../password") resolve to their governing marker.
+  for (let back = index - 1; back >= 0; back -= 1) {
+    const tok = tokens[back];
+    if (tok === CLAUSE_BREAK) break;
+    if (BOUNDARY_MARKERS.has(tok)) return true;
+    if (isForbiddenSurfaceToken(tok) || BOUNDARY_CONNECTORS.has(tok)) continue;
+    break;
+  }
+  return false;
+}
+
+function surfaceOccurrences(input, pattern) {
+  const tokens = tokenizeWithClauses(input);
+  const idxs = [];
+  for (let i = 0; i < tokens.length; i += 1) {
+    if (tokens[i] === pattern || tokens[i] === `${pattern}s`) idxs.push(i);
+  }
+  return { tokens, idxs };
+}
+
+// Occurrence-aware: the pattern stays high-risk if ANY single occurrence is
+// unbounded, even when another occurrence sits inside a boundary clause
+// (e.g. "deploy now; no deploy after midnight" must still gate).
+function hasUnboundedOccurrence(input, pattern) {
+  const { tokens, idxs } = surfaceOccurrences(input, pattern);
+  if (idxs.length === 0) return false;
+  return idxs.some((i) => !occurrenceGoverned(tokens, i));
+}
+
+// Cosmetic boundary note (exported / used by the workflow lane): the surface
+// appears and at least one occurrence is governed by a boundary marker.
+function hasBoundaryMarkerNear(input, pattern) {
+  const { tokens, idxs } = surfaceOccurrences(input, pattern);
+  return idxs.some((i) => occurrenceGoverned(tokens, i));
+}
+
 function inferRisk(input) {
   const low = String(input || "").toLowerCase();
-  const hits = FORBIDDEN_PATTERNS.filter((pattern) => new RegExp(`\\b${pattern}\\b`, "i").test(low));
+  const hits = FORBIDDEN_PATTERNS.filter((pattern) => {
+    const present = new RegExp(`\\b${pattern}s?\\b`, "i").test(low);
+    return present && hasUnboundedOccurrence(low, pattern);
+  });
   return {
     level: hits.length > 0 ? "high" : "medium",
     forbiddenHits: hits,
@@ -265,6 +349,7 @@ module.exports = {
   buildCompressedSummary,
   buildExpandedPrompt,
   inferRisk,
+  hasBoundaryMarkerNear,
 };
 
 if (require.main === module) {

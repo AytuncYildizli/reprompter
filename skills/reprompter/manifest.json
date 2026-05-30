@@ -10,15 +10,15 @@
   },
   "source": {
     "root_skill": "SKILL.md",
-    "root_skill_sha256": "26abecd8d04635fd60998d7c6f37016f8776d946bf0fb6070b0340c1b92a1834",
+    "root_skill_sha256": "f511d892ea6dd8733f54f6c7f98b0317e6ed2f22ae6b1eaa73bcd5e0c576e543",
     "sanitizer": "scripts/hermes-sanitizer.json",
-    "sanitizer_sha256": "36165a1324fabaa38c8c524fd273e81f5e1d8449a5b61016932cd98456d1a2cc"
+    "sanitizer_sha256": "6c101955d07f6b16da8e65eeb70e1ef60e7d6f73b173549cae6982df1eb9236e"
   },
   "files": [
     {
       "path": "SKILL.md",
-      "source_sha256": "26abecd8d04635fd60998d7c6f37016f8776d946bf0fb6070b0340c1b92a1834",
-      "generated_sha256": "ee1d250031b8a9fd7305c80b4e27549cc6802af8f690f83c9d48421168c33838"
+      "source_sha256": "f511d892ea6dd8733f54f6c7f98b0317e6ed2f22ae6b1eaa73bcd5e0c576e543",
+      "generated_sha256": "84d747ed1fc3482e71562e13c8f75b6f6632143c3600500e389eba4c27a3a3eb"
     },
     {
       "path": "references/api-template.md",
@@ -121,6 +121,11 @@
       "generated_sha256": "2261c50bc812e59e3815e8f9e91500924acc0e7f2592c32f259476f24727b18d"
     },
     {
+      "path": "references/runtime/claude-workflow-runtime.md",
+      "source_sha256": "15bb75e96c0d77980c4434051a2d9bcf8f3f3b12a608b5aa5e5cea22ed73d2ce",
+      "generated_sha256": "15bb75e96c0d77980c4434051a2d9bcf8f3f3b12a608b5aa5e5cea22ed73d2ce"
+    },
+    {
       "path": "references/runtime/hermes-agent-runtime.md",
       "source_sha256": "39495555fb3cb6d69e79abc349ef89eec3f2a3727521bfa30153a6b2e89f28ad",
       "generated_sha256": "dde195443caa99f4bee40f0d565454c4672bc0112b209b0c77899ffdb5fc245c"
@@ -149,6 +154,11 @@
       "path": "references/ui-template.md",
       "source_sha256": "5e2703def4d514f090672a74838a77bd06671231730d59fac660e1a3d08e92f7",
       "generated_sha256": "5e2703def4d514f090672a74838a77bd06671231730d59fac660e1a3d08e92f7"
+    },
+    {
+      "path": "references/workflow-template.md",
+      "source_sha256": "800e3ba59dd9a82fecac815ace32cece6dd24bebc435139eb0cceb321846914c",
+      "generated_sha256": "8e017a4a864bd313628059495090e8890bdd5ad41f84b0fa06ae9508b2b495c3"
     }
   ]
 }

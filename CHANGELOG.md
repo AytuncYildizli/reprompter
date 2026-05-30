@@ -1,3 +1,33 @@
+## v12.6.0 (2026-05-30) — Claude dynamic Workflow lane + Option H, first-class ultracode
+
+### Headline
+
+RePrompter gains a fifth output lane, **Workflow preflight**, and a matching Repromptverse Phase-3 backend, **Option H**, targeting Claude Code's dynamic `Workflow` tool. A reprompted task compiles into a runnable `.workflow.js` (JS-scripted background fan-out — `agent()`/`parallel()`/`pipeline()` with schema-validated returns and `resumeFromRunId`). **Schema returns are the single in-run source of truth**; the `/tmp/rpt-*.md` files become a parent-written compatibility mirror, so Status Line / Phase-4 / flywheel keep working. Ultracode is first-class: the emitted script defaults to adversarial / perspective-diverse verify + completeness critic + budget-scaled fleets, with a `--no-ultracode` off-ramp.
+
+Fully additive — no behavior change for Codex, Grok CLI, Hermes Agent, OpenClaw, or the existing Claude Code Options A/B.
+
+### Added
+
+- **Workflow preflight lane (Lane 5)** in `SKILL.md` — triggers, runtime detection, Process, a 12-row Workflow Command Card, the emitted-script shape, the expanded-prompt XML basis, and the schema-truth / parent-mirror reconciliation.
+- **Repromptverse Option H** — new Order-4 row in the Phase-3 auto-pick tree (just below Option B; the Workflow tool has no mid-run cross-agent messaging), plus an Option H subsection with the H1/H2/H3 pattern table.
+- `scripts/workflow-command.js` — the compiler (`buildWorkflowCommand`, `buildWorkflowScript`, `parseBudget`) emitting a `reprompter.workflow_command.v1` packet and a determinism-safe script (pure-literal `meta`, `runId`/`taskname` from `args`, `model` omitted, `filter(Boolean)`, bounded delta-retry; ultracode adds adversarial verify + completeness critic). Reuses `goal-command` risk logic; high-risk forbidden surfaces block emission.
+- `scripts/workflow-command.test.js` — 11 tests (versioned packet, risk gate, boundary handling, phase-title/no-drift, determinism, ultracode body, CLI artifacts; emitted scripts syntax-checked inside the workflow async wrapper).
+- `references/runtime/claude-workflow-runtime.md` — runtime contract (when-to-pick vs A/B, invocation/resume, concurrency, retries, gotchas, schema-vs-file reconciliation, ultracode, what-it-does-not-provide).
+- `references/workflow-template.md` — dual-block (expanded-prompt XML + compiled `.workflow.js` skeleton).
+
+### Changed
+
+- `scripts/intent-router.js` — new `mode: "workflow"` route (multi-word triggers only; never bare "workflow"/"parallel"), priority just after reverse and before multi-agent; `WORKFLOW_LANE_TRIGGERS` exported. +3 tests (now 25).
+- `scripts/goal-command.js` — exports `hasBoundaryMarkerNear` so the workflow compiler reuses the same boundary-aware risk logic (also carries the in-flight negation-aware risk refinement).
+- `scripts/hermes-sanitizer.json` — packages the two new reference docs and rewrites `scripts/workflow-command.js` references for the Hermes skill artifact.
+- `package.json` — `test:workflow-command` registered and added to the `check` gate; version `12.6.0`.
+- `README.md` — Workflow preflight lane, Option H compatibility row + parallel-path note, test table (Workflow command = 20; total 248).
+
+### Notes
+
+- `Workflow`-tool detection is by tool presence; absent it, RePrompter falls back to Repromptverse Option B/A or the `/goal` preflight lane.
+- Design rationale lives in `docs/dynamic-workflow-expansion.md`.
+
 ## v12.5.1 (2026-05-18) — Hermes install package
 
 ### Headline
