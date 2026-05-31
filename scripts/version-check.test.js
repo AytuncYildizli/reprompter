@@ -129,7 +129,8 @@ test("checkVersion: stale cache falls through to the network and rewrites cache"
 test("CLI --json with injected latest reports behind without touching the network", () => {
   const res = spawnSync(process.execPath, [path.join(__dirname, "version-check.js"), "--json", "--no-cache"], {
     encoding: "utf8",
-    env: { ...process.env, REPROMPTER_VERSION_LATEST: "99.0.0" },
+    // Force the opt-out off so the test is hermetic even if CI sets it to "0".
+    env: { ...process.env, REPROMPTER_VERSION_CHECK: "1", REPROMPTER_VERSION_LATEST: "99.0.0" },
   });
   assert.equal(res.status, 0, "version check must exit 0 (never fail a gate)");
   const out = JSON.parse(res.stdout);
@@ -142,7 +143,8 @@ test("CLI is silent (no output) when up to date — default path prints only if 
   const local = readLocalVersion();
   const res = spawnSync(process.execPath, [path.join(__dirname, "version-check.js"), "--no-cache"], {
     encoding: "utf8",
-    env: { ...process.env, REPROMPTER_VERSION_LATEST: local },
+    // Force the opt-out off so this exercises the up-to-date path, not the opt-out.
+    env: { ...process.env, REPROMPTER_VERSION_CHECK: "1", REPROMPTER_VERSION_LATEST: local },
   });
   assert.equal(res.status, 0);
   assert.equal(res.stdout.trim(), "", "an up-to-date install must produce no stdout noise");
@@ -160,7 +162,7 @@ test("CLI honors REPROMPTER_VERSION_CHECK=0 (silent no-op even when behind)", ()
 test("CLI sanitizes a junk REPROMPTER_REPO back to the default in the printed command", () => {
   const res = spawnSync(process.execPath, [path.join(__dirname, "version-check.js"), "--json", "--no-cache"], {
     encoding: "utf8",
-    env: { ...process.env, REPROMPTER_VERSION_LATEST: "99.0.0", REPROMPTER_REPO: "evil$(touch x)/repo" },
+    env: { ...process.env, REPROMPTER_VERSION_CHECK: "1", REPROMPTER_VERSION_LATEST: "99.0.0", REPROMPTER_REPO: "evil$(touch x)/repo" },
   });
   assert.equal(res.status, 0);
   const out = JSON.parse(res.stdout);
