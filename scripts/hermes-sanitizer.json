@@ -164,8 +164,8 @@
     },
     {
       "kind": "literal",
-      "pattern": "node scripts/version-check.js",
-      "replacement": "the root repository version-check helper"
+      "pattern": "node \"<skill-dir>/scripts/version-check.js\"",
+      "replacement": "the root repository version-check helper (Claude Code / copy installs only; not bundled with the Hermes package, so skip this step here)"
     },
     {
       "kind": "literal",
