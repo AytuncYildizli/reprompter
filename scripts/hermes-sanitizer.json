@@ -38,6 +38,12 @@
   ],
   "replacements": [
     {
+      "_comment": "Rewrite the whole Claude-side version-check instruction (must run before the ~/.claude/skills path rewrites below, since it contains those tokens).",
+      "kind": "literal",
+      "pattern": "Unless `REPROMPTER_VERSION_CHECK=0`, on the **first** reprompter invocation in a session run the check **once, from this skill's own install directory** — not the user's CWD, which is usually the project root and does not contain `scripts/`. Invoke it as `node \"<skill-dir>/scripts/version-check.js\"` where `<skill-dir>` is the directory this `SKILL.md` was loaded from (e.g. `~/.claude/skills/reprompter`, `~/.codex/skills/reprompter`, `~/.grok/skills/reprompter`, or a project-local `skills/reprompter`). If it prints an update notice, surface that notice to the user before continuing. Never block on it.",
+      "replacement": "On Hermes this version self-check does not run — the install package ships no `scripts/` helpers. To update, run `hermes skills install AytuncYildizli/reprompter/skills/reprompter` and start a new session."
+    },
+    {
       "kind": "literal",
       "pattern": "CLAUDE.md",
       "replacement": "project memory file"
@@ -161,11 +167,6 @@
       "kind": "literal",
       "pattern": "scripts/workflow-command.js",
       "replacement": "the root repository workflow compiler"
-    },
-    {
-      "kind": "literal",
-      "pattern": "node \"<skill-dir>/scripts/version-check.js\"",
-      "replacement": "the root repository version-check helper (Claude Code / copy installs only; not bundled with the Hermes package, so skip this step here)"
     },
     {
       "kind": "literal",

@@ -1,5 +1,11 @@
 "use strict";
 
+// Pin the repo to the default BEFORE requiring the module: REPO (and thus the
+// repo-scoped cache check) is resolved at module load, so an externally-set
+// REPROMPTER_REPO would otherwise make the repo-less cache fixtures be ignored
+// and break the cache-hit assertions. Subprocess tests set their own env.
+process.env.REPROMPTER_REPO = "AytuncYildizli/reprompter";
+
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
