@@ -1,3 +1,29 @@
+## v12.7.0 (2026-05-31) — Version self-check
+
+### Headline
+
+RePrompter is distributed copy-based with no package manager tracking the installed version, so a stale copy is invisible to the user. This release adds a **fail-soft version self-check**: on the first invocation in a session, RePrompter compares its local `SKILL.md` version against the latest GitHub release and surfaces an update notice (with a path-aware upgrade command) if the copy is behind. Fully additive and off-switchable; no output lane changes.
+
+### Added
+
+- `scripts/version-check.js` — pull-based check (`checkVersion`, `compareVersions`, `readLocalVersion`, `formatNotice`). Reads local `metadata.version` from `SKILL.md`, resolves the latest release via the GitHub API, and prints an actionable notice only when behind. The upgrade command is **path-aware and runtime-agnostic**: it re-fetches into the directory this skill copy actually lives in (derived from `__dirname`), so it targets the right place for Claude Code (`~/.claude/skills/...`), Codex (`~/.codex/skills/...`), OpenClaw, Grok CLI, or a project-local `skills/reprompter/` alike — with a `hermes skills install` line for the one runtime that ships no `scripts/`. Always says to start a new session (skills are cached per session). **Fail-soft**: offline / rate-limited / unparseable → no output, exit 0. Result cached ~24h under `XDG_CACHE_HOME`; a failed lookup is negatively cached ~1h to throttle retries without suppressing the check for a full day. `REPROMPTER_VERSION_LATEST` is a manual/offline override; `--json` and `--no-cache` CLI flags.
+- `scripts/version-check.test.js` — 19 tests (semver compare incl. numeric 12.10 > 12.7, local-version read, behind/equal/ahead, network-failure + thrown-fetch fail-soft, fresh-cache short-circuit + stale-cache refresh + repo-scoped cache, shell-safe install-dir quoting, REPROMPTER_REPO sanitization, REPROMPTER_VERSION_CHECK=0 opt-out, CLI silent-when-current/behind paths). No test touches the network or the real cache (all deps injected).
+
+### Changed
+
+- `SKILL.md` — new "Version self-check" subsection + `REPROMPTER_VERSION_CHECK=0|1` env var (default on); version bumped to `12.7.0`. Because the skill is cached per session, the notice tells the user to update **and start a new session**.
+- `scripts/hermes-sanitizer.json` — rewrites `node scripts/version-check.js` for the Hermes artifact (the package ships no `scripts/`).
+- `package.json` — `test:version-check` registered and added to the `check` gate; version `12.7.0`.
+- `README.md` — "Staying current" install section (manual run, `--json`, opt-in Claude Code `SessionStart` hook), version badge `12.7.0`, test table (Version check = 19; total 267).
+
+### Review hardening (Codex)
+
+- **[security] No shell injection in the printed upgrade command:** `REPROMPTER_REPO` is validated to a strict `owner/repo` shape (junk falls back to the default) and the install dir is POSIX single-quoted, so a copy-pasteable `curl | tar` line can't trigger `$()`/backtick expansion from a crafted path or env value.
+- **Opt-out honored on direct invocation:** `main()` early-returns silently when `REPROMPTER_VERSION_CHECK=0`, so the README `SessionStart` hook and manual runs respect the documented off-switch (previously only the skill-preflight path did).
+- **Silent when current:** the default (non-`--json`) path prints only when behind; up-to-date and undeterminable both produce no output, matching the documented contract and keeping session hooks quiet. `--json` remains the explicit status mode.
+- **Repo-scoped cache:** the cache payload carries `repo`, and entries from a different `REPROMPTER_REPO` are ignored, so a fork override can't reuse another repo's `latest` (pre-repo entries honored only for the default repo).
+- **Truly fail-soft:** `await fetchLatest()` is wrapped in try/catch so a synchronous rejection can't bubble past the "never throws" contract.
+
 ## v12.6.0 (2026-05-30) — Claude dynamic Workflow lane + Option H, first-class ultracode
 
 ### Headline
