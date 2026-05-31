@@ -10,7 +10,7 @@
 
 [![Version](https://img.shields.io/badge/version-12.7.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-265%20passing-2da44e)](#testing)
+[![Tests](https://img.shields.io/badge/tests-267%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 
 RePrompter is a prompt engineering skill for AI coding agents. It takes rough, low-quality prompts and transforms them into structured, high-scoring prompts that produce dramatically better results. Works with Claude Code, OpenClaw, Codex, Grok CLI, Hermes Agent, or any LLM that accepts structured prompts.
@@ -129,7 +129,7 @@ claude --version
 
 ### Staying current (version self-check)
 
-RePrompter is copy-based, so nothing auto-updates it — but it can tell you when your copy is behind the latest release. On the first invocation in a session it runs a **fail-soft** check (`scripts/version-check.js`) that compares your local `SKILL.md` version against the latest GitHub release and prints a notice **only if you're behind** (silent when up to date). The result is cached ~24h (keyed by repo), so repeat runs add no latency; the first uncached check waits up to ~3s for GitHub, then fails soft and silent if it can't reach it. Disable it entirely with `REPROMPTER_VERSION_CHECK=0`.
+RePrompter is copy-based, so nothing auto-updates it — but it can tell you when your copy is behind the latest release. On the first invocation in a session it runs a **fail-soft** check (`scripts/version-check.js`) that compares your local `SKILL.md` version against the latest GitHub release and prints a notice **only if you're behind** (silent when up to date). The result is cached ~24h (keyed by repo), so repeat runs add no latency; the first uncached check waits up to ~3s for GitHub, then fails soft and silent if it can't reach it (a failed lookup is cached ~1h so offline sessions don't repeat the timeout). Disable it entirely with `REPROMPTER_VERSION_CHECK=0`.
 
 The notice's upgrade command is **path-aware**: it re-fetches into the exact directory this skill is installed in, so it works the same whether you run Claude Code (`~/.claude/skills/reprompter`), Codex (`~/.codex/skills/reprompter`), OpenClaw, Grok CLI, or a project-local `skills/reprompter/`. (Hermes installs ship no `scripts/`, so the check doesn't run there — use `hermes skills install` to update.)
 
@@ -319,7 +319,7 @@ Exemplar output → EXTRACT structure → ANALYZE task type + domain + tone
 ## Testing
 
 ```bash
-npm run check    # 265 tests + 4 benchmarks
+npm run check    # 267 tests + 4 benchmarks
 npm run test:reverse-engineer  # individual suite example
 ```
 
@@ -339,11 +339,11 @@ npm run test:reverse-engineer  # individual suite example
 | Artifact evaluator | 4 |
 | Goal command | 11 |
 | Workflow command | 20 |
-| Version check | 17 |
+| Version check | 19 |
 | Hermes package | 8 |
 | Telemetry schema/store | 6 |
 | Observability report | 2 |
-| **Total** | **265** |
+| **Total** | **267** |
 
 All benchmarks at 100%: swarm routing (9/9), real-world routing (64/64), artifacts (84/84), flywheel (13/13), provider (9/9).
 

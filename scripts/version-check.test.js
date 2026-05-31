@@ -126,6 +126,47 @@ test("checkVersion: stale cache falls through to the network and rewrites cache"
   assert.equal(written.checkedAt, now);
 });
 
+test("checkVersion: a failed lookup is negatively cached, then throttles repeat network hits", async () => {
+  const cacheFile = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "rpt-vc-")), "neg.json");
+  let calls = 0;
+  const fetchLatest = async () => {
+    calls += 1;
+    return null; // network unavailable
+  };
+  const r1 = await checkVersion({ local: "12.5.1", now: 1000, cacheFile, fetchLatest });
+  assert.equal(r1.latest, null);
+  assert.equal(calls, 1);
+  const written = JSON.parse(fs.readFileSync(cacheFile, "utf8"));
+  assert.equal(written.latest, null, "failure recorded as a negative cache entry");
+  assert.equal(written.checkedAt, 1000);
+
+  // A new session 5 min later must not repeat the network hit.
+  const r2 = await checkVersion({ local: "12.5.1", now: 1000 + 5 * 60 * 1000, cacheFile, fetchLatest });
+  assert.equal(calls, 1, "negative cache throttles retries within the neg-TTL");
+  assert.equal(r2.fromCache, true);
+  assert.equal(r2.behind, false);
+});
+
+test("checkVersion: negative cache expires after the shorter neg-TTL and retries", async () => {
+  const cacheFile = tmpFile(
+    "neg.json",
+    JSON.stringify({ checkedAt: 1000, latest: null, repo: "AytuncYildizli/reprompter" })
+  );
+  let calls = 0;
+  const r = await checkVersion({
+    local: "12.5.1",
+    now: 1000 + 2 * 60 * 60 * 1000, // 2h later -> past the 1h neg-TTL
+    cacheFile,
+    fetchLatest: async () => {
+      calls += 1;
+      return "12.6.0";
+    },
+  });
+  assert.equal(calls, 1, "expired negative cache retries the network");
+  assert.equal(r.latest, "12.6.0");
+  assert.equal(r.behind, true);
+});
+
 test("CLI --json with injected latest reports behind without touching the network", () => {
   const res = spawnSync(process.execPath, [path.join(__dirname, "version-check.js"), "--json", "--no-cache"], {
     encoding: "utf8",

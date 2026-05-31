@@ -42,7 +42,8 @@ function sanitizeRepo(value) {
 const REPO = sanitizeRepo(process.env.REPROMPTER_REPO);
 const SKILL_ROOT = path.join(__dirname, "..");
 const SKILL_MD = path.join(SKILL_ROOT, "SKILL.md");
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h for a successful lookup
+const NEG_CACHE_TTL_MS = 60 * 60 * 1000; // 1h for a failed lookup (throttle retries without suppressing for a full day)
 const NET_TIMEOUT_MS = 3000;
 
 // POSIX single-quote escape: wrap in '...' and turn embedded ' into '\''.
@@ -90,6 +91,11 @@ function cachePath() {
   return path.join(base, "reprompter", "version-check.json");
 }
 
+// Returns the fresh cache entry as { latest } (latest may be null for a
+// negatively-cached failed lookup), or null when there's no usable entry.
+// A null `latest` that is still fresh means "we recently failed — don't retry
+// the network yet", which is how offline/restricted sessions avoid repeating
+// the timeout. Positive and negative entries use different TTLs.
 function readCache(now, file = cachePath()) {
   try {
     const c = JSON.parse(fs.readFileSync(file, "utf8"));
@@ -97,13 +103,12 @@ function readCache(now, file = cachePath()) {
     // reuse another repo's latest. Pre-repo cache entries (no `repo`) are
     // honored only for the default repo for backward compatibility.
     const repoMatches = c && (c.repo === REPO || (c.repo == null && REPO === DEFAULT_REPO));
-    if (
-      repoMatches &&
-      typeof c.checkedAt === "number" &&
-      now - c.checkedAt < CACHE_TTL_MS &&
-      parseVersion(c.latest)
-    ) {
-      return c.latest;
+    if (!repoMatches || typeof c.checkedAt !== "number") return null;
+    const age = now - c.checkedAt;
+    if (parseVersion(c.latest)) {
+      if (age < CACHE_TTL_MS) return { latest: c.latest };
+    } else if (c.latest === null && age < NEG_CACHE_TTL_MS) {
+      return { latest: null }; // fresh negative entry -> skip the network
     }
   } catch {
     /* missing / corrupt cache -> treat as no cache */
@@ -114,7 +119,8 @@ function readCache(now, file = cachePath()) {
 function writeCache(latest, now, file = cachePath()) {
   try {
     fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(file, JSON.stringify({ checkedAt: now, latest, repo: REPO }), "utf8");
+    // Normalize to null so a failed lookup is recorded as a negative entry.
+    fs.writeFileSync(file, JSON.stringify({ checkedAt: now, latest: latest ?? null, repo: REPO }), "utf8");
   } catch {
     /* cache is best-effort; never fail the check on a write error */
   }
@@ -193,9 +199,10 @@ async function checkVersion(opts = {}) {
   const fetchLatest = opts.fetchLatest || fetchLatestFromGitHub;
   const useCache = opts.useCache !== false;
 
-  let latest = useCache ? readCache(now, opts.cacheFile) : null;
-  const fromCache = latest !== null;
-  if (!latest) {
+  const cached = useCache ? readCache(now, opts.cacheFile) : null;
+  const fromCache = cached !== null;
+  let latest = cached ? cached.latest : null;
+  if (!cached) {
     // fetchLatest can reject synchronously (e.g. an invalid request path);
     // keep the "never throws" contract by swallowing it into a null latest.
     try {
@@ -203,7 +210,9 @@ async function checkVersion(opts = {}) {
     } catch {
       latest = null;
     }
-    if (latest && useCache) writeCache(latest, now, opts.cacheFile);
+    // Write even on failure: a negative entry throttles repeat network hits
+    // (and the full ~3s timeout) for offline/restricted sessions.
+    if (useCache) writeCache(latest, now, opts.cacheFile);
   }
 
   const behind = compareVersions(local, latest) === -1;
