@@ -45,17 +45,20 @@ test("readLocalVersion extracts metadata.version from SKILL.md frontmatter", () 
   assert.equal(readLocalVersion(path.join(os.tmpdir(), "does-not-exist-xyz.md")), null);
 });
 
-test("checkVersion: local behind latest -> behind + actionable notice", async () => {
+test("checkVersion: local behind latest -> behind + path-aware actionable notice", async () => {
   const r = await checkVersion({
     local: "12.5.1",
     fetchLatest: async () => "12.6.0",
     useCache: false,
+    installDir: "/home/u/.codex/skills/reprompter",
   });
   assert.equal(r.behind, true);
   assert.equal(r.latest, "12.6.0");
   assert.ok(r.notice.includes("12.5.1"));
   assert.ok(r.notice.includes("12.6.0"));
   assert.ok(/new session/i.test(r.notice)); // the per-session cache caveat
+  assert.ok(r.notice.includes("tar xz")); // concrete upgrade command
+  assert.ok(r.notice.includes("/home/u/.codex/skills/reprompter")); // targets the real install dir, any runtime
 });
 
 test("checkVersion: equal version -> not behind, no notice", async () => {
@@ -146,8 +149,11 @@ test("CLI exits 0 and stays quiet when up to date", () => {
   assert.ok(!/behind/.test(res.stdout));
 });
 
-test("formatNotice is a single actionable block with the release link", () => {
-  const n = formatNotice("12.5.1", "12.6.0");
+test("formatNotice is a single actionable block with a path-aware upgrade command", () => {
+  const n = formatNotice("12.5.1", "12.6.0", "/ws/skills/reprompter");
   assert.ok(n.startsWith("⚠ reprompter 12.5.1 is behind"));
   assert.ok(n.includes("releases/latest"));
+  assert.ok(n.includes("curl -sL"));
+  assert.ok(n.includes("-C \"/ws/skills/reprompter\"")); // re-fetch targets the detected dir
+  assert.ok(/hermes skills install/.test(n)); // the no-scripts/ runtime fallback
 });

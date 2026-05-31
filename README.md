@@ -129,7 +129,9 @@ claude --version
 
 ### Staying current (version self-check)
 
-RePrompter is copy-based, so nothing auto-updates it — but it can tell you when your copy is behind the latest release. On the first invocation in a session it runs a **fail-soft** check (`scripts/version-check.js`) that compares your local `SKILL.md` version against the latest GitHub release and prints a one-line notice if you're behind. It caches the result ~24h and stays completely silent when offline or rate-limited, so it never adds latency. Disable it with `REPROMPTER_VERSION_CHECK=0`.
+RePrompter is copy-based, so nothing auto-updates it — but it can tell you when your copy is behind the latest release. On the first invocation in a session it runs a **fail-soft** check (`scripts/version-check.js`) that compares your local `SKILL.md` version against the latest GitHub release and prints a notice if you're behind. It caches the result ~24h and stays completely silent when offline or rate-limited, so it never adds latency. Disable it with `REPROMPTER_VERSION_CHECK=0`.
+
+The notice's upgrade command is **path-aware**: it re-fetches into the exact directory this skill is installed in, so it works the same whether you run Claude Code (`~/.claude/skills/reprompter`), Codex (`~/.codex/skills/reprompter`), OpenClaw, Grok CLI, or a project-local `skills/reprompter/`. (Hermes installs ship no `scripts/`, so the check doesn't run there — use `hermes skills install` to update.)
 
 Run it manually any time:
 

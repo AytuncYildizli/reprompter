@@ -28,7 +28,8 @@ const path = require("node:path");
 const https = require("node:https");
 
 const REPO = process.env.REPROMPTER_REPO || "AytuncYildizli/reprompter";
-const SKILL_MD = path.join(__dirname, "..", "SKILL.md");
+const SKILL_ROOT = path.join(__dirname, "..");
+const SKILL_MD = path.join(SKILL_ROOT, "SKILL.md");
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
 const NET_TIMEOUT_MS = 3000;
 
@@ -143,12 +144,20 @@ function fetchLatestFromGitHub() {
   });
 }
 
-function formatNotice(local, latest) {
+// Build the upgrade notice. `installDir` is where this skill copy actually
+// lives (derived from __dirname), so the re-fetch command targets the right
+// folder regardless of runtime — Claude Code, Codex, OpenClaw, Grok CLI, or a
+// project-local `skills/reprompter/`. Hermes installs ship no `scripts/`, so
+// this script never runs there; the `hermes skills install` line is the note
+// for that one case.
+function formatNotice(local, latest, installDir = SKILL_ROOT) {
   return [
     `⚠ reprompter ${local} is behind the latest release ${latest}.`,
-    `  Update your install (e.g. re-run \`hermes skills install\`, or re-copy from`,
-    `  https://github.com/${REPO}/archive/main.tar.gz), then start a NEW session`,
-    `  — the skill is cached per session, so an in-place update won't apply until you do.`,
+    `  Upgrade in place (re-fetch into this install):`,
+    `    curl -sL https://github.com/${REPO}/archive/main.tar.gz \\`,
+    `      | tar xz --strip-components=1 -C ${JSON.stringify(installDir)}`,
+    `  (Hermes installs: hermes skills install ${REPO}/skills/reprompter)`,
+    `  Then start a NEW session — the skill is cached per session, so an in-place update won't apply until you do.`,
     `  Release notes: https://github.com/${REPO}/releases/latest`,
   ].join("\n");
 }
@@ -174,7 +183,7 @@ async function checkVersion(opts = {}) {
     latest: latest || null,
     behind,
     fromCache,
-    notice: behind ? formatNotice(local, latest) : null,
+    notice: behind ? formatNotice(local, latest, opts.installDir) : null,
   };
 }
 
