@@ -1,3 +1,21 @@
+## v12.7.0 (2026-05-31) — Version self-check
+
+### Headline
+
+RePrompter is distributed copy-based with no package manager tracking the installed version, so a stale copy is invisible to the user. This release adds a **fail-soft version self-check**: on the first invocation in a session, RePrompter compares its local `SKILL.md` version against the latest GitHub release and surfaces a one-line update notice if the copy is behind. Fully additive and off-switchable; no output lane changes.
+
+### Added
+
+- `scripts/version-check.js` — pull-based check (`checkVersion`, `compareVersions`, `readLocalVersion`, `formatNotice`). Reads local `metadata.version` from `SKILL.md`, resolves the latest release via the GitHub API, and prints an actionable notice (update + start a new session) only when behind. **Fail-soft**: offline / rate-limited / unparseable → no output, exit 0. Result cached ~24h under `XDG_CACHE_HOME`; network hit at most once/day. `REPROMPTER_VERSION_LATEST` is a manual/offline override; `--json` and `--no-cache` CLI flags.
+- `scripts/version-check.test.js` — 12 tests (semver compare incl. numeric 12.10 > 12.7, local-version read, behind/equal/ahead, network-failure fail-soft, fresh-cache short-circuit + stale-cache refresh, CLI exit-0 + behind/up-to-date paths). No test touches the network or the real cache (all deps injected).
+
+### Changed
+
+- `SKILL.md` — new "Version self-check" subsection + `REPROMPTER_VERSION_CHECK=0|1` env var (default on); version bumped to `12.7.0`. Because the skill is cached per session, the notice tells the user to update **and start a new session**.
+- `scripts/hermes-sanitizer.json` — rewrites `node scripts/version-check.js` for the Hermes artifact (the package ships no `scripts/`).
+- `package.json` — `test:version-check` registered and added to the `check` gate; version `12.7.0`.
+- `README.md` — "Staying current" install section (manual run, `--json`, opt-in Claude Code `SessionStart` hook), version badge `12.7.0`, test table (Version check = 12; total 260).
+
 ## v12.6.0 (2026-05-30) — Claude dynamic Workflow lane + Option H, first-class ultracode
 
 ### Headline

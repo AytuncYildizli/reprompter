@@ -13,12 +13,12 @@ compatibility: |
   Workflow preflight lane + Repromptverse Option H target Claude Code's dynamic `Workflow` tool (JS-scripted background fan-out with schema-validated returns and resume); additive, detected by tool presence, with first-class ultracode.
 metadata:
   author: AytuncYildizli
-  version: 12.6.0
+  version: 12.7.0
 ---
 
-# RePrompter v12.6.0
+# RePrompter v12.7.0
 
-> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.6.0 adds the Workflow preflight lane + Repromptverse Option H (Claude dynamic Workflow tool) with first-class ultracode, preserving all prior Claude Code, Codex, OpenClaw, Grok CLI, and Hermes behavior.**
+> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.6.0 added the Workflow preflight lane + Repromptverse Option H (Claude dynamic Workflow tool) with first-class ultracode; v12.7.0 adds a fail-soft version self-check that warns when the installed copy is behind the latest release. All prior Claude Code, Codex, OpenClaw, Grok CLI, and Hermes behavior is preserved.**
 
 ---
 
@@ -1478,6 +1478,13 @@ Repromptverse runtime supports deterministic toggles for rollout and troubleshoo
 - `REPROMPTER_TELEMETRY=0|1` — disable/enable runtime telemetry emission for observability reports
 - `REPROMPTER_FLYWHEEL=0|1` — disable/enable Prompt Flywheel outcome learning (v9.0+). Controls whether outcome records are **written** to `.reprompter/flywheel/outcomes.ndjson` after a run.
 - `REPROMPTER_FLYWHEEL_BIAS=0|1` — disable/enable Prompt Flywheel bias injection at generation time (v3 read-path). Default **off**. When on, Mode 1 and Mode 2 consult `npm run flywheel:query` for a recommendation before picking a template and apply the bias only when confidence is medium/high with `sampleCount >= 3`. See "Flywheel bias injection" under Mode 1 for the full decision rule.
+- `REPROMPTER_VERSION_CHECK=0|1` — disable/enable the version self-check (default **on**). See "Version self-check" below.
+
+### Version self-check
+RePrompter is distributed copy-based (no package manager tracks the installed version), so it can't auto-update — but it can tell the user when their copy is stale. Unless `REPROMPTER_VERSION_CHECK=0`, on the **first** reprompter invocation in a session run `the root repository version-check helper` once and, if it prints an update notice, surface that single line to the user before continuing. Never block on it.
+- The check is **fail-soft**: offline, rate-limited, or unparseable responses produce no output and exit 0. It compares the local `SKILL.md` `metadata.version` against the latest GitHub release and caches the result ~24h under `XDG_CACHE_HOME`, so it adds no latency or noise on repeat runs.
+- Because the skill is **cached per session**, the notice tells the user to update *and start a new session* — an in-place file update does not apply to a running session.
+- Hermes / non-Claude runtimes that don't ship the `scripts/` helpers can skip this; it is an operator convenience, not part of any output lane.
 
 ### Telemetry and observability
 Every Repromptverse run should emit stage-level telemetry events with `runId`, `taskId`, stage name, status, latency, and provider/model where applicable.

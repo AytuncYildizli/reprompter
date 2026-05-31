@@ -164,6 +164,11 @@
     },
     {
       "kind": "literal",
+      "pattern": "node scripts/version-check.js",
+      "replacement": "the root repository version-check helper"
+    },
+    {
+      "kind": "literal",
       "pattern": "#   curl -sL https://claude.ai/install.sh | bash",
       "replacement": "#   Use the official Claude Code installer for your platform."
     },
