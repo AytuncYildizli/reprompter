@@ -136,6 +136,7 @@ The notice's upgrade command is **path-aware**: it re-fetches into the exact dir
 Run it manually any time:
 
 ```bash
+cd skills/reprompter                   # run from the skill's install dir (where scripts/ lives)
 node scripts/version-check.js          # prints a notice only if behind; silent otherwise
 node scripts/version-check.js --json   # explicit status: {local, latest, behind, notice}
 ```
