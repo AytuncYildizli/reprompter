@@ -27,11 +27,30 @@ const os = require("node:os");
 const path = require("node:path");
 const https = require("node:https");
 
-const REPO = process.env.REPROMPTER_REPO || "AytuncYildizli/reprompter";
+const DEFAULT_REPO = "AytuncYildizli/reprompter";
+
+// REPROMPTER_REPO is interpolated into a request path AND into a copy-pasteable
+// shell command, so constrain it to a strict owner/repo shape. Anything else
+// (shell metacharacters, path-escaping, junk) falls back to the default — this
+// is the security boundary for the printed upgrade command and the API URL.
+function sanitizeRepo(value) {
+  return typeof value === "string" && /^[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+$/.test(value)
+    ? value
+    : DEFAULT_REPO;
+}
+
+const REPO = sanitizeRepo(process.env.REPROMPTER_REPO);
 const SKILL_ROOT = path.join(__dirname, "..");
 const SKILL_MD = path.join(SKILL_ROOT, "SKILL.md");
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
 const NET_TIMEOUT_MS = 3000;
+
+// POSIX single-quote escape: wrap in '...' and turn embedded ' into '\''.
+// Single quotes neutralize $(), backticks, $VAR — so a copy-pasteable path
+// can't trigger shell expansion no matter what it contains.
+function shSingleQuote(value) {
+  return `'${String(value).replace(/'/g, "'\\''")}'`;
+}
 
 // Parse the first semver-looking triple out of a string. Returns [maj, min, pat]
 // or null. Tolerates a leading "v" and surrounding text.
@@ -74,8 +93,12 @@ function cachePath() {
 function readCache(now, file = cachePath()) {
   try {
     const c = JSON.parse(fs.readFileSync(file, "utf8"));
+    // Cache must be repo-scoped: a fork / REPROMPTER_REPO override must not
+    // reuse another repo's latest. Pre-repo cache entries (no `repo`) are
+    // honored only for the default repo for backward compatibility.
+    const repoMatches = c && (c.repo === REPO || (c.repo == null && REPO === DEFAULT_REPO));
     if (
-      c &&
+      repoMatches &&
       typeof c.checkedAt === "number" &&
       now - c.checkedAt < CACHE_TTL_MS &&
       parseVersion(c.latest)
@@ -91,7 +114,7 @@ function readCache(now, file = cachePath()) {
 function writeCache(latest, now, file = cachePath()) {
   try {
     fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(file, JSON.stringify({ checkedAt: now, latest }), "utf8");
+    fs.writeFileSync(file, JSON.stringify({ checkedAt: now, latest, repo: REPO }), "utf8");
   } catch {
     /* cache is best-effort; never fail the check on a write error */
   }
@@ -155,7 +178,7 @@ function formatNotice(local, latest, installDir = SKILL_ROOT) {
     `⚠ reprompter ${local} is behind the latest release ${latest}.`,
     `  Upgrade in place (re-fetch into this install):`,
     `    curl -sL https://github.com/${REPO}/archive/main.tar.gz \\`,
-    `      | tar xz --strip-components=1 -C ${JSON.stringify(installDir)}`,
+    `      | tar xz --strip-components=1 -C ${shSingleQuote(installDir)}`,
     `  (Hermes installs: hermes skills install ${REPO}/skills/reprompter)`,
     `  Then start a NEW session — the skill is cached per session, so an in-place update won't apply until you do.`,
     `  Release notes: https://github.com/${REPO}/releases/latest`,
@@ -173,7 +196,13 @@ async function checkVersion(opts = {}) {
   let latest = useCache ? readCache(now, opts.cacheFile) : null;
   const fromCache = latest !== null;
   if (!latest) {
-    latest = await fetchLatest();
+    // fetchLatest can reject synchronously (e.g. an invalid request path);
+    // keep the "never throws" contract by swallowing it into a null latest.
+    try {
+      latest = await fetchLatest();
+    } catch {
+      latest = null;
+    }
     if (latest && useCache) writeCache(latest, now, opts.cacheFile);
   }
 
@@ -189,17 +218,21 @@ async function checkVersion(opts = {}) {
 
 async function main() {
   const argv = process.argv.slice(2);
+  // Honor the documented opt-out on every direct invocation (e.g. the README's
+  // SessionStart hook), not just the skill-preflight path.
+  if (process.env.REPROMPTER_VERSION_CHECK === "0") return 0;
+
   const json = argv.includes("--json");
   const result = await checkVersion({ useCache: !argv.includes("--no-cache") });
 
   if (json) {
+    // --json is the explicit status mode: always emit the full result.
     process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
   } else if (result.notice) {
     process.stdout.write(`${result.notice}\n`);
-  } else if (result.latest && result.local) {
-    process.stdout.write(`reprompter ${result.local} is up to date (latest ${result.latest}).\n`);
   }
-  // else: couldn't determine -> stay silent (fail-soft)
+  // Default (non-json) path prints ONLY when behind. Up-to-date and
+  // can't-determine both stay silent, so a session hook adds no noise.
   return 0; // a version check never fails a gate
 }
 

@@ -16,6 +16,14 @@ RePrompter is distributed copy-based with no package manager tracking the instal
 - `package.json` — `test:version-check` registered and added to the `check` gate; version `12.7.0`.
 - `README.md` — "Staying current" install section (manual run, `--json`, opt-in Claude Code `SessionStart` hook), version badge `12.7.0`, test table (Version check = 12; total 260).
 
+### Review hardening (Codex)
+
+- **[security] No shell injection in the printed upgrade command:** `REPROMPTER_REPO` is validated to a strict `owner/repo` shape (junk falls back to the default) and the install dir is POSIX single-quoted, so a copy-pasteable `curl | tar` line can't trigger `$()`/backtick expansion from a crafted path or env value.
+- **Opt-out honored on direct invocation:** `main()` early-returns silently when `REPROMPTER_VERSION_CHECK=0`, so the README `SessionStart` hook and manual runs respect the documented off-switch (previously only the skill-preflight path did).
+- **Silent when current:** the default (non-`--json`) path prints only when behind; up-to-date and undeterminable both produce no output, matching the documented contract and keeping session hooks quiet. `--json` remains the explicit status mode.
+- **Repo-scoped cache:** the cache payload carries `repo`, and entries from a different `REPROMPTER_REPO` are ignored, so a fork override can't reuse another repo's `latest` (pre-repo entries honored only for the default repo).
+- **Truly fail-soft:** `await fetchLatest()` is wrapped in try/catch so a synchronous rejection can't bubble past the "never throws" contract.
+
 ## v12.6.0 (2026-05-30) — Claude dynamic Workflow lane + Option H, first-class ultracode
 
 ### Headline

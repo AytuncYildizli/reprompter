@@ -138,15 +138,69 @@ test("CLI --json with injected latest reports behind without touching the networ
   assert.ok(parseVersion(out.local), "reads the real local SKILL.md version");
 });
 
-test("CLI exits 0 and stays quiet when up to date", () => {
+test("CLI is silent (no output) when up to date — default path prints only if behind", () => {
   const local = readLocalVersion();
   const res = spawnSync(process.execPath, [path.join(__dirname, "version-check.js"), "--no-cache"], {
     encoding: "utf8",
     env: { ...process.env, REPROMPTER_VERSION_LATEST: local },
   });
   assert.equal(res.status, 0);
-  assert.ok(/up to date/.test(res.stdout));
-  assert.ok(!/behind/.test(res.stdout));
+  assert.equal(res.stdout.trim(), "", "an up-to-date install must produce no stdout noise");
+});
+
+test("CLI honors REPROMPTER_VERSION_CHECK=0 (silent no-op even when behind)", () => {
+  const res = spawnSync(process.execPath, [path.join(__dirname, "version-check.js"), "--no-cache"], {
+    encoding: "utf8",
+    env: { ...process.env, REPROMPTER_VERSION_LATEST: "99.0.0", REPROMPTER_VERSION_CHECK: "0" },
+  });
+  assert.equal(res.status, 0);
+  assert.equal(res.stdout.trim(), "", "opt-out must suppress all output on direct invocation");
+});
+
+test("CLI sanitizes a junk REPROMPTER_REPO back to the default in the printed command", () => {
+  const res = spawnSync(process.execPath, [path.join(__dirname, "version-check.js"), "--json", "--no-cache"], {
+    encoding: "utf8",
+    env: { ...process.env, REPROMPTER_VERSION_LATEST: "99.0.0", REPROMPTER_REPO: "evil$(touch x)/repo" },
+  });
+  assert.equal(res.status, 0);
+  const out = JSON.parse(res.stdout);
+  assert.ok(out.notice.includes("github.com/AytuncYildizli/reprompter"), "falls back to default repo");
+  assert.ok(!out.notice.includes("evil$(touch x)"), "never echoes an unsafe repo");
+});
+
+test("checkVersion: cache from a different repo is ignored (repo-scoped)", async () => {
+  const cacheFile = tmpFile("vc.json", JSON.stringify({ checkedAt: 1000, latest: "99.0.0", repo: "other/fork" }));
+  let fetched = false;
+  const r = await checkVersion({
+    local: "12.5.1",
+    now: 1000 + 60 * 1000,
+    cacheFile,
+    fetchLatest: async () => {
+      fetched = true;
+      return "12.6.0";
+    },
+  });
+  assert.equal(fetched, true, "must not reuse another repo's cached latest");
+  assert.equal(r.latest, "12.6.0");
+});
+
+test("checkVersion: fetchLatest that throws stays fail-soft (never rejects)", async () => {
+  const r = await checkVersion({
+    local: "12.5.1",
+    useCache: false,
+    fetchLatest: async () => {
+      throw new Error("boom");
+    },
+  });
+  assert.equal(r.behind, false);
+  assert.equal(r.latest, null);
+  assert.equal(r.notice, null);
+});
+
+test("formatNotice single-quotes the install dir so shell metacharacters can't expand", () => {
+  const n = formatNotice("12.5.1", "12.6.0", "/tmp/$(touch pwned)/reprompter");
+  assert.ok(n.includes("-C '/tmp/$(touch pwned)/reprompter'"), "path is single-quoted verbatim");
+  assert.ok(!/-C\s+\/tmp\/\$\(/.test(n), "never emits an unquoted $(...) path");
 });
 
 test("formatNotice is a single actionable block with a path-aware upgrade command", () => {
@@ -154,6 +208,6 @@ test("formatNotice is a single actionable block with a path-aware upgrade comman
   assert.ok(n.startsWith("⚠ reprompter 12.5.1 is behind"));
   assert.ok(n.includes("releases/latest"));
   assert.ok(n.includes("curl -sL"));
-  assert.ok(n.includes("-C \"/ws/skills/reprompter\"")); // re-fetch targets the detected dir
+  assert.ok(n.includes("-C '/ws/skills/reprompter'")); // re-fetch targets the detected dir (shell-safe quoted)
   assert.ok(/hermes skills install/.test(n)); // the no-scripts/ runtime fallback
 });
