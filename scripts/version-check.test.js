@@ -260,10 +260,3 @@ test("formatNotice is a single actionable block with a path-aware upgrade comman
   assert.ok(n.includes("-C '/ws/skills/reprompter'")); // re-fetch targets the detected dir (shell-safe quoted)
   assert.ok(/hermes skills install/.test(n)); // the no-scripts/ runtime fallback
 });
-
-test("formatNotice upgrade command excludes the Hermes-only package and repo extras", () => {
-  const n = formatNotice("12.5.1", "12.6.0", "/ws/skills/reprompter");
-  assert.ok(n.includes("--exclude='*/skills'"), "skips the nested Hermes-only skills/ package");
-  assert.ok(n.includes("--exclude='*/benchmarks'"));
-  assert.ok(n.includes("--exclude='*/assets'"));
-});

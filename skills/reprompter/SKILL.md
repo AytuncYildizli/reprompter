@@ -13,10 +13,10 @@ compatibility: |
   Workflow preflight lane + Repromptverse Option H target Claude Code's dynamic `Workflow` tool (JS-scripted background fan-out with schema-validated returns and resume); additive, detected by tool presence, with first-class ultracode.
 metadata:
   author: AytuncYildizli
-  version: 12.7.0
+  version: 12.7.1
 ---
 
-# RePrompter v12.7.0
+# RePrompter v12.7.1
 
 > **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.6.0 added the Workflow preflight lane + Repromptverse Option H (Claude dynamic Workflow tool) with first-class ultracode; v12.7.0 adds a fail-soft version self-check that warns when the installed copy is behind the latest release. All prior Claude Code, Codex, OpenClaw, Grok CLI, and Hermes behavior is preserved.**
 
