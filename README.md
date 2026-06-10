@@ -8,7 +8,7 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-12.7.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-12.7.1-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-267%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
@@ -120,6 +120,8 @@ curl -sL https://github.com/aytuncyildizli/reprompter/archive/main.tar.gz | \
   tar xz --strip-components=1 -C skills/reprompter
 ```
 
+Source archives are runtime-only (`.gitattributes` `export-ignore`): they contain `SKILL.md`, `references/`, and `scripts/` but not dev/dist trees like `skills/` (the Hermes-only install package — see [Install paths](#openclaw--codex--grok-cli--hermes-agent)), `benchmarks/`, `assets/`, or `docs/`. Installed an older full copy? It's safe to delete those directories from it — upgrades won't bring them back.
+
 For the `/goal` preflight lane on Claude Code, pin the CLI to **v2.1.139 or later**. `/goal` depends on the hooks layer — if `disableAllHooks` or `allowManagedHooksOnly` is set in `settings.json` the command is unavailable on any version (v2.1.140 only made the failure visible). Managed environments that block hooks should stick to Single mode for goal-shaped work.
 
 ```bash
@@ -178,10 +180,10 @@ Avoid using the two-part Hermes identifier as the primary install command becaus
 hermes skills install AytuncYildizli/reprompter
 ```
 
-Hermes Agent's default manual skill location is `~/.hermes/skills/reprompter/`:
+Hermes Agent's default manual skill location is `~/.hermes/skills/reprompter/`. The `skills/` package is excluded from GitHub source archives, so a manual copy needs a **git clone** (or any `hermes skills install` form above), not a tarball/ZIP download:
 
 ```bash
-# Run from the parent directory that contains reprompter/
+git clone https://github.com/AytuncYildizli/reprompter.git
 mkdir -p ~/.hermes/skills
 cp -R reprompter/skills/reprompter ~/.hermes/skills/
 ```

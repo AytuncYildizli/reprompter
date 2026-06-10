@@ -1,3 +1,18 @@
+## v12.7.1 (2026-06-10) — Runtime-only source archives
+
+### Headline
+
+Copy-based installs (Claude Code, Codex, OpenClaw, Grok CLI) fetched the full repo tarball, which nested the generated Hermes-only `skills/reprompter/` package (1,806-line `SKILL.md` + `references/` tree) plus `benchmarks/`, `assets/`, and `docs/` inside every install — and the version-check upgrade command re-introduced them on every update. This release makes GitHub source archives **runtime-only** at the source: `.gitattributes` `export-ignore` strips dev/dist trees from `archive/*.tar.gz` and "Download ZIP", so every documented install/upgrade command stays a plain `curl | tar` and existing installs self-heal on their next upgrade (old copies' upgrade commands now fetch a clean tarball; leftover dirs are safe to delete).
+
+### Added
+
+- `.gitattributes` — `export-ignore` for `/skills`, `/benchmarks`, `/assets`, `/docs`, `/.github`. Hermes is unaffected: `hermes skills install` fetches through the GitHub Trees/Contents API, which ignores `export-ignore`; the committed `skills/reprompter/` package on `main` is unchanged.
+
+### Changed
+
+- `README.md` — install section notes that archives are runtime-only and that older full installs can safely delete `skills/`, `benchmarks/`, `assets/`, `docs/`; the manual Hermes copy path now starts from a `git clone` (archives no longer contain `skills/`); version badge `12.7.1`.
+- `SKILL.md`, `package.json`, `package-lock.json` — version `12.7.1`; Hermes package regenerated.
+
 ## v12.7.0 (2026-05-31) — Version self-check
 
 ### Headline

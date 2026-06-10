@@ -1,0 +1,11 @@
+# Keep GitHub source archives (archive/*.tar.gz, "Download ZIP") runtime-only.
+# Copy-based installs (Claude Code, Codex, OpenClaw, Grok CLI) fetch these
+# archives, so dev/dist-only trees would otherwise ship inside every install —
+# including skills/, the generated Hermes-only package (see README "Install").
+# Hermes installs are unaffected: `hermes skills install` fetches through the
+# GitHub Trees/Contents API, which ignores export-ignore.
+/skills     export-ignore
+/benchmarks export-ignore
+/assets     export-ignore
+/docs       export-ignore
+/.github    export-ignore
