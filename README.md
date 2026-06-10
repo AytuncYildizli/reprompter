@@ -117,8 +117,11 @@ with unit tests for both API and UI, without breaking existing API contracts.
 ```bash
 mkdir -p skills/reprompter
 curl -sL https://github.com/aytuncyildizli/reprompter/archive/main.tar.gz | \
-  tar xz --strip-components=1 -C skills/reprompter
+  tar xz --strip-components=1 -C skills/reprompter \
+  --exclude='*/skills' --exclude='*/benchmarks' --exclude='*/assets'
 ```
+
+The `--exclude` flags skip the nested `skills/` directory (the Hermes-only install package — see [Install paths](#openclaw--codex--grok-cli--hermes-agent)) plus benchmarks and assets, none of which are used at runtime outside Hermes. Already have a full copy installed? It's safe to delete those three directories from it.
 
 For the `/goal` preflight lane on Claude Code, pin the CLI to **v2.1.139 or later**. `/goal` depends on the hooks layer — if `disableAllHooks` or `allowManagedHooksOnly` is set in `settings.json` the command is unavailable on any version (v2.1.140 only made the failure visible). Managed environments that block hooks should stick to Single mode for goal-shaped work.
 
