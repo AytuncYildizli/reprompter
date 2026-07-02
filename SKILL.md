@@ -13,12 +13,12 @@ compatibility: |
   Workflow preflight lane + Repromptverse Option H target Claude Code's dynamic `Workflow` tool (JS-scripted background fan-out with schema-validated returns and resume); additive, detected by tool presence, with first-class ultracode.
 metadata:
   author: AytuncYildizli
-  version: 12.7.1
+  version: 12.8.0
 ---
 
-# RePrompter v12.7.1
+# RePrompter v12.8.0
 
-> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.6.0 added the Workflow preflight lane + Repromptverse Option H (Claude dynamic Workflow tool) with first-class ultracode; v12.7.0 adds a fail-soft version self-check that warns when the installed copy is behind the latest release. All prior Claude Code, Codex, OpenClaw, Grok CLI, and Hermes behavior is preserved.**
+> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.6.0 added the Workflow preflight lane + Repromptverse Option H (Claude dynamic Workflow tool) with first-class ultracode; v12.7.0 adds a fail-soft version self-check that warns when the installed copy is behind the latest release; v12.8.0 adds an opt-in ambient prompt gate for Claude Code UserPromptSubmit hooks. All prior Claude Code, Codex, OpenClaw, Grok CLI, and Hermes behavior is preserved.**
 
 ---
 
@@ -1489,8 +1489,8 @@ RePrompter is distributed copy-based (no package manager tracks the installed ve
 
 ### Telemetry and observability
 Every Repromptverse run should emit stage-level telemetry events with `runId`, `taskId`, stage name, status, latency, and provider/model where applicable.
-- Event stages: `route_intent`, `select_patterns`, `resolve_model`, `build_context`, `plan_ready`, `spawn_agent`, `poll_artifacts`, `evaluate_artifact`, `finalize_run`, `fingerprint_recipe`, `collect_outcome`, `learn_strategy`
-- Storage: `.reprompter/telemetry/events.ndjson`
+- Event stages: `route_intent`, `select_patterns`, `resolve_model`, `build_context`, `plan_ready`, `spawn_agent`, `poll_artifacts`, `evaluate_artifact`, `retry_artifact`, `finalize_run`, `fingerprint_recipe`, `collect_outcome`, `gate_prompt`, `learn_strategy`
+- Storage: `.reprompter/telemetry/events.ndjson`; `gate_prompt` events are written under `$XDG_CACHE_HOME/reprompter/telemetry` instead.
 - Report command: `npm run telemetry:report`
 
 ### Prompt Flywheel (v9.0+)
@@ -1564,6 +1564,39 @@ Always include explicit permission for the model to express uncertainty rather t
 - Add to constraints: "If unsure about any requirement, ask for clarification rather than assuming"
 - For research tasks: "Clearly label confidence levels (high/medium/low) for each finding"
 - For code tasks: "Flag any assumptions about the codebase with TODO comments"
+
+---
+
+## Ambient Prompt Gate (opt-in UserPromptSubmit hook — Claude Code only)
+
+The Ambient Prompt Gate is an optional Claude Code `UserPromptSubmit` hook that scores every incoming prompt with the same six RePrompter quality dimensions (clarity, specificity, structure, constraints, verifiability, decomposition). It stays silent for slash commands, acknowledgements, short prompts, non-task prompts, concise direct atomic tasks, prompts that already mention reprompting, and prompts above the configured threshold. For task-shaped prompts below threshold, it injects one line of model-facing context suggesting a one-time offer to structure the request via RePrompter before proceeding.
+
+It NEVER blocks a prompt. The hook is fail-soft: malformed stdin, unreadable state, telemetry errors, or any internal failure produce empty stdout and exit 0. It never writes prompt text to telemetry or state; telemetry contains only score, weakest dimensions, whether it nudged, the reason, and a hashed session correlation id.
+
+Install it in Claude Code by adding a `UserPromptSubmit` hook in `~/.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      { "hooks": [ { "type": "command", "command": "node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js" } ] }
+    ]
+  }
+}
+```
+
+Hermes installs ship no `scripts/` helpers, so use a git clone or Claude Code install if you want to run this gate.
+
+| Env flag | Values | Effect |
+|----------|--------|--------|
+| `REPROMPTER_AMBIENT` | `"0"` / unset | Kill switch. `"0"` disables all nudges. |
+| `REPROMPTER_AMBIENT_THRESHOLD` | number | Overall score threshold for nudging. Default `5`. |
+| `REPROMPTER_AMBIENT_COOLDOWN_MIN` | number | Per-session cooldown after a nudge. Default `15`. |
+| `REPROMPTER_TELEMETRY` | `"0"` / unset | `"0"` disables the privacy-safe `gate_prompt` telemetry event. |
+
+State lives under the user's cache directory (`$XDG_CACHE_HOME/reprompter/ambient-gate.json`, or `~/.cache/reprompter/ambient-gate.json`) and stores only session ids plus last-nudge timestamps. Telemetry, when enabled, is written under that same cache root, never into the user's project cwd.
+
+Other runtimes (Codex hooks, Hermes) are a documented follow-up; v12.8.0 is Claude Code-only.
 
 ---
 

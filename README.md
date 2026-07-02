@@ -8,9 +8,9 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-12.7.1-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-12.8.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-267%20passing-2da44e)](#testing)
+[![Tests](https://img.shields.io/badge/tests-293%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 
 RePrompter is a prompt engineering skill for AI coding agents. It takes rough, low-quality prompts and transforms them into structured, high-scoring prompts that produce dramatically better results. Works with Claude Code, OpenClaw, Codex, Grok CLI, Hermes Agent, or any LLM that accepts structured prompts.
@@ -309,6 +309,8 @@ Exemplar output → EXTRACT structure → ANALYZE task type + domain + tone
 
 **Prompt Flywheel Recipe Fingerprinting** - Every prompt carries a deterministic recipe fingerprint (template + patterns + capability tier + domain + context layers + quality bucket). Strategy learner groups outcomes by fingerprint so recommendations are grounded in repeated evidence, not one-off runs.
 
+**Ambient Prompt Gate (v12.8)** - An opt-in Claude Code `UserPromptSubmit` hook scores task-shaped prompts locally and silently nudges only when the request is below threshold. It is fail-soft, never blocks a prompt, uses cooldown to avoid nagging, and writes no prompt text to telemetry or state.
+
 **Agent Cards** - Plan Cards (before execution), Status Line (during), Result Cards (after). Full transparency into what agents will do, are doing, and found.
 
 **Dimension Interview** - Low-scoring prompt dimensions trigger targeted questions. No more vague prompts spawning expensive agents.
@@ -322,7 +324,7 @@ Exemplar output → EXTRACT structure → ANALYZE task type + domain + tone
 ## Testing
 
 ```bash
-npm run check    # 267 tests + 4 benchmarks
+npm run check    # 293 tests + 4 benchmarks
 npm run test:reverse-engineer  # individual suite example
 ```
 
@@ -343,10 +345,12 @@ npm run test:reverse-engineer  # individual suite example
 | Goal command | 11 |
 | Workflow command | 20 |
 | Version check | 19 |
+| Prompt gate | 23 |
 | Hermes package | 8 |
 | Telemetry schema/store | 6 |
 | Observability report | 2 |
-| **Total** | **267** |
+| Observability contract | 3 |
+| **Total** | **293** |
 
 All benchmarks at 100%: swarm routing (9/9), real-world routing (64/64), artifacts (84/84), flywheel (13/13), provider (9/9).
 
@@ -378,6 +382,22 @@ Hermes parallel paths: **G1 `delegate_task` batch** for normal Repromptverse, **
 ---
 
 ## Configuration
+
+### Ambient Prompt Gate (Claude Code, opt-in)
+
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      { "hooks": [ { "type": "command", "command": "node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js" } ] }
+    ]
+  }
+}
+```
+
+Ambient flags: `REPROMPTER_AMBIENT=0` disables nudges, `REPROMPTER_AMBIENT_THRESHOLD` changes the default score threshold (`5`), `REPROMPTER_AMBIENT_COOLDOWN_MIN` changes the per-session cooldown (`15`), and `REPROMPTER_TELEMETRY=0` disables privacy-safe gate telemetry. The gate never blocks prompts and never persists prompt text.
+
+### Repromptverse
 
 ```json
 // ~/.claude/settings.json
