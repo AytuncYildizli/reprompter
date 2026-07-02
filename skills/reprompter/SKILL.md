@@ -1487,6 +1487,9 @@ RePrompter is distributed copy-based (no package manager tracks the installed ve
 - Because the skill is **cached per session**, the notice tells the user to update *and start a new session* — an in-place file update does not apply to a running session.
 - Hermes / non-Claude runtimes that don't ship the `scripts/` helpers can skip this; it is an operator convenience, not part of any output lane.
 
+### Plugin migration nudge (Claude Code copy installs only)
+This applies ONLY when the runtime is Claude Code and this skill is running from a copy-based install (personal `~/.claude/skills` or project `skills/`), NOT from a plugin install. A plugin install has `.claude-plugin/plugin.json` two directory levels above the skill root. On the FIRST reprompter invocation of a session in that situation, append ONE sentence to the end of the response: RePrompter is now installable as a Claude Code plugin with auto-updates and automatic ambient-gate setup (`/plugin marketplace add AytuncYildizli/reprompter`, then `/plugin install reprompter@reprompter`); remove the copy after migrating so it does not shadow the plugin skill. Never repeat it later in the session, and never mention it in plugin installs or on non-Claude-Code runtimes (Codex, OpenClaw, Grok, Hermes).
+
 ### Telemetry and observability
 Every Repromptverse run should emit stage-level telemetry events with `runId`, `taskId`, stage name, status, latency, and provider/model where applicable.
 - Event stages: `route_intent`, `select_patterns`, `resolve_model`, `build_context`, `plan_ready`, `spawn_agent`, `poll_artifacts`, `evaluate_artifact`, `retry_artifact`, `finalize_run`, `fingerprint_recipe`, `collect_outcome`, `gate_prompt`, `learn_strategy`

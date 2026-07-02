@@ -192,6 +192,7 @@ function formatNotice(local, latest, installDir = SKILL_ROOT) {
     `  (Hermes installs: hermes skills install ${REPO}/skills/reprompter)`,
     `  Then start a NEW session — the skill is cached per session, so an in-place update won't apply until you do.`,
     `  Release notes: https://github.com/${REPO}/releases/latest`,
+    `Claude Code users: RePrompter is now installable as a plugin (auto-updates + automatic ambient-gate setup): /plugin marketplace add ${REPO}, then /plugin install reprompter@reprompter - and remove this copy afterwards so it does not shadow the plugin skill.`,
   ].join("\n");
 }
 

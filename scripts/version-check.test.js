@@ -21,6 +21,9 @@ const {
   isPluginInstall,
 } = require("./version-check");
 
+const PLUGIN_MIGRATION_TIP =
+  "Claude Code users: RePrompter is now installable as a plugin (auto-updates + automatic ambient-gate setup): /plugin marketplace add AytuncYildizli/reprompter, then /plugin install reprompter@reprompter - and remove this copy afterwards so it does not shadow the plugin skill.";
+
 function tmpFile(name, contents) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "rpt-vc-"));
   const file = path.join(dir, name);
@@ -66,6 +69,7 @@ test("checkVersion: local behind latest -> behind + path-aware actionable notice
   assert.ok(/new session/i.test(r.notice)); // the per-session cache caveat
   assert.ok(r.notice.includes("tar xz")); // concrete upgrade command
   assert.ok(r.notice.includes("/home/u/.codex/skills/reprompter")); // targets the real install dir, any runtime
+  assert.ok(r.notice.includes(PLUGIN_MIGRATION_TIP), "behind notice includes Claude Code plugin migration tip");
 });
 
 test("checkVersion: equal version -> not behind, no notice", async () => {
@@ -76,6 +80,7 @@ test("checkVersion: equal version -> not behind, no notice", async () => {
   });
   assert.equal(r.behind, false);
   assert.equal(r.notice, null);
+  assert.equal(String(r.notice).includes(PLUGIN_MIGRATION_TIP), false);
 });
 
 test("checkVersion: local ahead of latest -> not behind", async () => {
@@ -223,6 +228,7 @@ test("CLI is silent inside a Claude Code plugin layout", () => {
   });
   assert.equal(res.status, 0);
   assert.equal(res.stdout.trim(), "", "plugin installs rely on native plugin updates, not curl|tar notices");
+  assert.equal(res.stdout.includes(PLUGIN_MIGRATION_TIP), false, "plugin installs must not print migration tip");
 });
 
 test("CLI sanitizes a junk REPROMPTER_REPO back to the default in the printed command", () => {
