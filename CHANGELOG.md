@@ -1,3 +1,11 @@
+## v12.9.1 (2026-07-02) — Privacy clarification hardening
+
+### Changed
+
+- Docs-only privacy clarification: README and SKILL now make the local-only guarantee explicit for the Ambient Prompt Gate, flywheel, and telemetry files.
+- Clarified that no prompt text is persisted, session ids are sha256-hashed, gate/flywheel files stay on the user's machine, and the only network call is the optional GitHub releases version self-check (`REPROMPTER_VERSION_CHECK=0` disables it).
+- No behavior changes.
+
 ## v12.9.0 (2026-07-02) — Claude Code plugin distribution
 
 ### Headline
