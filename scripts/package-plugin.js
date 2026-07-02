@@ -101,6 +101,9 @@ function isPluginScriptFile(sourceRelativePath, entry) {
   if (/^check-.*\.sh$/.test(fileName)) {
     return false;
   }
+  if (/^run-.*-benchmark\.js$/.test(fileName)) {
+    return false;
+  }
   return true;
 }
 

@@ -231,6 +231,30 @@ test("CLI is silent inside a Claude Code plugin layout", () => {
   assert.equal(res.stdout.includes(PLUGIN_MIGRATION_TIP), false, "plugin installs must not print migration tip");
 });
 
+test("CLI still prints stale notices near an unrelated Claude Code plugin layout", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rpt-vc-plugin-false-positive-"));
+  const skillRoot = path.join(tempRoot, "skills", "reprompter");
+  fs.mkdirSync(path.join(tempRoot, ".claude-plugin"), { recursive: true });
+  fs.mkdirSync(path.join(skillRoot, "scripts"), { recursive: true });
+  fs.writeFileSync(path.join(tempRoot, ".claude-plugin", "plugin.json"), '{"name":"other-plugin"}\n', "utf8");
+  fs.writeFileSync(
+    path.join(skillRoot, "SKILL.md"),
+    "---\nname: reprompter\nmetadata:\n  version: 12.8.0\n---\n",
+    "utf8"
+  );
+  fs.copyFileSync(path.join(__dirname, "version-check.js"), path.join(skillRoot, "scripts", "version-check.js"));
+
+  assert.equal(isPluginInstall(skillRoot), false);
+
+  const res = spawnSync(process.execPath, [path.join(skillRoot, "scripts", "version-check.js"), "--no-cache"], {
+    encoding: "utf8",
+    env: { ...process.env, REPROMPTER_VERSION_CHECK: "1", REPROMPTER_VERSION_LATEST: "99.0.0" },
+  });
+  assert.equal(res.status, 0);
+  assert.match(res.stdout, /reprompter 12\.8\.0 is behind the latest release 99\.0\.0/);
+  assert.ok(res.stdout.includes(PLUGIN_MIGRATION_TIP), "copy installs still get the plugin migration tip");
+});
+
 test("CLI sanitizes a junk REPROMPTER_REPO back to the default in the printed command", () => {
   const res = spawnSync(process.execPath, [path.join(__dirname, "version-check.js"), "--json", "--no-cache"], {
     encoding: "utf8",

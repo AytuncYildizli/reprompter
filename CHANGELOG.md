@@ -13,6 +13,7 @@ RePrompter now ships as a Claude Code plugin. Claude Code users can add the repo
 ### Changed
 
 - `scripts/version-check.js` detects plugin-layout installs and stays silent there, because Claude Code's native plugin update mechanism owns freshness.
+- Plugin packaging now excludes repo-only benchmark runners and only suppresses copy-install stale notices for manifests named `reprompter`.
 - Copy-based Claude Code installs now get migration steering in stale-version notices and the first in-session RePrompter response, pointing to the plugin install commands and the copy-removal shadowing caveat.
 - `README.md` and `SKILL.md` make the Claude Code plugin the recommended install path, keep copy-based install as fallback, and document the personal-skill shadowing migration note plus the `REPROMPTER_AMBIENT=0` per-feature off switch.
 - `.gitattributes` excludes `plugin/` and `.claude-plugin/` from source archives. Plugin installs are git-clone based through Claude Code marketplace, so archive installs remain runtime-only.

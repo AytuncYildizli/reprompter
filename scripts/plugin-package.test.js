@@ -6,6 +6,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const test = require("node:test");
+const { isPluginScriptFile } = require("./package-plugin");
 
 const repoRoot = path.resolve(__dirname, "..");
 const pluginRoot = path.join(repoRoot, "plugin");
@@ -88,6 +89,24 @@ test("plugin package excludes tests and packaging scripts", () => {
   assert.equal(files.some((file) => /\.test\.js$/.test(file)), false, "plugin contains test files");
   assert.equal(files.some((file) => /(^|\/)package-.*\.(?:sh|js)$/.test(file)), false, "plugin contains package scripts");
   assert.equal(files.some((file) => /(^|\/)check-.*\.sh$/.test(file)), false, "plugin contains check scripts");
+});
+
+test("plugin scripts exactly match the generator filter and exclude benchmark runners", () => {
+  const rootScriptsDir = path.join(repoRoot, "scripts");
+  const pluginScriptsDir = path.join(pluginRoot, "skills/reprompter/scripts");
+  const expected = fs
+    .readdirSync(rootScriptsDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && isPluginScriptFile(path.join("scripts", entry.name), entry))
+    .map((entry) => entry.name)
+    .sort();
+  const actual = fs
+    .readdirSync(pluginScriptsDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile())
+    .map((entry) => entry.name)
+    .sort();
+
+  assert.deepEqual(actual, expected);
+  assert.equal(actual.filter((file) => /^run-.*-benchmark\.js$/.test(file)).length, 0);
 });
 
 test("generated plugin manifest directory contains only plugin.json", () => {

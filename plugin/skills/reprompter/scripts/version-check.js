@@ -47,7 +47,14 @@ const NEG_CACHE_TTL_MS = 60 * 60 * 1000; // 1h for a failed lookup (throttle ret
 const NET_TIMEOUT_MS = 3000;
 
 function isPluginInstall(skillRoot = SKILL_ROOT) {
-  return fs.existsSync(path.join(skillRoot, "..", "..", ".claude-plugin", "plugin.json"));
+  try {
+    const manifest = JSON.parse(
+      fs.readFileSync(path.join(skillRoot, "..", "..", ".claude-plugin", "plugin.json"), "utf8")
+    );
+    return manifest && manifest.name === "reprompter";
+  } catch {
+    return false;
+  }
 }
 
 // POSIX single-quote escape: wrap in '...' and turn embedded ' into '\''.
