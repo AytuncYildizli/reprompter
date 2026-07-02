@@ -18,7 +18,11 @@ const {
   readLocalVersion,
   formatNotice,
   checkVersion,
+  isPluginInstall,
 } = require("./version-check");
+
+const PLUGIN_MIGRATION_TIP =
+  "Claude Code users: RePrompter is now installable as a plugin (auto-updates + automatic ambient-gate setup): /plugin marketplace add AytuncYildizli/reprompter, then /plugin install reprompter@reprompter - and remove this copy afterwards so it does not shadow the plugin skill.";
 
 function tmpFile(name, contents) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "rpt-vc-"));
@@ -65,6 +69,7 @@ test("checkVersion: local behind latest -> behind + path-aware actionable notice
   assert.ok(/new session/i.test(r.notice)); // the per-session cache caveat
   assert.ok(r.notice.includes("tar xz")); // concrete upgrade command
   assert.ok(r.notice.includes("/home/u/.codex/skills/reprompter")); // targets the real install dir, any runtime
+  assert.ok(r.notice.includes(PLUGIN_MIGRATION_TIP), "behind notice includes Claude Code plugin migration tip");
 });
 
 test("checkVersion: equal version -> not behind, no notice", async () => {
@@ -75,6 +80,7 @@ test("checkVersion: equal version -> not behind, no notice", async () => {
   });
   assert.equal(r.behind, false);
   assert.equal(r.notice, null);
+  assert.equal(String(r.notice).includes(PLUGIN_MIGRATION_TIP), false);
 });
 
 test("checkVersion: local ahead of latest -> not behind", async () => {
@@ -204,6 +210,49 @@ test("CLI honors REPROMPTER_VERSION_CHECK=0 (silent no-op even when behind)", ()
   });
   assert.equal(res.status, 0);
   assert.equal(res.stdout.trim(), "", "opt-out must suppress all output on direct invocation");
+});
+
+test("CLI is silent inside a Claude Code plugin layout", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rpt-vc-plugin-"));
+  const skillRoot = path.join(tempRoot, "skills", "reprompter");
+  fs.mkdirSync(path.join(tempRoot, ".claude-plugin"), { recursive: true });
+  fs.mkdirSync(path.join(skillRoot, "scripts"), { recursive: true });
+  fs.writeFileSync(path.join(tempRoot, ".claude-plugin", "plugin.json"), '{"name":"reprompter"}\n', "utf8");
+  fs.copyFileSync(path.join(__dirname, "version-check.js"), path.join(skillRoot, "scripts", "version-check.js"));
+
+  assert.equal(isPluginInstall(skillRoot), true);
+
+  const res = spawnSync(process.execPath, [path.join(skillRoot, "scripts", "version-check.js"), "--no-cache"], {
+    encoding: "utf8",
+    env: { ...process.env, REPROMPTER_VERSION_CHECK: "1", REPROMPTER_VERSION_LATEST: "99.0.0" },
+  });
+  assert.equal(res.status, 0);
+  assert.equal(res.stdout.trim(), "", "plugin installs rely on native plugin updates, not curl|tar notices");
+  assert.equal(res.stdout.includes(PLUGIN_MIGRATION_TIP), false, "plugin installs must not print migration tip");
+});
+
+test("CLI still prints stale notices near an unrelated Claude Code plugin layout", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rpt-vc-plugin-false-positive-"));
+  const skillRoot = path.join(tempRoot, "skills", "reprompter");
+  fs.mkdirSync(path.join(tempRoot, ".claude-plugin"), { recursive: true });
+  fs.mkdirSync(path.join(skillRoot, "scripts"), { recursive: true });
+  fs.writeFileSync(path.join(tempRoot, ".claude-plugin", "plugin.json"), '{"name":"other-plugin"}\n', "utf8");
+  fs.writeFileSync(
+    path.join(skillRoot, "SKILL.md"),
+    "---\nname: reprompter\nmetadata:\n  version: 12.8.0\n---\n",
+    "utf8"
+  );
+  fs.copyFileSync(path.join(__dirname, "version-check.js"), path.join(skillRoot, "scripts", "version-check.js"));
+
+  assert.equal(isPluginInstall(skillRoot), false);
+
+  const res = spawnSync(process.execPath, [path.join(skillRoot, "scripts", "version-check.js"), "--no-cache"], {
+    encoding: "utf8",
+    env: { ...process.env, REPROMPTER_VERSION_CHECK: "1", REPROMPTER_VERSION_LATEST: "99.0.0" },
+  });
+  assert.equal(res.status, 0);
+  assert.match(res.stdout, /reprompter 12\.8\.0 is behind the latest release 99\.0\.0/);
+  assert.ok(res.stdout.includes(PLUGIN_MIGRATION_TIP), "copy installs still get the plugin migration tip");
 });
 
 test("CLI sanitizes a junk REPROMPTER_REPO back to the default in the printed command", () => {

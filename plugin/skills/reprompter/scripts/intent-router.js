@@ -1,0 +1,387 @@
+#!/usr/bin/env node
+"use strict";
+
+const PROFILE_PRIORITY = [
+  "marketing-swarm",
+  "engineering-swarm",
+  "ops-swarm",
+  "research-swarm",
+];
+
+const EXPLICIT_PROFILE_TRIGGERS = [
+  { profile: "marketing-swarm", phrases: ["campaign swarm", "marketing swarm"] },
+  { profile: "engineering-swarm", phrases: ["engineering swarm"] },
+  { profile: "ops-swarm", phrases: ["ops swarm", "operations swarm"] },
+  { profile: "research-swarm", phrases: ["research swarm"] },
+];
+
+const REVERSE_MODE_TRIGGERS = [
+  "reverse reprompt",
+  "reverse reprompter",
+  "reprompt from example",
+  "reprompt from this",
+  "learn from this",
+  "extract prompt from",
+  "reverse engineer prompt",
+  "prompt from output",
+  "prompt dna",
+  "prompt genome",
+];
+
+// Workflow-preflight lane (Lane 5). Multi-word phrases ONLY — never the bare
+// word "workflow" (too broad) or "parallel" (already a complexity trigger).
+const WORKFLOW_LANE_TRIGGERS = [
+  "workflow preflight",
+  "compile to workflow",
+  "make a workflow",
+  "build a workflow script",
+  "run via workflow tool",
+  "dynamic workflow",
+];
+
+const MULTI_AGENT_TRIGGERS = [
+  "repromptverse",
+  "reprompter teams",
+  "smart run",
+  "smart agents",
+  "run with quality",
+  "multi-agent",
+  "parallel agents",
+];
+
+const COMPLEXITY_TRIGGERS = ["parallel", "in parallel"];
+const COORDINATION_SCOPE_TRIGGERS = [
+  "coordinate",
+  "workstream",
+  "workstreams",
+  "across",
+  "cross-functional",
+  "cross functional",
+  "end-to-end",
+  "end to end",
+  "orchestrate",
+  "integration",
+];
+const MIN_RULE_SCORE = 2;
+
+const DOMAIN_KEYWORD_SETS = [
+  { domain: "frontend", keywords: ["frontend", "ui", "react", "nextjs", "next.js"] },
+  { domain: "backend", keywords: ["backend", "server", "service"] },
+  { domain: "api", keywords: ["api", "endpoint", "contract"] },
+  { domain: "database", keywords: ["database", "db", "schema", "sql"] },
+  { domain: "infrastructure", keywords: ["infra", "infrastructure", "deployment", "slo"] },
+  { domain: "security", keywords: ["security", "auth", "authentication"] },
+  { domain: "cost", keywords: ["cost", "billing", "spend"] },
+  { domain: "config", keywords: ["config", "configuration", "settings"] },
+  { domain: "memory", keywords: ["memory", "tokens", "context window"] },
+];
+
+const ROUTING_RULES = [
+  {
+    profile: "marketing-swarm",
+    weightedPhrases: [
+      "campaign",
+      "go to market",
+      "go-to-market",
+      "growth",
+      "seo",
+      "content calendar",
+      "funnel",
+      "conversion",
+      "brand",
+      "positioning",
+      "distribution",
+    ],
+    keywords: ["launch", "cta", "hook", "audience", "copy"],
+  },
+  {
+    profile: "engineering-swarm",
+    weightedPhrases: [
+      "feature delivery",
+      "test coverage",
+      "api contract",
+      "code review",
+      "integration tests",
+      "schema migration",
+      "refactor",
+      "migration",
+      "architecture",
+    ],
+    keywords: [
+      "backend",
+      "frontend",
+      "database",
+      "module",
+      "implementation",
+      "regression",
+      "types",
+      "build",
+      "compile",
+    ],
+  },
+  {
+    profile: "ops-swarm",
+    weightedPhrases: [
+      "incident response",
+      "incident containment",
+      "root cause",
+      "postmortem",
+      "gateway timeout",
+      "service health",
+      "error budget",
+      "slo",
+      "sla",
+      "rollback",
+      "on-call",
+    ],
+    keywords: [
+      "uptime",
+      "latency",
+      "cron",
+      "alert",
+      "infra",
+      "reliability",
+      "outage",
+      "timeout",
+      "health",
+      "deployment",
+      "incident",
+      "observability",
+      "recovery",
+    ],
+  },
+  {
+    profile: "research-swarm",
+    weightedPhrases: [
+      "tradeoff analysis",
+      "option analysis",
+      "compare options",
+      "benchmark",
+      "decision memo",
+      "decision matrix",
+      "evidence quality",
+      "evidence scoring",
+      "competitive analysis",
+      "market scan",
+      "literature review",
+    ],
+    keywords: [
+      "research",
+      "analysis",
+      "compare",
+      "hypothesis",
+      "confidence",
+      "findings",
+      "evaluate",
+      "matrix",
+      "insight",
+    ],
+  },
+];
+
+function normalize(input) {
+  return String(input || "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function hasPhrase(text, phrase) {
+  return text.includes(phrase);
+}
+
+function hasKeyword(text, keyword) {
+  const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(`\\b${escaped}\\b`, "i");
+  return re.test(text);
+}
+
+function hasTerm(text, term) {
+  if (term.includes(" ") || term.includes("-") || term.includes(".")) {
+    return hasPhrase(text, term);
+  }
+  return hasKeyword(text, term);
+}
+
+function scoreRule(text, rule) {
+  let score = 0;
+  const hits = [];
+
+  for (const phrase of rule.weightedPhrases) {
+    if (hasPhrase(text, phrase)) {
+      score += 3;
+      hits.push(phrase);
+    }
+  }
+
+  for (const keyword of rule.keywords) {
+    if (hasKeyword(text, keyword)) {
+      score += 1;
+      hits.push(keyword);
+    }
+  }
+
+  return { profile: rule.profile, score, hits };
+}
+
+function detectExplicitProfile(text) {
+  for (const trigger of EXPLICIT_PROFILE_TRIGGERS) {
+    if (trigger.phrases.some((p) => hasPhrase(text, p))) {
+      return trigger.profile;
+    }
+  }
+  return null;
+}
+
+function countDistinctDomains(text) {
+  let count = 0;
+  for (const set of DOMAIN_KEYWORD_SETS) {
+    if (set.keywords.some((keyword) => hasTerm(text, keyword))) {
+      count += 1;
+    }
+  }
+  return count;
+}
+
+function hasCoordinationScopeSignal(text) {
+  if (COORDINATION_SCOPE_TRIGGERS.some((trigger) => hasPhrase(text, trigger))) return true;
+  // Treat comma+and list language as a weak scope signal for multi-domain orchestration.
+  return text.includes(",") && hasKeyword(text, "and");
+}
+
+function detectImplicitMultiAgent(text) {
+  if (hasKeyword(text, "audit")) return true;
+  if (COMPLEXITY_TRIGGERS.some((trigger) => hasPhrase(text, trigger))) return true;
+  const domainCount = countDistinctDomains(text);
+  if (domainCount < 2) return false;
+  return hasCoordinationScopeSignal(text);
+}
+
+function isMultiAgentIntent(text, options = {}) {
+  if (options.forceMultiAgent === true) return true;
+  if (options.forceSingle === true) return false;
+  if (MULTI_AGENT_TRIGGERS.some((p) => hasPhrase(text, p))) return true;
+  return detectImplicitMultiAgent(text);
+}
+
+function rankCandidates(candidates) {
+  return candidates.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return PROFILE_PRIORITY.indexOf(a.profile) - PROFILE_PRIORITY.indexOf(b.profile);
+  });
+}
+
+function routeIntent(input, options = {}) {
+  const text = normalize(input);
+  if (!text) {
+    return {
+      mode: "single",
+      profile: "single",
+      score: 0,
+      hits: [],
+      reason: "empty-input",
+    };
+  }
+
+  // Force flags are hard overrides — checked before any trigger detection
+  if (options.forceSingle === true) {
+    return {
+      mode: "single",
+      profile: "single",
+      score: 0,
+      hits: [],
+      reason: "forced-single-mode",
+    };
+  }
+
+  // Reverse mode detection (highest priority after force flags)
+  if (options.forceReverse === true) {
+    return {
+      mode: "reverse",
+      profile: "reverse",
+      score: 100,
+      hits: ["forced-reverse"],
+      reason: "forced-reverse-mode",
+    };
+  }
+
+  const reverseHit = REVERSE_MODE_TRIGGERS.find((trigger) => hasPhrase(text, trigger));
+  if (reverseHit) {
+    return {
+      mode: "reverse",
+      profile: "reverse",
+      score: 100,
+      hits: [reverseHit],
+      reason: "reverse-mode-trigger",
+    };
+  }
+
+  // Workflow-preflight lane — explicit, like reverse: wins over multi-agent so
+  // "compile to workflow an engineering swarm audit" routes to the workflow lane.
+  const workflowHit = WORKFLOW_LANE_TRIGGERS.find((trigger) => hasPhrase(text, trigger));
+  if (workflowHit) {
+    return {
+      mode: "workflow",
+      profile: "workflow",
+      score: 100,
+      hits: [workflowHit],
+      reason: "workflow-lane-trigger",
+    };
+  }
+
+  const explicitProfile = detectExplicitProfile(text);
+  if (explicitProfile) {
+    return {
+      mode: "multi-agent",
+      profile: explicitProfile,
+      score: 100,
+      hits: [explicitProfile],
+      reason: "explicit-profile-trigger",
+    };
+  }
+
+  const multiAgent = isMultiAgentIntent(text, options);
+  if (!multiAgent) {
+    return {
+      mode: "single",
+      profile: "single",
+      score: 0,
+      hits: [],
+      reason: "single-mode-intent",
+    };
+  }
+
+  const ranked = rankCandidates(ROUTING_RULES.map((rule) => scoreRule(text, rule)));
+  const best = ranked[0];
+  if (!best || best.score < MIN_RULE_SCORE) {
+    return {
+      mode: "multi-agent",
+      profile: "repromptverse",
+      score: 0,
+      hits: [],
+      reason: "generic-multi-agent-fallback",
+    };
+  }
+
+  return {
+    mode: "multi-agent",
+    profile: best.profile,
+    score: best.score,
+    hits: best.hits,
+    reason: "rule-match",
+  };
+}
+
+module.exports = {
+  PROFILE_PRIORITY,
+  REVERSE_MODE_TRIGGERS,
+  WORKFLOW_LANE_TRIGGERS,
+  ROUTING_RULES,
+  routeIntent,
+};
+
+if (require.main === module) {
+  const prompt = process.argv.slice(2).join(" ");
+  const result = routeIntent(prompt);
+  process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+}

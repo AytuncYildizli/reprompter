@@ -5,6 +5,8 @@
 # Hermes installs are unaffected: `hermes skills install` fetches through the
 # GitHub Trees/Contents API, which ignores export-ignore.
 /skills     export-ignore
+/plugin     export-ignore
+/.claude-plugin export-ignore
 /benchmarks export-ignore
 /assets     export-ignore
 /docs       export-ignore

@@ -1,3 +1,24 @@
+## v12.9.0 (2026-07-02) — Claude Code plugin distribution
+
+### Headline
+
+RePrompter now ships as a Claude Code plugin. Claude Code users can add the repo as a marketplace and install `reprompter@reprompter` to get both the skill and the Ambient Prompt Gate hook registered automatically. This is additive and Claude Code-only: Codex, OpenClaw, Grok CLI, and Hermes Agent install paths are unchanged.
+
+### Added
+
+- Generated Claude Code plugin package at `plugin/` with `.claude-plugin/plugin.json`, `hooks/hooks.json`, and a plugin-local `skills/reprompter/` mirror generated from root sources.
+- Repo marketplace manifest at `.claude-plugin/marketplace.json`.
+- `scripts/package-plugin.*`, `scripts/check-plugin-package.sh`, and `scripts/plugin-package.test.js` to keep plugin manifests and generated contents deterministic and structurally verified.
+
+### Changed
+
+- `scripts/version-check.js` detects plugin-layout installs and stays silent there, because Claude Code's native plugin update mechanism owns freshness.
+- Plugin packaging now excludes repo-only benchmark runners and only suppresses copy-install stale notices for manifests named `reprompter`.
+- Copy-based Claude Code installs now get migration steering in stale-version notices and the first in-session RePrompter response, pointing to the plugin install commands and the copy-removal shadowing caveat.
+- `README.md` and `SKILL.md` make the Claude Code plugin the recommended install path, keep copy-based install as fallback, and document the personal-skill shadowing migration note plus the `REPROMPTER_AMBIENT=0` per-feature off switch.
+- `.gitattributes` excludes `plugin/` and `.claude-plugin/` from source archives. Plugin installs are git-clone based through Claude Code marketplace, so archive installs remain runtime-only.
+- `package.json`, `package-lock.json`, generated plugin, and generated Hermes package — version `12.9.0`.
+
 ## v12.8.0 (2026-07-02) — Ambient Prompt Gate
 
 ### Headline
