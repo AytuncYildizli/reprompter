@@ -9,7 +9,8 @@ honor its STOP conditions. The reviewer maintains this index.
 | Plan | Title | Priority | Effort | Depends on | Status |
 |------|-------|----------|--------|------------|--------|
 | 001  | Ambient Prompt Gate (opt-in UserPromptSubmit hook, v12.8.0) | P1 | M | — | DONE (executor: Codex gpt-5.5; reviewed + dogfooded + calibration-tuned; PR #59) |
-| 002  | Claude Code plugin distribution (marketplace + auto-registered hook, v12.9.0) | P1 | M | 001 | DONE (executor: Codex gpt-5.5; reviewed; `claude plugin validate` passed; 303 tests green) |
+| 002  | Claude Code plugin distribution (marketplace + auto-registered hook, v12.9.0) | P1 | M | 001 | DONE (executor: Codex gpt-5.5; reviewed + live-dogfooded; shipped as PR #61, released v12.9.0) |
+| 003  | 2026 best-practices template alignment (v12.10.0) | P1 | L | — | DONE (research: 105-agent deep-research pass; executor: Codex gpt-5.5; reviewed FIX_FIRST→fixed; shipped as PR #63, released v12.10.0) |
 
 ## Dependency notes
 
