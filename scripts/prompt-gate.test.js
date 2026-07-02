@@ -3,6 +3,7 @@
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
+const crypto = require("node:crypto");
 const { execFileSync } = require("node:child_process");
 const test = require("node:test");
 const assert = require("node:assert/strict");
@@ -20,6 +21,10 @@ function runGate(input, env = {}) {
     input,
     env: {
       ...process.env,
+      REPROMPTER_AMBIENT: "1",
+      REPROMPTER_TELEMETRY: "1",
+      REPROMPTER_AMBIENT_THRESHOLD: "5",
+      REPROMPTER_AMBIENT_COOLDOWN_MIN: "15",
       XDG_CACHE_HOME: tmpDir(),
       ...env,
     },
@@ -95,6 +100,18 @@ test("skip reason: above-threshold", () => {
   assert.equal(result.reason, "above-threshold");
 });
 
+test("empty threshold env uses default threshold", () => {
+  const dir = tmpDir();
+  const statePath = path.join(dir, "ambient-gate.json");
+  const result = shouldNudge(roughPrompt, {
+    env: { REPROMPTER_AMBIENT_THRESHOLD: "  " },
+    sessionId: "empty-threshold",
+    statePath,
+  });
+  assert.equal(result.nudge, true);
+  assert.equal(result.reason, "below-threshold");
+});
+
 test("skip reason: cooldown", () => {
   const dir = tmpDir();
   const statePath = path.join(dir, "ambient-gate.json");
@@ -107,6 +124,35 @@ test("skip reason: cooldown", () => {
     statePath,
     now: () => now + 5 * 60 * 1000,
   });
+  assert.equal(result.reason, "cooldown");
+});
+
+test("cooldown treats zero and empty env values as default window", () => {
+  const dir = tmpDir();
+  const statePath = path.join(dir, "ambient-gate.json");
+  const now = Date.parse("2026-07-02T10:00:00.000Z");
+  const env = { REPROMPTER_AMBIENT_COOLDOWN_MIN: "0" };
+
+  assert.equal(shouldNudge(roughPrompt, { env, sessionId: "s1", statePath, now: () => now }).nudge, true);
+  assert.equal(
+    shouldNudge(roughPrompt, { env, sessionId: "s1", statePath, now: () => now + 1 }).reason,
+    "cooldown"
+  );
+
+  const blankEnv = { REPROMPTER_AMBIENT_COOLDOWN_MIN: " " };
+  assert.equal(
+    shouldNudge(roughPrompt, { env: blankEnv, sessionId: "s1", statePath, now: () => now + 2 }).reason,
+    "cooldown"
+  );
+});
+
+test("future-dated cooldown state still suppresses nudges", () => {
+  const dir = tmpDir();
+  const statePath = path.join(dir, "ambient-gate.json");
+  const now = Date.parse("2026-07-02T10:00:00.000Z");
+  fs.writeFileSync(statePath, JSON.stringify({ s1: new Date(now + 5 * 60 * 1000).toISOString() }), "utf8");
+
+  const result = shouldNudge(roughPrompt, { env: {}, sessionId: "s1", statePath, now: () => now });
   assert.equal(result.reason, "cooldown");
 });
 
@@ -134,6 +180,16 @@ test("cooldown expires after the configured window", () => {
     }).nudge,
     true
   );
+});
+
+test("weak Turkish task prompt nudges", () => {
+  const prompt = "lütfen bu dağınık akışı düzelt ve daha kullanışlı yap ama detaylar bende yok";
+  const dir = tmpDir();
+  const statePath = path.join(dir, "ambient-gate.json");
+  const result = shouldNudge(prompt, { env: {}, sessionId: "weak-turkish-task", statePath });
+
+  assert.equal(result.nudge, true);
+  assert.equal(result.reason, "below-threshold");
 });
 
 test("hook CLI nudges for low-quality JSON", () => {
@@ -167,6 +223,10 @@ test("telemetry never persists raw prompt text", () => {
     input: JSON.stringify({ session_id: "privacy", prompt: roughPrompt }),
     env: {
       ...process.env,
+      REPROMPTER_AMBIENT: "1",
+      REPROMPTER_TELEMETRY: "1",
+      REPROMPTER_AMBIENT_THRESHOLD: "5",
+      REPROMPTER_AMBIENT_COOLDOWN_MIN: "15",
       XDG_CACHE_HOME: cache,
     },
     encoding: "utf8",
@@ -175,6 +235,9 @@ test("telemetry never persists raw prompt text", () => {
 
   const eventsPath = path.join(cache, "reprompter", "telemetry", "events.ndjson");
   const events = fs.readFileSync(eventsPath, "utf8");
+  const hashedSession = crypto.createHash("sha256").update("privacy").digest("hex").slice(0, 12);
   assert.doesNotMatch(events, /crypto dashboard/);
+  assert.doesNotMatch(events, /gate-privacy/);
+  assert.match(events, new RegExp(`gate-${hashedSession}`));
   assert.match(events, /gate_prompt/);
 });

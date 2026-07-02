@@ -8,7 +8,7 @@ RePrompter now has an opt-in **Ambient Prompt Gate** for Claude Code `UserPrompt
 
 - `scripts/prompt-gate.js` — fail-soft, privacy-safe hook helper. It never exits 2, never blocks a prompt, never calls the network, and persists only cooldown timestamps under the user's cache directory. `REPROMPTER_AMBIENT=0` disables nudges, `REPROMPTER_AMBIENT_THRESHOLD` tunes the score threshold, and `REPROMPTER_AMBIENT_COOLDOWN_MIN` controls per-session cooldown.
 - `scripts/prompt-gate.test.js` — calibration, skip-reason, cooldown, CLI contract, and privacy coverage for the hook.
-- `gate_prompt` telemetry stage — optional local telemetry records only numeric/enum metadata (`overall`, `weakest`, `nudged`, `reason`) and never records prompt text.
+- `gate_prompt` telemetry stage — optional local telemetry records only numeric/enum metadata (`overall`, `weakest`, `nudged`, `reason`) plus a hashed session correlation id, and never records prompt text.
 
 ### Changed
 

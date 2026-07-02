@@ -1490,7 +1490,7 @@ RePrompter is distributed copy-based (no package manager tracks the installed ve
 ### Telemetry and observability
 Every Repromptverse run should emit stage-level telemetry events with `runId`, `taskId`, stage name, status, latency, and provider/model where applicable.
 - Event stages: `route_intent`, `select_patterns`, `resolve_model`, `build_context`, `plan_ready`, `spawn_agent`, `poll_artifacts`, `evaluate_artifact`, `retry_artifact`, `finalize_run`, `fingerprint_recipe`, `collect_outcome`, `gate_prompt`, `learn_strategy`
-- Storage: `.reprompter/telemetry/events.ndjson`
+- Storage: `.reprompter/telemetry/events.ndjson`; `gate_prompt` events are written under `$XDG_CACHE_HOME/reprompter/telemetry` instead.
 - Report command: `npm run telemetry:report`
 
 ### Prompt Flywheel (v9.0+)
@@ -1571,7 +1571,7 @@ Always include explicit permission for the model to express uncertainty rather t
 
 The Ambient Prompt Gate is an optional Claude Code `UserPromptSubmit` hook that scores every incoming prompt with the same six RePrompter quality dimensions (clarity, specificity, structure, constraints, verifiability, decomposition). It stays silent for slash commands, acknowledgements, short prompts, non-task prompts, prompts that already mention reprompting, and prompts above the configured threshold. For task-shaped prompts below threshold, it injects one line of model-facing context suggesting a one-time offer to structure the request via RePrompter before proceeding.
 
-It NEVER blocks a prompt. The hook is fail-soft: malformed stdin, unreadable state, telemetry errors, or any internal failure produce empty stdout and exit 0. It never writes prompt text to telemetry or state; telemetry contains only score, weakest dimensions, whether it nudged, and the reason.
+It NEVER blocks a prompt. The hook is fail-soft: malformed stdin, unreadable state, telemetry errors, or any internal failure produce empty stdout and exit 0. It never writes prompt text to telemetry or state; telemetry contains only score, weakest dimensions, whether it nudged, the reason, and a hashed session correlation id.
 
 Install it in Claude Code by adding a `UserPromptSubmit` hook in `Claude Code settings file`:
 
@@ -1584,6 +1584,8 @@ Install it in Claude Code by adding a `UserPromptSubmit` hook in `Claude Code se
   }
 }
 ```
+
+Hermes installs ship no `scripts/` helpers, so use a git clone or Claude Code install if you want to run this gate.
 
 | Env flag | Values | Effect |
 |----------|--------|--------|

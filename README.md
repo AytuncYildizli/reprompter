@@ -10,7 +10,7 @@
 
 [![Version](https://img.shields.io/badge/version-12.8.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-283%20passing-2da44e)](#testing)
+[![Tests](https://img.shields.io/badge/tests-290%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 
 RePrompter is a prompt engineering skill for AI coding agents. It takes rough, low-quality prompts and transforms them into structured, high-scoring prompts that produce dramatically better results. Works with Claude Code, OpenClaw, Codex, Grok CLI, Hermes Agent, or any LLM that accepts structured prompts.
@@ -324,7 +324,7 @@ Exemplar output → EXTRACT structure → ANALYZE task type + domain + tone
 ## Testing
 
 ```bash
-npm run check    # 283 tests + 4 benchmarks
+npm run check    # 290 tests + 4 benchmarks
 npm run test:reverse-engineer  # individual suite example
 ```
 
@@ -345,11 +345,12 @@ npm run test:reverse-engineer  # individual suite example
 | Goal command | 11 |
 | Workflow command | 20 |
 | Version check | 19 |
-| Prompt gate | 16 |
+| Prompt gate | 20 |
 | Hermes package | 8 |
 | Telemetry schema/store | 6 |
 | Observability report | 2 |
-| **Total** | **283** |
+| Observability contract | 3 |
+| **Total** | **290** |
 
 All benchmarks at 100%: swarm routing (9/9), real-world routing (64/64), artifacts (84/84), flywheel (13/13), provider (9/9).
 

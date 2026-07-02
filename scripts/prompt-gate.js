@@ -15,7 +15,7 @@
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const { createTelemetryStore } = require("./telemetry-store");
+const crypto = require("node:crypto");
 
 const WEIGHTS = {
   clarity: 0.2,
@@ -53,7 +53,28 @@ const TASK_VERBS = [
   "investigate",
   "audit",
   "review",
+  "ekle",
+  "yap",
+  "kur",
+  "yaz",
+  "oluştur",
+  "düzelt",
+  "güncelle",
+  "geliştir",
+  "incele",
+  "araştır",
+  "değiştir",
+  "kaldır",
 ];
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+");
+}
+
+const TASK_VERB_PATTERN = new RegExp(
+  `(?:^|[^\\p{L}])(?:${TASK_VERBS.map(escapeRegExp).join("|")})(?=[^\\p{L}]|$)`,
+  "iu"
+);
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -77,8 +98,7 @@ function wordCount(text) {
 }
 
 function hasTaskVerb(text) {
-  const escaped = TASK_VERBS.map((verb) => verb.replace(/\s+/g, "\\s+"));
-  return new RegExp(`\\b(?:${escaped.join("|")})\\b`, "i").test(text);
+  return TASK_VERB_PATTERN.test(text);
 }
 
 function scoreClarity(text) {
@@ -230,13 +250,17 @@ function writeState(statePath, state, nowMs) {
 }
 
 function thresholdFromEnv(env) {
-  const parsed = Number(env.REPROMPTER_AMBIENT_THRESHOLD);
+  const raw = env.REPROMPTER_AMBIENT_THRESHOLD;
+  if (raw == null || String(raw).trim() === "") return DEFAULT_THRESHOLD;
+  const parsed = Number(raw);
   return Number.isFinite(parsed) ? parsed : DEFAULT_THRESHOLD;
 }
 
 function cooldownMinFromEnv(env) {
-  const parsed = Number(env.REPROMPTER_AMBIENT_COOLDOWN_MIN);
-  return Number.isFinite(parsed) ? parsed : DEFAULT_COOLDOWN_MIN;
+  const raw = env.REPROMPTER_AMBIENT_COOLDOWN_MIN;
+  if (raw == null || String(raw).trim() === "") return DEFAULT_COOLDOWN_MIN;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_COOLDOWN_MIN;
 }
 
 function shouldNudge(prompt, options = {}) {
@@ -264,7 +288,7 @@ function shouldNudge(prompt, options = {}) {
   const state = readState(statePath);
   const last = Date.parse(state[sessionId]);
   const cooldownMs = cooldownMinFromEnv(env) * 60 * 1000;
-  if (!Number.isNaN(last) && nowMs - last >= 0 && nowMs - last < cooldownMs) {
+  if (!Number.isNaN(last) && nowMs - last < cooldownMs) {
     return { nudge: false, reason: "cooldown", score };
   }
 
@@ -276,16 +300,21 @@ function shouldNudge(prompt, options = {}) {
 
 function buildNudge(scoreResult) {
   const score = scoreResult || scorePrompt("");
-  return `<reprompter-ambient-gate>Heuristic prompt quality: ${score.overall}/10 (weakest: ${score.weakest[0]}, ${score.weakest[1]}). If this request is a nontrivial task, briefly offer ONCE to structure it first via the reprompter skill (user can say "reprompt this"); if the user declines or the task is trivial, proceed normally and never mention this gate again this session.</reprompter-ambient-gate>`;
+  return `<reprompter-ambient-gate>Heuristic prompt quality: ${score.overall}/10 (weakest: ${score.weakest[0]}, ${score.weakest[1]}). If this request is a nontrivial task, briefly offer once for this request to structure it first via the reprompter skill (user can say "reprompt this"); if the user declines or the task is trivial, proceed normally.</reprompter-ambient-gate>`;
+}
+
+function hashedSessionId(sessionId) {
+  return crypto.createHash("sha256").update(String(sessionId || "anonymous")).digest("hex").slice(0, 12);
 }
 
 function emitTelemetry({ env, sessionId, decision, score }) {
   if (env.REPROMPTER_TELEMETRY === "0") return;
   try {
+    const { createTelemetryStore } = require("./telemetry-store");
     const store = createTelemetryStore({ dirPath: path.join(cacheDir(env), "telemetry") });
     const scoreResult = score || { overall: null, weakest: [] };
     store.writeEvent({
-      runId: `gate-${sessionId || "anonymous"}`,
+      runId: `gate-${hashedSessionId(sessionId)}`,
       taskId: "ambient-gate",
       stage: "gate_prompt",
       status: "ok",
@@ -316,7 +345,7 @@ function runHookMode() {
     : "anonymous";
   const env = process.env;
   const decision = shouldNudge(prompt, { env, sessionId });
-  const score = decision.score || scorePrompt(prompt);
+  const score = decision.score || null;
 
   emitTelemetry({ env, sessionId, decision, score });
 

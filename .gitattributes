@@ -8,4 +8,5 @@
 /benchmarks export-ignore
 /assets     export-ignore
 /docs       export-ignore
+/plans      export-ignore
 /.github    export-ignore
