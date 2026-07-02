@@ -4,6 +4,8 @@ Use this template for writing tests (unit, integration, E2E).
 
 ## Template
 
+Prompting guidance: use clear sectioning (XML default; Markdown headers equally valid when requested). Keep instructions outcome-first: objective, requirements, verification, and only genuinely ordered procedures. In `<constraints>`, include load-bearing boundaries at the right altitude instead of exhaustive edge-case stuffing. In `<output_format>`, if the target runtime supports structured-output API features, name the expected shape and defer enforcement to the API; embed full schemas only as fallback.
+
 ```xml
 <role>
 {QA engineer specializing in [test type] testing with [detected testing framework]}

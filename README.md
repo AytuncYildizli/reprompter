@@ -8,12 +8,12 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-12.9.1-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-12.10.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-303%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 
-RePrompter is a prompt engineering skill for AI coding agents. It takes rough, low-quality prompts and transforms them into structured, high-scoring prompts that produce dramatically better results. Works with Claude Code, OpenClaw, Codex, Grok CLI, Hermes Agent, or any LLM that accepts structured prompts.
+RePrompter is a prompt engineering skill for AI coding agents. It takes rough, low-quality prompts and transforms them into structured, high-scoring prompts that produce dramatically better results. Templates are aligned with 2026 vendor guidance: clear sectioning, calibrated emphasis, outcome-first instructions, load-bearing constraints, structured-output routing, context budgeting, and tool-description quality. Works with Claude Code, OpenClaw, Codex, Grok CLI, Hermes Agent, or any LLM that accepts structured prompts.
 
 <br/>
 <p align="center">
@@ -279,7 +279,7 @@ reprompter teams - audit the auth module for security and test coverage
 reverse reprompt this: [paste a great output you want to reproduce]
 ```
 
-RePrompter interviews you (2-5 questions), generates a structured XML prompt, and shows a before/after quality score.
+RePrompter interviews you when interactive clarification is useful, generates a structured prompt (XML default; Markdown equally valid when requested), and shows a before/after quality score.
 
 ---
 
@@ -289,16 +289,16 @@ RePrompter interviews you (2-5 questions), generates a structured XML prompt, an
 
 ```
 Rough prompt → Input guard → Quick mode gate → Interview (2-5 questions)
-→ Template selection → XML prompt generation → Quality scoring → Delta rewrite if < 7/10
+→ Template selection → structured prompt generation → Quality scoring → Delta rewrite if < 7/10
 ```
 
-17 templates cover feature, bugfix, refactor, testing, API, UI, security, docs, content, research, and multi-agent swarm patterns.
+18 validated templates cover feature, bugfix, refactor, testing, API, UI, security, docs, content, research, workflow, and multi-agent swarm patterns.
 
 ### Repromptverse Mode
 
 ```
 Phase 1: Score prompt, interview if needed, plan team, show Plan Cards → user approves
-Phase 2: Write XML prompt per agent (target 8+/10), show quality scorecard
+Phase 2: Write structured prompt per agent (target 8+/10), show quality scorecard
 Phase 3: Execute (tmux / TeamCreate / Workflow tool / OpenClaw / Codex / Grok CLI / Hermes Agent / sequential fallback)
 Phase 4: Show Result Cards, evaluate, retry with delta prompts if needed (max 2)
 ```
@@ -309,7 +309,7 @@ Agents get non-overlapping scopes, explicit success criteria, and file:line refe
 
 ```
 Exemplar output → EXTRACT structure → ANALYZE task type + domain + tone
-→ SYNTHESIZE XML prompt → Score → Optional: INJECT into flywheel
+→ SYNTHESIZE structured prompt → Score → Optional: INJECT into flywheel
 ```
 
 11 task type classifiers (code review, security audit, architecture doc, API spec, test plan, bug report, PR description, documentation, content, research, ops report) with 8 domain detectors and tone analysis. Solves the flywheel cold-start problem by seeding it with known-good prompt/output pairs.
@@ -326,9 +326,11 @@ Exemplar output → EXTRACT structure → ANALYZE task type + domain + tone
 
 **Agent Cards** - Plan Cards (before execution), Status Line (during), Result Cards (after). Full transparency into what agents will do, are doing, and found.
 
-**Dimension Interview** - Low-scoring prompt dimensions trigger targeted questions. No more vague prompts spawning expensive agents.
+**Dimension Interview** - Low-scoring prompt dimensions trigger targeted questions for interactive use. Autonomous goal/workflow/team lanes document reasonable defaults in `<assumptions>` instead of blocking on low-value questions.
 
-**Pattern Library** - 6 pluggable prompt engineering patterns: constraint-first framing, uncertainty labeling, self-critique checkpoints, delta retry scaffolds, evidence-strength labeling, context-manifest transparency.
+**Pattern Library** - 7 pluggable prompt engineering patterns: runtime-aware constraint placement (`constraint-first-framing` compatibility key), uncertainty labeling, self-critique checkpoints, delta retry scaffolds, evidence-strength labeling, context-manifest transparency, and tool-description quality.
+
+**2026 Template Alignment** - Templates keep validated structure, roles, success criteria, and delta retries while updating contested guidance: XML is the default but not mandatory, schemas route to structured-output APIs when available, prompts emphasize outcomes over hand-written plans, and constraints stay load-bearing rather than exhaustive.
 
 **Capability Routing** - When multiple models are available, routes each agent by capability tier (reasoning, long context, cost-optimized, latency-optimized) with provider-diverse fallback chains.
 

@@ -4,6 +4,8 @@ Use this template for the **Workflow preflight** lane (Lane 5) and Repromptverse
 
 ## Template
 
+Prompting guidance: use clear sectioning (XML default; Markdown headers equally valid when requested). Keep instructions outcome-first: objective, requirements, verification, and only genuinely ordered procedures. In `<constraints>`, include load-bearing boundaries at the right altitude instead of exhaustive edge-case stuffing. In `<output_format>`, if the target runtime supports structured-output API features, name the expected shape and defer enforcement to the API; embed full schemas only as fallback.
+
 ### Block 1 — Expanded prompt (the reprompted intent that authors the workflow)
 
 ```xml
@@ -14,8 +16,12 @@ Use this template for the **Workflow preflight** lane (Lane 5) and Repromptverse
 - Target runtime: Claude dynamic Workflow tool (Phase 3 Option H)
 - RePrompter route: {mode}/{profile} ({reason})
 - Repository/runtime context: {infer from workspace}
-- interviewContext (scope/excludes/success), if gathered
+- interviewContext (scope/excludes/success), if gathered; otherwise documented assumptions for reasonable defaults
 </context>
+
+<assumptions>
+- {Documented defaults used instead of blocking this autonomous workflow on low-value clarification questions}
+</assumptions>
 
 <task>Compile the request into a runnable .workflow.js that fans out reprompted per-role agents and returns a reprompter.workflow_outcome.v1 payload.</task>
 

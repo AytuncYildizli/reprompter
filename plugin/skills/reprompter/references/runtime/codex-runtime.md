@@ -40,7 +40,7 @@ Required Goal Command Card shape:
 | Mode | `/goal preflight` |
 | Paste Into | Codex TUI prompt, as-is |
 | Risk Level | `low` / `medium` / `high` |
-| Missing Inputs | Up to 3 unknowns, or `none` |
+| Missing Inputs | Up to 3 unresolved unknowns; use documented assumptions for reasonable defaults and write `none` when ready |
 | Verification | 2-4 checks the later goal should run |
 | Quality | Before score -> after score, with the weakest remaining dimension |
 

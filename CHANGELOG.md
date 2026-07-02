@@ -1,3 +1,19 @@
+## v12.10.0 (2026-07-02) — 2026 prompt-practice alignment
+
+### Changed
+
+- Aligned `SKILL.md` and reference templates with the maintainer-held 2026-07-02 research baseline across Anthropic, OpenAI, Google Gemini, and xAI guidance.
+- Preserved validated techniques from the same research pass: clear sectioning/XML defaults, role prompting, success criteria, verification-first prompting, and delta-style retry guidance.
+- Softened XML-mandatory language to clear sectioning with XML as default and Markdown as an equally valid sectioning syntax when requested.
+- Calibrated emphasis: generated prompts now use plain phrasing by default and reserve `CRITICAL` / `MUST` / `NEVER` style emphasis for safety, privacy, protocol, and schema gates.
+- Updated output-format guidance so runtimes with structured-output APIs enforce shape through the API; prompt-embedded schemas remain the fallback when no such surface exists.
+- Reframed template guidance toward outcome-first prompts and load-bearing constraints at the right altitude instead of prescriptive step plans or exhaustive constraint stuffing.
+- Made constraint placement runtime-aware while preserving the `constraint-first-framing` compatibility key: Claude/Codex keep constraint-early defaults, Gemini-targeted complex prompts place critical/negative constraints near the end, and blanket negative constraints are avoided.
+- Added autonomous-lane assumptions guidance: `/goal`, Workflow preflight, and Repromptverse can skip low-value clarification questions when reasonable defaults exist and emit an `<assumptions>` block the user can veto.
+- Added context-engineering guidance for context rot, right-altitude curation, references over long inline dumps, and token-budget preservation.
+- Added catalog-only `tool-description-quality` pattern coverage for agent tools/MCP/tool descriptions; selector wiring remains a follow-up because the selector uses an in-code catalog.
+- `package.json`, `package-lock.json`, generated plugin, and generated Hermes package — version `12.10.0`.
+
 ## v12.9.1 (2026-07-02) — Privacy clarification hardening
 
 ### Changed
