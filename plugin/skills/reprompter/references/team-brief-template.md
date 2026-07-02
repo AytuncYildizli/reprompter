@@ -7,7 +7,7 @@
 
 ## Format Contract (Markdown Exception)
 
-- This template is the **only formal exception** to strict XML file format.
+- Markdown-format orchestration exception; XML remains the default prompt-template format.
 - It still defines all 8 core fields conceptually: `role`, `context`, `task`, `motivation`, `requirements`, `constraints`, `output_format`, `success_criteria`.
 - Use clear sectioning; Markdown headers are the normative representation here, while XML remains the default for prompt templates.
 - `constraints` should name load-bearing ownership, safety, and sequencing boundaries. Prefer stating what agents should do over blanket negative constraints; use negative rules only when they prevent real overlap, data loss, or unsafe behavior.

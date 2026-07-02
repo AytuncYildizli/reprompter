@@ -102,8 +102,8 @@
     },
     {
       "path": "references/runtime/codex-runtime.md",
-      "source_sha256": "ae597e88e8a1e072fd41bdcbcdcae35c6284781abce3795984e61e3e2363da91",
-      "generated_sha256": "9212837311a20de5fc57039d00da8db6caa189d8ffdc95921d62e4657b01de07"
+      "source_sha256": "4a2d88e30f070a811e197ddeb290453b442b88ba70e5d1b17e6e7f00976fc198",
+      "generated_sha256": "e0a556d3abbcc9bdae6f8b402bb6beaf608bc3f33ae2c9b9d585ecff0cf4bce9"
     },
     {
       "path": "references/runtime/context-layers.md",
@@ -127,8 +127,8 @@
     },
     {
       "path": "references/runtime/hermes-agent-runtime.md",
-      "source_sha256": "39495555fb3cb6d69e79abc349ef89eec3f2a3727521bfa30153a6b2e89f28ad",
-      "generated_sha256": "dde195443caa99f4bee40f0d565454c4672bc0112b209b0c77899ffdb5fc245c"
+      "source_sha256": "e40cb3269546999003fe9a34b1c21fc9635b62f0f96ad4ed4fee66d349f3d6c7",
+      "generated_sha256": "875f3a2afe7de2cc7510caec1ca35506466a71e2566dee0f138f641f3f5f2a60"
     },
     {
       "path": "references/security-template.md",
@@ -142,8 +142,8 @@
     },
     {
       "path": "references/team-brief-template.md",
-      "source_sha256": "76500282a6c2e6454334116ac6ce236c057e06b266bb90f873054eb24a595c31",
-      "generated_sha256": "76500282a6c2e6454334116ac6ce236c057e06b266bb90f873054eb24a595c31"
+      "source_sha256": "2335b68936cc980de0b840226950b63f9dab979c10b1da26a3f15d33889caec0",
+      "generated_sha256": "2335b68936cc980de0b840226950b63f9dab979c10b1da26a3f15d33889caec0"
     },
     {
       "path": "references/testing-template.md",
