@@ -1,13 +1,15 @@
 {
   "name": "reprompter",
-  "version": "12.8.0",
+  "version": "12.9.0",
   "private": true,
   "description": "Prompt engineering skill for Claude Code, OpenClaw, Codex, Grok CLI, and Hermes Agent",
   "scripts": {
     "validate:templates": "bash scripts/validate-templates.sh",
     "validate:tool-refs": "node scripts/validate-tool-refs.js",
     "package:hermes": "bash scripts/package-hermes-skill.sh",
+    "package:plugin": "bash scripts/package-plugin.sh",
     "check:hermes-package": "bash scripts/check-hermes-package.sh",
+    "check:plugin-package": "bash scripts/check-plugin-package.sh",
     "check:hermes-guard": "bash scripts/check-hermes-guard.sh",
     "test:intent-router": "node --test scripts/intent-router.test.js",
     "test:capability-policy": "node --test scripts/capability-policy.test.js",
@@ -20,6 +22,7 @@
     "test:version-check": "node --test scripts/version-check.test.js",
     "test:prompt-gate": "node --test scripts/prompt-gate.test.js",
     "test:hermes-package": "node --test scripts/hermes-package.test.js",
+    "test:plugin-package": "node --test scripts/plugin-package.test.js",
     "test:repromptverse-runtime": "node --test scripts/repromptverse-runtime.test.js",
     "test:telemetry-schema": "node --test scripts/telemetry-schema.test.js",
     "test:telemetry-store": "node --test scripts/telemetry-store.test.js",
@@ -39,7 +42,7 @@
     "flywheel:query": "node scripts/strategy-learner.js --query",
     "flywheel:ab": "node scripts/strategy-learner.js --ab",
     "flywheel:ingest": "node scripts/outcome-collector.js --ingest-dir",
-    "check": "npm run validate:templates && npm run validate:tool-refs && npm run test:intent-router && npm run test:capability-policy && npm run test:context-builder && npm run test:artifact-evaluator && npm run test:pattern-selector && npm run test:runtime-adapter && npm run test:goal-command && npm run test:workflow-command && npm run test:version-check && npm run test:prompt-gate && npm run test:hermes-package && npm run test:repromptverse-runtime && npm run test:telemetry-schema && npm run test:telemetry-store && npm run test:observability-report && npm run test:observability-contract && npm run test:recipe-fingerprint && npm run test:outcome-collector && npm run test:strategy-learner && npm run test:reverse-engineer && npm run test:flywheel-e2e && npm run benchmark:swarms && npm run benchmark:provider && npm run benchmark:realworld && npm run benchmark:flywheel"
+    "check": "npm run validate:templates && npm run validate:tool-refs && npm run test:intent-router && npm run test:capability-policy && npm run test:context-builder && npm run test:artifact-evaluator && npm run test:pattern-selector && npm run test:runtime-adapter && npm run test:goal-command && npm run test:workflow-command && npm run test:version-check && npm run test:prompt-gate && npm run test:hermes-package && npm run test:plugin-package && npm run check:hermes-package && npm run check:plugin-package && npm run test:repromptverse-runtime && npm run test:telemetry-schema && npm run test:telemetry-store && npm run test:observability-report && npm run test:observability-contract && npm run test:recipe-fingerprint && npm run test:outcome-collector && npm run test:strategy-learner && npm run test:reverse-engineer && npm run test:flywheel-e2e && npm run benchmark:swarms && npm run benchmark:provider && npm run benchmark:realworld && npm run benchmark:flywheel"
   },
   "repository": {
     "type": "git",

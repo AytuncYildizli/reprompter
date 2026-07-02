@@ -8,7 +8,8 @@ honor its STOP conditions. The reviewer maintains this index.
 
 | Plan | Title | Priority | Effort | Depends on | Status |
 |------|-------|----------|--------|------------|--------|
-| 001  | Ambient Prompt Gate (opt-in UserPromptSubmit hook, v12.8.0) | P1 | M | — | DONE (executor: Codex gpt-5.5; reviewed; `npm run check` 283 tests + benchmarks green) |
+| 001  | Ambient Prompt Gate (opt-in UserPromptSubmit hook, v12.8.0) | P1 | M | — | DONE (executor: Codex gpt-5.5; reviewed + dogfooded + calibration-tuned; PR #59) |
+| 002  | Claude Code plugin distribution (marketplace + auto-registered hook, v12.9.0) | P1 | M | 001 | DONE (executor: Codex gpt-5.5; reviewed; `claude plugin validate` passed; 303 tests green) |
 
 ## Dependency notes
 

@@ -18,6 +18,7 @@ const {
   readLocalVersion,
   formatNotice,
   checkVersion,
+  isPluginInstall,
 } = require("./version-check");
 
 function tmpFile(name, contents) {
@@ -204,6 +205,24 @@ test("CLI honors REPROMPTER_VERSION_CHECK=0 (silent no-op even when behind)", ()
   });
   assert.equal(res.status, 0);
   assert.equal(res.stdout.trim(), "", "opt-out must suppress all output on direct invocation");
+});
+
+test("CLI is silent inside a Claude Code plugin layout", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rpt-vc-plugin-"));
+  const skillRoot = path.join(tempRoot, "skills", "reprompter");
+  fs.mkdirSync(path.join(tempRoot, ".claude-plugin"), { recursive: true });
+  fs.mkdirSync(path.join(skillRoot, "scripts"), { recursive: true });
+  fs.writeFileSync(path.join(tempRoot, ".claude-plugin", "plugin.json"), '{"name":"reprompter"}\n', "utf8");
+  fs.copyFileSync(path.join(__dirname, "version-check.js"), path.join(skillRoot, "scripts", "version-check.js"));
+
+  assert.equal(isPluginInstall(skillRoot), true);
+
+  const res = spawnSync(process.execPath, [path.join(skillRoot, "scripts", "version-check.js"), "--no-cache"], {
+    encoding: "utf8",
+    env: { ...process.env, REPROMPTER_VERSION_CHECK: "1", REPROMPTER_VERSION_LATEST: "99.0.0" },
+  });
+  assert.equal(res.status, 0);
+  assert.equal(res.stdout.trim(), "", "plugin installs rely on native plugin updates, not curl|tar notices");
 });
 
 test("CLI sanitizes a junk REPROMPTER_REPO back to the default in the printed command", () => {

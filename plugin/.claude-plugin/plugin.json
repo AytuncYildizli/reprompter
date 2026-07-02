@@ -1,0 +1,8 @@
+{
+  "name": "reprompter",
+  "description": "Prompt engineering skill for Claude Code, OpenClaw, Codex, Grok CLI, and Hermes Agent",
+  "version": "12.9.0",
+  "author": {
+    "name": "AytuncYildizli"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/skills/reprompter/scripts/prompt-gate.js\""
+          }
+        ]
+      }
+    ]
+  }
+}

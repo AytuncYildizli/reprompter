@@ -8,9 +8,9 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-12.8.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-12.9.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-293%20passing-2da44e)](#testing)
+[![Tests](https://img.shields.io/badge/tests-303%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 
 RePrompter is a prompt engineering skill for AI coding agents. It takes rough, low-quality prompts and transforms them into structured, high-scoring prompts that produce dramatically better results. Works with Claude Code, OpenClaw, Codex, Grok CLI, Hermes Agent, or any LLM that accepts structured prompts.
@@ -114,13 +114,26 @@ with unit tests for both API and UI, without breaking existing API contracts.
 
 ### Claude Code
 
+Recommended: install the Claude Code plugin. One install registers the RePrompter skill namespace and the Ambient Prompt Gate hook; future updates use Claude Code's native plugin update flow.
+
+```text
+/plugin marketplace add AytuncYildizli/reprompter
+/plugin install reprompter@reprompter
+```
+
+If you previously installed `~/.claude/skills/reprompter`, remove that personal copy before using the plugin. Personal skills shadow/duplicate plugin skills, so leaving it in place can make Claude Code load the old copy instead of `/reprompter:reprompter`.
+
+The plugin ships the Ambient Prompt Gate enabled for Claude Code `UserPromptSubmit`. Use `REPROMPTER_AMBIENT=0` as the per-feature off switch; Claude Code's `disableAllHooks` still disables all hooks, including plugin hooks.
+
+Fallback for copy-based or non-plugin setups:
+
 ```bash
 mkdir -p skills/reprompter
 curl -sL https://github.com/aytuncyildizli/reprompter/archive/main.tar.gz | \
   tar xz --strip-components=1 -C skills/reprompter
 ```
 
-Source archives are runtime-only (`.gitattributes` `export-ignore`): they contain `SKILL.md`, `references/`, and `scripts/` but not dev/dist trees like `skills/` (the Hermes-only install package — see [Install paths](#openclaw--codex--grok-cli--hermes-agent)), `benchmarks/`, `assets/`, or `docs/`. Installed an older full copy? It's safe to delete those directories from it — upgrades won't bring them back.
+Source archives are runtime-only (`.gitattributes` `export-ignore`): they contain `SKILL.md`, `references/`, and `scripts/` but not dev/dist trees like `skills/` (the Hermes-only install package — see [Install paths](#openclaw--codex--grok-cli--hermes-agent)), `plugin/`, `.claude-plugin/`, `benchmarks/`, `assets/`, or `docs/`. Plugin installs use git clone through Claude Code's marketplace flow, so export-ignoring the plugin tree does not affect plugin installs. Installed an older full copy? It's safe to delete those directories from it — upgrades won't bring them back.
 
 For the `/goal` preflight lane on Claude Code, pin the CLI to **v2.1.139 or later**. `/goal` depends on the hooks layer — if `disableAllHooks` or `allowManagedHooksOnly` is set in `settings.json` the command is unavailable on any version (v2.1.140 only made the failure visible). Managed environments that block hooks should stick to Single mode for goal-shaped work.
 
@@ -131,7 +144,7 @@ claude --version
 
 ### Staying current (version self-check)
 
-RePrompter is copy-based, so nothing auto-updates it — but it can tell you when your copy is behind the latest release. On the first invocation in a session it runs a **fail-soft** check (`scripts/version-check.js`) that compares your local `SKILL.md` version against the latest GitHub release and prints a notice **only if you're behind** (silent when up to date). The result is cached ~24h (keyed by repo), so repeat runs add no latency; the first uncached check waits up to ~3s for GitHub, then fails soft and silent if it can't reach it (a failed lookup is cached ~1h so offline sessions don't repeat the timeout). Disable it entirely with `REPROMPTER_VERSION_CHECK=0`.
+Copy-based RePrompter installs can tell you when they are behind the latest release. Claude Code plugin installs stay silent here because native plugin update detection owns freshness. On the first invocation in a copy-based session, RePrompter runs a **fail-soft** check (`scripts/version-check.js`) that compares your local `SKILL.md` version against the latest GitHub release and prints a notice **only if you're behind** (silent when up to date). The result is cached ~24h (keyed by repo), so repeat runs add no latency; the first uncached check waits up to ~3s for GitHub, then fails soft and silent if it can't reach it (a failed lookup is cached ~1h so offline sessions don't repeat the timeout). Disable it entirely with `REPROMPTER_VERSION_CHECK=0`.
 
 The notice's upgrade command is **path-aware**: it re-fetches into the exact directory this skill is installed in, so it works the same whether you run Claude Code (`~/.claude/skills/reprompter`), Codex (`~/.codex/skills/reprompter`), OpenClaw, Grok CLI, or a project-local `skills/reprompter/`. (Hermes installs ship no `scripts/`, so the check doesn't run there — use `hermes skills install` to update.)
 
@@ -324,7 +337,7 @@ Exemplar output → EXTRACT structure → ANALYZE task type + domain + tone
 ## Testing
 
 ```bash
-npm run check    # 293 tests + 4 benchmarks
+npm run check    # 303 tests + 4 benchmarks
 npm run test:reverse-engineer  # individual suite example
 ```
 
@@ -344,13 +357,14 @@ npm run test:reverse-engineer  # individual suite example
 | Artifact evaluator | 4 |
 | Goal command | 11 |
 | Workflow command | 20 |
-| Version check | 19 |
+| Version check | 20 |
 | Prompt gate | 23 |
 | Hermes package | 8 |
+| Claude Code plugin package | 9 |
 | Telemetry schema/store | 6 |
 | Observability report | 2 |
 | Observability contract | 3 |
-| **Total** | **293** |
+| **Total** | **303** |
 
 All benchmarks at 100%: swarm routing (9/9), real-world routing (64/64), artifacts (84/84), flywheel (13/13), provider (9/9).
 
@@ -383,7 +397,9 @@ Hermes parallel paths: **G1 `delegate_task` batch** for normal Repromptverse, **
 
 ## Configuration
 
-### Ambient Prompt Gate (Claude Code, opt-in)
+### Ambient Prompt Gate (Claude Code)
+
+Plugin installs register this hook automatically. For copy-based installs, add it manually:
 
 ```json
 {
@@ -395,7 +411,7 @@ Hermes parallel paths: **G1 `delegate_task` batch** for normal Repromptverse, **
 }
 ```
 
-Ambient flags: `REPROMPTER_AMBIENT=0` disables nudges, `REPROMPTER_AMBIENT_THRESHOLD` changes the default score threshold (`5`), `REPROMPTER_AMBIENT_COOLDOWN_MIN` changes the per-session cooldown (`15`), and `REPROMPTER_TELEMETRY=0` disables privacy-safe gate telemetry. The gate never blocks prompts and never persists prompt text.
+Ambient flags: `REPROMPTER_AMBIENT=0` disables nudges, `REPROMPTER_AMBIENT_THRESHOLD` changes the default score threshold (`5`), `REPROMPTER_AMBIENT_COOLDOWN_MIN` changes the per-session cooldown (`15`), and `REPROMPTER_TELEMETRY=0` disables privacy-safe gate telemetry. Claude Code's `disableAllHooks` still wins globally. The gate never blocks prompts and never persists prompt text.
 
 ### Repromptverse
 
