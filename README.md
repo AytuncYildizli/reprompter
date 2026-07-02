@@ -8,7 +8,7 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-12.9.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-12.9.1-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-303%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
@@ -322,7 +322,7 @@ Exemplar output → EXTRACT structure → ANALYZE task type + domain + tone
 
 **Prompt Flywheel Recipe Fingerprinting** - Every prompt carries a deterministic recipe fingerprint (template + patterns + capability tier + domain + context layers + quality bucket). Strategy learner groups outcomes by fingerprint so recommendations are grounded in repeated evidence, not one-off runs.
 
-**Ambient Prompt Gate (v12.8)** - An opt-in Claude Code `UserPromptSubmit` hook scores task-shaped prompts locally and silently nudges only when the request is below threshold. It is fail-soft, never blocks a prompt, uses cooldown to avoid nagging, and writes no prompt text to telemetry or state.
+**Ambient Prompt Gate (v12.8)** - An opt-in Claude Code `UserPromptSubmit` hook scores task-shaped prompts locally and silently nudges only when the request is below threshold. It is fail-soft, never blocks a prompt, uses cooldown to avoid nagging, and writes no prompt text to the local outcome log (called telemetry in the code) or state.
 
 **Agent Cards** - Plan Cards (before execution), Status Line (during), Result Cards (after). Full transparency into what agents will do, are doing, and found.
 
@@ -331,6 +331,19 @@ Exemplar output → EXTRACT structure → ANALYZE task type + domain + tone
 **Pattern Library** - 6 pluggable prompt engineering patterns: constraint-first framing, uncertainty labeling, self-critique checkpoints, delta retry scaffolds, evidence-strength labeling, context-manifest transparency.
 
 **Capability Routing** - When multiple models are available, routes each agent by capability tier (reasoning, long context, cost-optimized, latency-optimized) with provider-diverse fallback chains.
+
+## Privacy
+
+RePrompter never transmits or collects anything from anyone. The Ambient Prompt Gate and flywheel write **local files only** on the user's own machine:
+
+- Gate state and outcome log: `$XDG_CACHE_HOME/reprompter/`
+- Flywheel and runtime telemetry runs: `.reprompter/`
+
+No prompt text is ever persisted. Session ids are sha256-hashed before they are written.
+
+The single network call in the entire product is the version self-check (`scripts/version-check.js`) querying the GitHub releases API for the latest RePrompter release. It sends no user data and can be disabled with `REPROMPTER_VERSION_CHECK=0`.
+
+You can inspect the local files, delete them anytime, and kill the gate log with `REPROMPTER_TELEMETRY=0`. To verify the local-only gate directly, read `scripts/prompt-gate.js`: it has no network imports.
 
 ---
 
@@ -411,7 +424,7 @@ Plugin installs register this hook automatically. For copy-based installs, add i
 }
 ```
 
-Ambient flags: `REPROMPTER_AMBIENT=0` disables nudges, `REPROMPTER_AMBIENT_THRESHOLD` changes the default score threshold (`5`), `REPROMPTER_AMBIENT_COOLDOWN_MIN` changes the per-session cooldown (`15`), and `REPROMPTER_TELEMETRY=0` disables privacy-safe gate telemetry. Claude Code's `disableAllHooks` still wins globally. The gate never blocks prompts and never persists prompt text.
+Ambient flags: `REPROMPTER_AMBIENT=0` disables nudges, `REPROMPTER_AMBIENT_THRESHOLD` changes the default score threshold (`5`), `REPROMPTER_AMBIENT_COOLDOWN_MIN` changes the per-session cooldown (`15`), and `REPROMPTER_TELEMETRY=0` disables the privacy-safe gate local outcome log. Claude Code's `disableAllHooks` still wins globally. The gate never blocks prompts and never persists prompt text.
 
 ### Repromptverse
 
