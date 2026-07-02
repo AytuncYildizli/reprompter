@@ -12,6 +12,7 @@ RePrompter now has an opt-in **Ambient Prompt Gate** for Claude Code `UserPrompt
 
 ### Changed
 
+- Ambient Prompt Gate now skips concise direct atomic tasks while keeping vague concise prompts nudgeable with bilingual English/Turkish vagueness detection.
 - `SKILL.md` and `README.md` — document the Claude Code-only install snippet, fail-soft behavior, privacy guarantee, and env flags. Codex hooks, Hermes support, and TESTING.md scenario docs are deliberately deferred to follow-up work.
 - `package.json`, `package-lock.json`, generated Hermes package — version `12.8.0`; `npm run check` now includes `test:prompt-gate`.
 

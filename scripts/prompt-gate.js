@@ -75,6 +75,27 @@ const TASK_VERB_PATTERN = new RegExp(
   `(?:^|[^\\p{L}])(?:${TASK_VERBS.map(escapeRegExp).join("|")})(?=[^\\p{L}]|$)`,
   "iu"
 );
+const VAGUENESS_PATTERN = new RegExp(
+  `(?:^|[^\\p{L}])(?:${[
+    "maybe",
+    "somehow",
+    "stuff",
+    "etc",
+    "idk",
+    "whatever",
+    "uhh",
+    "or something",
+    "belki",
+    "falan",
+    "filan",
+    "herhalde",
+    "bilmem",
+    "bir şeyler",
+  ]
+    .map(escapeRegExp)
+    .join("|")})(?=[^\\p{L}]|$)`,
+  "giu"
+);
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -105,10 +126,7 @@ function scoreClarity(text) {
   const value = normalizedText(text).trim();
   const lower = lowerText(value);
   const length = value.length;
-  const vagueHits = countMatches(
-    lower,
-    /\b(?:maybe|somehow|stuff|etc|idk|whatever|uhh)\b|or something/g
-  );
+  const vagueHits = countMatches(lower, VAGUENESS_PATTERN);
 
   let score = 1;
   if (length >= 40) score += 2;
@@ -278,6 +296,9 @@ function shouldNudge(prompt, options = {}) {
   }
   if (/reprompt/i.test(trimmed)) return { nudge: false, reason: "mentions-reprompt" };
   if (!hasTaskVerb(trimmed)) return { nudge: false, reason: "not-a-task" };
+  if (wordCount(trimmed) <= 15 && countMatches(lowerText(trimmed), VAGUENESS_PATTERN) === 0) {
+    return { nudge: false, reason: "atomic-task" };
+  }
 
   const score = scorePrompt(trimmed);
   if (score.overall >= thresholdFromEnv(env)) {

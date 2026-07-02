@@ -1569,7 +1569,7 @@ Always include explicit permission for the model to express uncertainty rather t
 
 ## Ambient Prompt Gate (opt-in UserPromptSubmit hook — Claude Code only)
 
-The Ambient Prompt Gate is an optional Claude Code `UserPromptSubmit` hook that scores every incoming prompt with the same six RePrompter quality dimensions (clarity, specificity, structure, constraints, verifiability, decomposition). It stays silent for slash commands, acknowledgements, short prompts, non-task prompts, prompts that already mention reprompting, and prompts above the configured threshold. For task-shaped prompts below threshold, it injects one line of model-facing context suggesting a one-time offer to structure the request via RePrompter before proceeding.
+The Ambient Prompt Gate is an optional Claude Code `UserPromptSubmit` hook that scores every incoming prompt with the same six RePrompter quality dimensions (clarity, specificity, structure, constraints, verifiability, decomposition). It stays silent for slash commands, acknowledgements, short prompts, non-task prompts, concise direct atomic tasks, prompts that already mention reprompting, and prompts above the configured threshold. For task-shaped prompts below threshold, it injects one line of model-facing context suggesting a one-time offer to structure the request via RePrompter before proceeding.
 
 It NEVER blocks a prompt. The hook is fail-soft: malformed stdin, unreadable state, telemetry errors, or any internal failure produce empty stdout and exit 0. It never writes prompt text to telemetry or state; telemetry contains only score, weakest dimensions, whether it nudged, the reason, and a hashed session correlation id.
 
