@@ -1,3 +1,20 @@
+## v12.8.0 (2026-07-02) — Ambient Prompt Gate
+
+### Headline
+
+RePrompter now has an opt-in **Ambient Prompt Gate** for Claude Code `UserPromptSubmit` hooks. The gate scores each incoming prompt with cheap local heuristics, stays silent for healthy or non-task prompts, and injects one model-facing advisory only when a task-shaped prompt falls below threshold. It is lane-adjacent infrastructure rather than a new output lane: it nudges users toward RePrompter at the moment a weak prompt would benefit from structure.
+
+### Added
+
+- `scripts/prompt-gate.js` — fail-soft, privacy-safe hook helper. It never exits 2, never blocks a prompt, never calls the network, and persists only cooldown timestamps under the user's cache directory. `REPROMPTER_AMBIENT=0` disables nudges, `REPROMPTER_AMBIENT_THRESHOLD` tunes the score threshold, and `REPROMPTER_AMBIENT_COOLDOWN_MIN` controls per-session cooldown.
+- `scripts/prompt-gate.test.js` — calibration, skip-reason, cooldown, CLI contract, and privacy coverage for the hook.
+- `gate_prompt` telemetry stage — optional local telemetry records only numeric/enum metadata (`overall`, `weakest`, `nudged`, `reason`) and never records prompt text.
+
+### Changed
+
+- `SKILL.md` and `README.md` — document the Claude Code-only install snippet, fail-soft behavior, privacy guarantee, and env flags. Codex hooks, Hermes support, and TESTING.md scenario docs are deliberately deferred to follow-up work.
+- `package.json`, `package-lock.json`, generated Hermes package — version `12.8.0`; `npm run check` now includes `test:prompt-gate`.
+
 ## v12.7.1 (2026-06-10) — Runtime-only source archives
 
 ### Headline
