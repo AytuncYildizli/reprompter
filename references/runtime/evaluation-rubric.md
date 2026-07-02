@@ -8,13 +8,15 @@ Strict quality gate for Repromptverse artifacts.
 - Coverage
 - Verifiability
 - Boundary Respect
+- Constraint Quality
 
 ## Default Weights
 
 - Clarity: 25%
 - Coverage: 30%
 - Verifiability: 25%
-- Boundary Respect: 20%
+- Boundary Respect: 15%
+- Constraint Quality: 5%
 
 ## Gating Rules
 
@@ -22,6 +24,7 @@ Strict quality gate for Repromptverse artifacts.
 - All required sections must be present
 - File/line references required unless explicitly disabled
 - Forbidden-pattern boundary violations fail in strict mode
+- Constraints score well when they are load-bearing boundaries at the right altitude: specific enough to guide behavior, flexible enough to leave local heuristics intact. Do not reward exhaustive constraint lists by count alone.
 
 ## Retry Policy
 

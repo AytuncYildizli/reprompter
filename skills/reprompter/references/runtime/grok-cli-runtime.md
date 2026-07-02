@@ -66,7 +66,7 @@ spawn_subagent(
   description="Repromptverse {role} worker for {taskname}",
   subagent_type="general-purpose",     # or "explore" / "plan"
   persona="implementer",               # or "researcher", "reviewer", custom
-  fork_context=true,                   # CRITICAL: gives the worker the original user prompt + interviewContext
+  fork_context=true,                   # Gives the worker the original user prompt + interviewContext
   capability_mode="execute",           # or "read-write" / "read-only"
   prompt="You are the {role} agent on the rpt-{taskname} team.
 

@@ -13,12 +13,12 @@ compatibility: |
   Workflow preflight lane + Repromptverse Option H target Claude Code's dynamic `Workflow` tool (JS-scripted background fan-out with schema-validated returns and resume); additive, detected by tool presence, with first-class ultracode.
 metadata:
   author: AytuncYildizli
-  version: 12.9.1
+  version: 12.10.0
 ---
 
-# RePrompter v12.9.1
+# RePrompter v12.10.0
 
-> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.6.0 added the Workflow preflight lane + Repromptverse Option H (Claude dynamic Workflow tool) with first-class ultracode; v12.7.0 adds a fail-soft version self-check that warns when copy-based installs are behind; v12.8.0 adds an ambient prompt gate for Claude Code UserPromptSubmit hooks; v12.9.0 ships RePrompter as a Claude Code plugin with skill + hook auto-registration; v12.9.1 makes the local-only privacy guarantees explicit with no behavior changes. All prior Claude Code, Codex, OpenClaw, Grok CLI, and Hermes behavior is preserved.**
+> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.10.0 aligns RePrompter templates with 2026 vendor guidance: clear sectioning over XML absolutism, calibrated emphasis, outcome-first instructions, structured-output routing, runtime-aware constraints, documented assumptions for autonomous lanes, context-budget awareness, and tool-description quality. All prior Claude Code, Codex, OpenClaw, Grok CLI, and Hermes behavior is preserved.**
 
 ---
 
@@ -70,7 +70,7 @@ Process:
 2. Detect the target runtime (table above). Carry the runtime label through the rest of the lane.
 3. Render the **Goal Command Card** first, with `Runtime` populated from step 2.
 4. Infer the user's real intent from the rough prompt: desired outcome, hidden constraint, success signal, and likely risk.
-5. Build the rich expanded prompt first, using the normal RePrompter structure: goal/task, context, requirements, constraints, execution notes, and success criteria.
+5. Build the rich expanded prompt first, using the normal RePrompter structure: goal/task, context, assumptions, requirements, constraints, execution notes, and success criteria.
 6. Compress that expanded prompt into a dense one-line goal summary. This should feel like a summary of a long XML prompt, not a slightly polished copy of the user's rough sentence. The compression rule is identical across runtimes — both Codex's alpha `/goal` and Claude Code's v2.1.139+ `/goal` consume `<objective>` as a single argument.
 7. Generate an exact copy-paste command: `/goal <summary of expanded prompt>`.
 8. Do not put the full XML or Markdown document after `/goal`; only the compressed summary belongs in the command.
@@ -91,7 +91,7 @@ Both runtimes shape the slash command as `/goal <objective>`. Render this card b
 | Mode | `/goal preflight` |
 | Paste Into | Codex TUI prompt, Claude Code TUI prompt, or Hermes TUI prompt, as-is |
 | Risk Level | `low` / `medium` / `high`, based on blast radius |
-| Missing Inputs | Up to 3 unknowns; write `none` if the prompt is ready |
+| Missing Inputs | Up to 3 unresolved unknowns; use documented assumptions for reasonable defaults and write `none` when the prompt is ready |
 | Verification | 2-4 checks the agent should run while pursuing the goal |
 | Quality | Before score → after score, with the weakest remaining dimension |
 
@@ -108,6 +108,9 @@ Then show the expanded prompt basis:
 <context>
 - {known repo/runtime/user context}
 </context>
+<assumptions>
+- {reasonable default applied because this autonomous goal should not block on a low-value question}
+</assumptions>
 <requirements>
 - {measurable requirement}
 </requirements>
@@ -218,7 +221,7 @@ Single Claude-native surface: requires the `Workflow` tool in the current toolse
 ### Process
 
 1. Treat the input as a team task. Run `routeIntent` — a workflow-lane trigger returns `mode: "workflow"`.
-2. Infer the real intent and build the rich expanded prompt (the XML basis below) with all eight base tags + `<success_criteria>`.
+2. Infer the real intent and build the rich expanded prompt (the XML basis below) with all eight base tags + `<assumptions>` + `<success_criteria>`. Because Workflow preflight is autonomous execution, skip clarification questions when a reasonable default exists and document the default in `<assumptions>`.
 3. Reprompt one prompt per role (each owns ONE domain, no overlap), exactly as Repromptverse Phase 2.
 4. Compile to a `.workflow.js` via `the root repository workflow compiler` (`buildWorkflowCommand`): pure-literal `meta`, schema-validated `agent()` returns, `parallel()`/`pipeline()` per the H1/H2 heuristic, `runId`/`taskname` from `args`, `model` omitted, `filter(Boolean)`, bounded delta-retry (max 2/role).
 5. Render the **Workflow Command Card** first, then the emitted script, then the expanded-prompt basis.
@@ -239,7 +242,7 @@ Single Claude-native surface: requires the `Workflow` tool in the current toolse
 | Execution Pattern | `parallel fan-out + bounded delta-retry` (ultracode: `+ adversarial verify + completeness critic`) |
 | Budget | directive total / `inherit` / `none` |
 | Risk Level | `low` / `medium` / `high` |
-| Missing Inputs | Up to 3 unknowns, or `none` |
+| Missing Inputs | Up to 3 unresolved unknowns; use documented assumptions for reasonable defaults, or `none` |
 | Verification | 2-4 checks the run should surface (per-role scores, missing roles) |
 | Quality | Before score → after score |
 
@@ -309,6 +312,9 @@ Then the expanded-prompt basis (the reprompted XML that authors the workflow):
 <context>
 - Raw operator request, target = Claude dynamic Workflow tool, route mode/profile
 </context>
+<assumptions>
+- {Documented default used instead of blocking workflow compilation on a low-value question}
+</assumptions>
 <task>{Compile the request into a runnable .workflow.js fan-out.}</task>
 <motivation>{Why this matters}</motivation>
 <requirements>
@@ -350,9 +356,9 @@ See `references/workflow-template.md` and `references/runtime/claude-workflow-ru
    - Reject examples: "hi", "thanks", "lol", "what's up", "good morning", random emoji-only input
    - Accept examples: "fix login bug", "write API tests", "improve this prompt"
 3. **Quick Mode gate** — under 20 words, single action, no complexity indicators → generate immediately
-4. **Smart Interview** — use `AskUserQuestion` with clickable options (2-5 questions max)
+4. **Smart Interview** — use `AskUserQuestion` with clickable options (2-5 questions max) for interactive Single mode. For prompts destined for autonomous execution (goal/workflow/team lanes), skip questions with reasonable defaults and emit an `<assumptions>` block the user can veto before running.
 5. **Flywheel bias check (optional, read-only)** — if `REPROMPTER_FLYWHEEL_BIAS=1` is set in the environment, consult past outcomes before choosing a template. See "Flywheel bias injection" below.
-6. **Generate + Score** — apply template, show before/after quality metrics. The generated prompt MUST include a `<success_criteria schema_version="1">` block with 3-6 `<criterion>` entries. Each criterion has `id` (kebab-case slug, unique in block), `verification_method` (`rule` | `llm_judge` | `manual`), a one-sentence `<description>`, and — depending on method — an inline `<rule type="regex|predicate">` or `<judge_prompt>` (neither for `manual`). Schema of record: `references/outcome-schema.md`.
+6. **Generate + Score** — apply template, show before/after quality metrics. Generated prompts include a `<success_criteria schema_version="1">` block with 3-6 `<criterion>` entries. Each criterion has `id` (kebab-case slug, unique in block), `verification_method` (`rule` | `llm_judge` | `manual`), a one-sentence `<description>`, and — depending on method — an inline `<rule type="regex|predicate">` or `<judge_prompt>` (neither for `manual`). Schema of record: `references/outcome-schema.md`.
 7. **Single-pass evaluator** — run self-eval rubric and do one delta rewrite if score < 7
 
 **Why criteria are emitted:** so every prompt carries its own testable assertions; outcome records produced by `the root repository outcome recording helper` (added in the same PR) join criteria to results for flywheel learning.
@@ -377,9 +383,9 @@ When the flag is set, between the interview and the template pick:
 6. The bias changes **which template/patterns you start from.** The rest of the pipeline (interview content, generated prompt's XML structure, criteria emission) is unchanged. The flywheel never rewrites Claude's output.
 7. **Attribution (v3 part 3).** When bias is applied, remember the chosen recipe's `hash`, `confidence`, and `sampleCount` until the outcome is recorded for this run. Then stamp them onto the record via `the root repository outcome recording helper --applied-recommendation '{"recipe_hash":"<hash>","confidence":"<low|medium|high>","sample_count":<N>,"applied_at":"prompt_gen"}'`. Use `applied_at="phase_2"` for Repromptverse team-wide bias. **If no bias was applied (flag off, query returned null, or low confidence) OMIT the flag entirely** — the *absence* of `applied_recommendation` on a record is what marks it as the bias-off control group for `npm run flywheel:ab` analysis. Never stamp a zero/placeholder block; absence is the signal.
 
-### ⚠️ MUST GENERATE AFTER INTERVIEW
+### Generate after interview
 
-After interview completes, IMMEDIATELY:
+After interview completes, immediately:
 1. Select template based on task type
 2. Generate the full polished prompt
 3. Show quality score (before/after table)
@@ -401,7 +407,7 @@ Ask via `AskUserQuestion`. **Max 5 questions total.**
 3. Motivation: User-facing / Internal tooling / Bug fix / Exploration / Skip *(drop first if space needed)*
 4. Output format: XML Tags / Markdown / Plain Text / JSON *(drop first if space needed)*
 
-**Task-specific questions** (MANDATORY for compound prompts — replace lower-priority standard questions):
+**Task-specific questions** (required for compound prompts — replace lower-priority standard questions):
 - Extract keywords from prompt → generate relevant follow-up options
 - Example: prompt mentions "telegram" → ask about alert type, interactivity, delivery
 - **Vague prompt fallback:** if input has no extractable keywords (e.g., "make it better"), ask open-ended: "What are you working on?" and "What's the goal?" before proceeding
@@ -493,7 +499,7 @@ Detect task type from input. Each type has a dedicated template in `references/`
 
 ### Base XML structure
 
-All templates follow this core structure (8 required tags). Use as fallback if no specific template matches:
+All templates follow this core section structure (8 required fields). XML is the default emitted format; Markdown headers are equally valid when requested by the user or runtime. Use as fallback if no specific template matches:
 
 Exception: `team-brief-template.md` uses Markdown format for orchestration briefs. This is intentional — see template header for rationale.
 
@@ -515,11 +521,11 @@ Exception: `team-brief-template.md` uses Markdown format for orchestration brief
 </requirements>
 
 <constraints>
-- {What NOT to do}
-- {Boundaries and limits}
+- {Load-bearing boundary or limit}
+- {What to do instead of an unsafe or out-of-scope action}
 </constraints>
 
-<output_format>{Expected format, structure, length}</output_format>
+<output_format>{Expected format, structure, length. If the target runtime supports structured-output APIs, name the shape here and enforce it through the API; embed full schemas only as fallback.}</output_format>
 
 <success_criteria schema_version="1">
   <criterion id="no-regression" verification_method="rule">
@@ -590,7 +596,7 @@ If docs and code ever diverge, the script is the source of truth for benchmark/t
 
 1. **Score raw prompt** (1-10): Clarity, Specificity, Structure, Constraints, Decomposition
    - Phase 1 uses 5 quick-assessment dimensions. The full 6-dimension scoring (adding Verifiability) is used in Phase 4 evaluation.
-2. **Dimension Interview gate** — check which askable dimensions scored < 5 (see Dimension Interview section below)
+2. **Dimension Interview gate** — check which askable dimensions scored < 5 (see Dimension Interview section below). In autonomous or batch-destined runs, prefer documented assumptions over blocking questions when a reasonable default exists.
 3. **Pick mode:** parallel (independent agents) or sequential (pipeline with dependencies)
 4. **Define team:** 2-5 agents max, each owns ONE domain, no overlap (informed by interviewContext if interview ran)
 5. **Show Plan Cards** (see Agent Cards section below)
@@ -655,6 +661,18 @@ interviewContext = {
 
 When `successCriteria` is not gathered (question not asked or user skipped), omit the field. Phase 2 derives success criteria from requirements as it does today.
 
+For autonomous execution lanes, record safe defaults in the generated prompt instead of asking low-value clarification questions:
+
+```xml
+<assumptions>
+- Scope defaults to the files and systems named or strongly implied by the request.
+- Excludes default to unrelated refactors, new dependencies, and destructive production changes.
+- Verification defaults to the smallest local checks that prove the requested outcome.
+</assumptions>
+```
+
+The user can veto or edit these assumptions before execution. Interactive Single mode still asks when ambiguity changes the requested outcome.
+
 **How interviewContext feeds into later phases:**
 - **Agent count and roles** — scope determines which agents are created
 - **Per-agent `<constraints>`** — excludes injected into each agent's prompt
@@ -685,7 +703,7 @@ Interview context applied: {summary of influence, including override conflicts, 
 ```
 
 **Rules:**
-- MUST appear before any agent is launched
+- Render before any agent is launched
 - If interview ran, show which constraints came from interview vs auto-detected
 - If user requests agent adjustments at confirmation gate, re-render Plan Cards with updated team
 - Single-agent runs: table renders with one row (valid)
@@ -720,7 +738,7 @@ Total: {N} findings | {accepted}/{total} accepted | {retry_count} retries
 ```
 
 **Rules:**
-- MUST appear before synthesis is written
+- Render before synthesis is written
 - "Key Insight" = single most important finding per agent (forces prioritization)
 - Retry agents show retry reason in findings column
 
@@ -747,7 +765,7 @@ For EACH agent:
 - `<requirements>`: At least 5 specific, independently verifiable requirements
 - `<constraints>`: Scope boundary with other agents, read-only vs write, file/directory boundaries
 - `<output_format>`: Exact path `/tmp/rpt-{taskname}-{agent-domain}.md`, required sections
-- `<success_criteria>`: **MUST** use the v1 structured shape (same as Mode 1) — see `references/outcome-schema.md`. Include 3–6 `<criterion>` entries scoped to **this agent's artifact** (not the whole team's output). Each criterion has `id`, `verification_method` (`rule` | `llm_judge` | `manual`), a one-sentence `<description>`, and an inline `<rule>` or `<judge_prompt>` per the method. Bullet-list placeholders in the template files are acceptable scaffolding but the generated per-agent prompt **must** upgrade them to the structured form.
+- `<success_criteria>`: use the v1 structured shape (same as Mode 1) — see `references/outcome-schema.md`. Include 3–6 `<criterion>` entries scoped to **this agent's artifact** (not the whole team's output). Each criterion has `id`, `verification_method` (`rule` | `llm_judge` | `manual`), a one-sentence `<description>`, and an inline `<rule>` or `<judge_prompt>` per the method. Bullet-list placeholders in the template files are acceptable scaffolding but the generated per-agent prompt upgrades them to the structured form.
 
 **Score each prompt — target 8+/10.** If under 8, add more context/constraints.
 
@@ -772,7 +790,7 @@ Raw prompt scored {raw}/10. After reprompting, each agent prompt scores {min}-{m
 ```
 
 **Rules:**
-- MUST appear after Phase 2 prompt generation, before Phase 3 execution
+- Render after Phase 2 prompt generation, before Phase 3 execution
 - Shows the user exactly how much reprompter improved their input
 - If any agent prompt scores < 8, note which ones and what was added to fix them
 
@@ -857,16 +875,16 @@ tmux new-session -d -s {session} "cd /path/to/workdir && CLAUDE_CODE_EXPERIMENTA
 # 2. Wait for startup
 sleep 12
 
-# 3. Send prompt — MUST use -l (literal), Enter SEPARATE
-# IMPORTANT: Include POLLING RULES to prevent lead TaskList loop bug
-tmux send-keys -t {session} -l 'Create an agent team with N teammates. CRITICAL: Use model opus for ALL tasks.
+# 3. Send prompt — use -l (literal), Enter SEPARATE
+# Include POLLING RULES to prevent lead TaskList loop bug
+tmux send-keys -t {session} -l 'Create an agent team with N teammates. Use model opus for all tasks.
 
-POLLING RULES — YOU MUST FOLLOW THESE:
+POLLING RULES:
 - After sending tasks, poll TaskList at most 10 times
-- If ALL tasks show "done" status, IMMEDIATELY stop polling
-- After 3 consecutive TaskList calls showing the same status, STOP polling regardless
+- If all tasks show "done" status, stop polling immediately
+- After 3 consecutive TaskList calls showing the same status, stop polling regardless
 - Once you stop polling: read the output files, then write synthesis
-- DO NOT call TaskList more than 20 times total under any circumstances
+- Do not call TaskList more than 20 times total under any circumstances
 
 Teammate 1 (ROLE): TASK. Write output to /tmp/rpt-{taskname}-{domain}.md. ... After all complete, synthesize into /tmp/rpt-{taskname}-final.md'
 sleep 0.5
@@ -943,7 +961,7 @@ TeamCreate(team_name="rpt-{taskname}", description="Repromptverse: {task summary
 TaskCreate(subject="Agent 1 task", description="Full reprompted prompt from Phase 2")
 TaskCreate(subject="Agent 2 task", description="Full reprompted prompt from Phase 2")
 
-# 3. Spawn teammates with the Agent tool (MUST specify model=opus)
+# 3. Spawn teammates with the Agent tool (specify model=opus)
 #    Note: In Claude Code ≥2.1, the tool is `Agent`. The old `Task` name referred
 #    to the same spawn primitive but no longer exists as a callable tool. Using
 #    `Task(...)` here causes the model to either fail the call or skip the spawn.
@@ -963,7 +981,7 @@ Agent(description="Agent 2 on rpt-{taskname}", subagent_type="general-purpose",
 #    Two hard rules on the current runtime (verified on Claude Code 2.1+):
 #    - SendMessage(to="*") ONLY accepts plain-string messages. Structured
 #      payloads like {"type": "shutdown_request"} are rejected on broadcast,
-#      so shutdown MUST be sent per-agent by name.
+#      so shutdown is sent per-agent by name.
 #    - TeamDelete() errors if any teammate is still active. shutdown is
 #      asynchronous (each teammate needs a turn to approve the request and
 #      terminate), so wait for each agent to acknowledge before calling it.
@@ -1257,9 +1275,9 @@ Phase 4: INJECT — seed flywheel with pre-graded exemplar outcome (optional, ~2
 7. **Score** — show quality dimensions of the generated prompt
 8. **Flywheel injection** — offer to save as pre-graded exemplar outcome
 
-### ⚠️ MUST GENERATE AFTER ANALYSIS
+### Generate after analysis
 
-After analysis completes, IMMEDIATELY:
+After analysis completes, immediately:
 1. Extract `<success_criteria>` from the exemplar (see "Criteria extraction from exemplars" below — 3–6 criteria anchored to observable features of the exemplar)
 2. Generate the full reverse-engineered prompt, embedding the extracted `<success_criteria>` block
 3. Show the Extraction Card (see below)
@@ -1392,7 +1410,7 @@ Canonical implementation for structural analysis and classification lives in `th
 | Clarity | 20% | Task unambiguous? |
 | Specificity | 20% | Requirements concrete? |
 | Structure | 15% | Proper sections, logical flow? |
-| Constraints | 15% | Boundaries defined? |
+| Constraints | 15% | Load-bearing boundaries at the right altitude? |
 | Verifiability | 15% | Success measurable? |
 | Decomposition | 15% | Work split cleanly? (Score 10 if task is correctly atomic) |
 
@@ -1409,6 +1427,14 @@ Canonical implementation for structural analysis and classification lives in `th
 ```
 
 > **Bias note:** Scores are self-assessed. Treat as directional indicators, not absolutes.
+
+### Emphasis calibration
+
+Generated prompts use plain imperative phrasing. Reserve capitalized emphasis (`MUST`, `NEVER`, `CRITICAL`) for safety-critical or protocol-critical boundaries such as privacy guarantees, destructive-action gates, runtime call contracts, and schema/version invariants. Current Anthropic/OpenAI guidance notes that aggressive emphasis can cause frontier models to over-comply, loop on tools, or overweight a local instruction beyond its intended importance.
+
+### Context altitude and budget
+
+Context is a finite resource that degrades as it grows. Generated prompts should curate the minimal sufficient context at the right altitude: include facts that change the decision, prefer references or paths over pasted long material, and keep token budgets visible. More context is not automatically better when it buries the objective, constraints, or verification criteria.
 
 ---
 
@@ -1550,17 +1576,18 @@ Benchmark command: `npm run benchmark:flywheel`
 
 ### Pattern library (pluggable)
 Treat prompt/context engineering advancements as toggleable patterns (not fixed doctrine):
-- Constraint-first framing
+- Constraint placement (runtime-aware; `constraint-first-framing` remains the compatibility key)
 - Uncertainty labeling
 - Self-critique checkpoint
 - Delta retry scaffold
 - Evidence-strength labeling
 - Context-manifest transparency
+- Tool-description quality
 
 Activate by task/domain/outcome profile and validate via benchmark fixtures.
 
 ### Token budget
-Keep generated prompts under ~2K tokens for single mode, ~1K per agent for Repromptverse. Longer prompts waste context window without improving quality. If a prompt exceeds budget, split into phases or move detail into constraints.
+Keep generated prompts under ~2K tokens for single mode, ~1K per agent for Repromptverse. Longer prompts can rot the context window instead of improving quality. If a prompt exceeds budget, split into phases, cite source paths, or move long supporting material into references instead of inlining dumps.
 
 ### Uncertainty handling
 Always include explicit permission for the model to express uncertainty rather than fabricate:
@@ -1776,6 +1803,7 @@ Templates may add domain-specific tags beyond the 8 required base tags. Always i
 | `<threat_model>` | security | Threat landscape and vectors |
 | `<structure>` | docs | Document organization |
 | `<reference>` | docs | Source material to reference |
+| `<assumptions>` | goal/workflow/repromptverse | Documented defaults used instead of blocking autonomous execution on low-value questions |
 
 ## Hermes Agent Support (Additive Section — Zero Impact on Claude, Codex, OpenClaw, Grok)
 

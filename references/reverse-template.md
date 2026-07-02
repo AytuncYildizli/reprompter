@@ -4,6 +4,8 @@ Use this template when reverse-engineering a prompt from an exemplar output. The
 
 ## Template
 
+Prompting guidance: use clear sectioning (XML default; Markdown headers equally valid when requested). Keep instructions outcome-first: objective, requirements, verification, and only genuinely ordered procedures. In `<constraints>`, include load-bearing boundaries at the right altitude instead of exhaustive edge-case stuffing. In `<output_format>`, if the target runtime supports structured-output API features, name the expected shape and defer enforcement to the API; embed full schemas only as fallback.
+
 ```xml
 <role>
 {Expert role inferred from the exemplar's domain, depth, and technical level}
@@ -137,7 +139,7 @@ Senior security-focused code reviewer with expertise in authentication patterns,
 
 <constraints>
 - Stay focused on security — do not nitpick formatting or style
-- Every critical issue MUST have a concrete fix suggestion
+- Every critical issue includes a concrete fix suggestion
 - Include positive feedback to balance critical findings
 - Do not flag theoretical risks without evidence in the actual code
 </constraints>

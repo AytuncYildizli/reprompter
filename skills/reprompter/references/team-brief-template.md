@@ -8,8 +8,10 @@
 ## Format Contract (Markdown Exception)
 
 - This template is the **only formal exception** to strict XML file format.
-- It MUST still define all 8 core fields conceptually: `role`, `context`, `task`, `motivation`, `requirements`, `constraints`, `output_format`, `success_criteria`.
-- Negative constraints are mandatory in `constraints` (at least 3 explicit "Do NOT ..." rules).
+- It still defines all 8 core fields conceptually: `role`, `context`, `task`, `motivation`, `requirements`, `constraints`, `output_format`, `success_criteria`.
+- Use clear sectioning; Markdown headers are the normative representation here, while XML remains the default for prompt templates.
+- `constraints` should name load-bearing ownership, safety, and sequencing boundaries. Prefer stating what agents should do over blanket negative constraints; use negative rules only when they prevent real overlap, data loss, or unsafe behavior.
+- `output_format` should name the expected shape. If the target runtime supports structured-output API features, defer enforcement to that API; embed full schemas only as fallback.
 
 ## When to Use
 
@@ -48,10 +50,10 @@ Lead orchestrator coordinating specialized agents to deliver the overall task sa
 - Define review criteria for final synthesis
 
 ## Constraints
-- Do NOT assign overlapping ownership across agents
-- Do NOT modify files outside declared scope boundaries
-- Do NOT leave output destinations unspecified
-- Do NOT merge outputs before dependency prerequisites are complete
+- Assign non-overlapping ownership across agents
+- Keep work inside declared scope boundaries
+- Specify every output destination
+- Merge outputs only after dependency prerequisites are complete
 
 ## Output Format
 - Team brief path: `/tmp/rpt-brief-{taskname}.md`
