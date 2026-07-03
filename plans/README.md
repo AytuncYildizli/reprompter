@@ -13,6 +13,8 @@ honor its STOP conditions. The reviewer maintains this index.
 | 003  | 2026 best-practices template alignment (v12.10.0) | P1 | L | — | DONE (research: 105-agent deep-research pass; executor: Codex gpt-5.5; reviewed FIX_FIRST→fixed; shipped as PR #63, released v12.10.0) |
 | 004  | Stop-hook nudge-outcome recording (v12.12.0) | P1 | M | 001, 002 | DONE (executor: Codex gpt-5.5; reviewer-run e2e verified; PR #66) |
 | 005  | Multi-runtime gate: Codex CLI + Hermes (v12.13.0) | P1 | M | 004 | DONE (hooks research verified on live installs; executor: Codex gpt-5.5; PR #67) |
+| 006  | Fleet-shared flywheel: sanitized pack export/import (v12.14.0) | P1 | M | — | DONE (recon-grounded; reviewer audited 300-row real-ledger export, 0 leaks; PR #69) |
+| 007  | Mid-run supervisor: advisory run-health verdicts (v12.15.0) | P2 | M | 006 | DONE (advisory-only; retry_artifact emission honestly skipped per recon; PR #70) |
 
 ## Dependency notes
 
@@ -20,5 +22,6 @@ honor its STOP conditions. The reviewer maintains this index.
 
 ## Findings considered and rejected
 
+- **Gate heuristic recalibration** — deliberately deferred until per-runtime nudge-acceptance data (collected since v12.12.0/v12.13.0) accumulates; acceptance-rate-by-score-bucket is the calibration curve.
 - **MCP server surface** — more reach than innovation; revisit if non-skill clients become a real demand.
 - **Mid-run delta supervisor** — effort L and deeply runtime-specific; premature before observability contract goes GREEN.
