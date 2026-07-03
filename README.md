@@ -8,9 +8,9 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-12.11.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-12.12.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-306%20passing-2da44e)](#testing)
+[![Tests](https://img.shields.io/badge/tests-316%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 
 RePrompter is a prompt engineering skill for AI coding agents. It takes rough, low-quality prompts and transforms them into structured, high-scoring prompts that produce dramatically better results. Templates are aligned with 2026 vendor guidance: clear sectioning, calibrated emphasis, outcome-first instructions, load-bearing constraints, structured-output routing, context budgeting, and tool-description quality. Works with Claude Code, OpenClaw, Codex, Grok CLI, Hermes Agent, or any LLM that accepts structured prompts.
@@ -114,7 +114,7 @@ with unit tests for both API and UI, without breaking existing API contracts.
 
 ### Claude Code
 
-Recommended: install the Claude Code plugin. One install registers the RePrompter skill namespace and the Ambient Prompt Gate hook; future updates use Claude Code's native plugin update flow.
+Recommended: install the Claude Code plugin. One install registers the RePrompter skill namespace and both Ambient Prompt Gate hooks; future updates use Claude Code's native plugin update flow.
 
 ```text
 /plugin marketplace add AytuncYildizli/reprompter
@@ -123,7 +123,7 @@ Recommended: install the Claude Code plugin. One install registers the RePrompte
 
 If you previously installed `~/.claude/skills/reprompter`, remove that personal copy before using the plugin. Personal skills shadow/duplicate plugin skills, so leaving it in place can make Claude Code load the old copy instead of `/reprompter:reprompter`.
 
-The plugin ships the Ambient Prompt Gate enabled for Claude Code `UserPromptSubmit`. Use `REPROMPTER_AMBIENT=0` as the per-feature off switch; Claude Code's `disableAllHooks` still disables all hooks, including plugin hooks.
+The plugin ships the Ambient Prompt Gate enabled for Claude Code `UserPromptSubmit` and `Stop`. Use `REPROMPTER_AMBIENT=0` as the per-feature off switch; Claude Code's `disableAllHooks` still disables all hooks, including plugin hooks.
 
 Fallback for copy-based or non-plugin setups:
 
@@ -322,7 +322,7 @@ Exemplar output → EXTRACT structure → ANALYZE task type + domain + tone
 
 **Prompt Flywheel Recipe Fingerprinting** - Every prompt carries a deterministic recipe fingerprint (template + patterns + capability tier + domain + context layers + quality bucket). Strategy learner groups outcomes by fingerprint so recommendations are grounded in repeated evidence, not one-off runs.
 
-**Ambient Prompt Gate (v12.8)** - An opt-in Claude Code `UserPromptSubmit` hook scores task-shaped prompts locally and silently nudges only when the request is below threshold. It is fail-soft, never blocks a prompt, uses cooldown to avoid nagging, and writes no prompt text to the local outcome log (called telemetry in the code) or state.
+**Ambient Prompt Gate (v12.12)** - Opt-in Claude Code `UserPromptSubmit` and `Stop` hooks score task-shaped prompts locally, silently nudge only when the request is below threshold, and measure whether nudged sessions accept the nudge. They are fail-soft, never block a prompt or stop event, dedupe outcomes, and write no prompt or transcript text to the local outcome log (called telemetry in the code) or state.
 
 **Agent Cards** - Plan Cards (before execution), Status Line (during), Result Cards (after). Full transparency into what agents will do, are doing, and found.
 
@@ -341,18 +341,18 @@ RePrompter never transmits or collects anything from anyone. The Ambient Prompt 
 - Gate state and outcome log: `$XDG_CACHE_HOME/reprompter/`
 - Flywheel and runtime telemetry runs: `.reprompter/`
 
-No prompt text is ever persisted. Session ids are sha256-hashed before they are written.
+No prompt or transcript text is ever persisted. Session ids are sha256-hashed before they are written.
 
 The single network call in the entire product is the version self-check (`scripts/version-check.js`) querying the GitHub releases API for the latest RePrompter release. It sends no user data and can be disabled with `REPROMPTER_VERSION_CHECK=0`.
 
-You can inspect the local files, delete them anytime, and kill the gate log with `REPROMPTER_TELEMETRY=0`. To verify the local-only gate directly, read `scripts/prompt-gate.js`: it has no network imports.
+You can inspect the local files, delete them anytime, and kill the gate log with `REPROMPTER_TELEMETRY=0`. To verify the local-only gate directly, read `scripts/prompt-gate.js` and `scripts/stop-gate.js`: they have no network imports.
 
 ---
 
 ## Testing
 
 ```bash
-npm run check    # 306 tests + 4 benchmarks
+npm run check    # 316 tests + 4 benchmarks
 npm run test:reverse-engineer  # individual suite example
 ```
 
@@ -372,14 +372,15 @@ npm run test:reverse-engineer  # individual suite example
 | Artifact evaluator | 4 |
 | Goal command | 11 |
 | Workflow command | 20 |
-| Version check | 20 |
+| Version check | 21 |
 | Prompt gate | 23 |
+| Stop gate | 8 |
 | Hermes package | 8 |
-| Claude Code plugin package | 9 |
+| Claude Code plugin package | 10 |
 | Telemetry schema/store | 6 |
 | Observability report | 2 |
 | Observability contract | 3 |
-| **Total** | **306** |
+| **Total** | **316** |
 
 All benchmarks at 100%: swarm routing (9/9), real-world routing (64/64), artifacts (84/84), flywheel (13/13), provider (9/9).
 
@@ -414,19 +415,22 @@ Hermes parallel paths: **G1 `delegate_task` batch** for normal Repromptverse, **
 
 ### Ambient Prompt Gate (Claude Code)
 
-Plugin installs register this hook automatically. For copy-based installs, add it manually:
+Plugin installs register these hooks automatically. For copy-based installs, add them manually:
 
 ```json
 {
   "hooks": {
     "UserPromptSubmit": [
       { "hooks": [ { "type": "command", "command": "node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js" } ] }
+    ],
+    "Stop": [
+      { "hooks": [ { "type": "command", "command": "node /absolute/path/to/skills/reprompter/scripts/stop-gate.js" } ] }
     ]
   }
 }
 ```
 
-Ambient flags: `REPROMPTER_AMBIENT=0` disables nudges, `REPROMPTER_AMBIENT_THRESHOLD` changes the default score threshold (`5`), `REPROMPTER_AMBIENT_COOLDOWN_MIN` changes the per-session cooldown (`15`), and `REPROMPTER_TELEMETRY=0` disables the privacy-safe gate local outcome log. Claude Code's `disableAllHooks` still wins globally. The gate never blocks prompts and never persists prompt text.
+Ambient flags: `REPROMPTER_AMBIENT=0` disables nudges and outcome recording, `REPROMPTER_AMBIENT_THRESHOLD` changes the default score threshold (`5`), `REPROMPTER_AMBIENT_COOLDOWN_MIN` changes the per-session cooldown (`15`), and `REPROMPTER_TELEMETRY=0` disables the privacy-safe gate local outcome log. Claude Code's `disableAllHooks` still wins globally. The gate never blocks prompts or Stop events and never persists prompt or transcript text.
 
 ### Repromptverse
 

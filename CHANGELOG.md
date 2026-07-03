@@ -1,3 +1,17 @@
+## v12.12.0 (2026-07-03) — Stop-hook nudge acceptance
+
+### Added
+
+- Added `scripts/stop-gate.js`, a fail-soft Claude Code `Stop` hook that records at most one `gate_outcome` event per nudged session with only `metadata.accepted: true|false`.
+- Added `scripts/stop-gate.test.js` coverage for accepted, ignored, not-nudged, dedupe, kill switches, malformed stdin, missing transcript, and an end-to-end prompt-gate to Stop flow with no prompt or transcript text persisted.
+- Added `gate_outcome` to the telemetry schema and shipped the Stop hook through the generated Claude Code plugin package.
+
+### Changed
+
+- Exposed prompt-gate cache/hash helpers through additive exports so Stop outcome recording reuses the existing gate internals instead of duplicating them.
+- Documented the two-hook Ambient Prompt Gate install snippets and the boolean-only nudge-acceptance telemetry contract in README and SKILL.
+- `package.json`, `package-lock.json`, generated plugin, and generated Hermes package — version `12.12.0`.
+
 ## v12.11.0 (2026-07-03) — Small follow-up hardening
 
 ### Changed

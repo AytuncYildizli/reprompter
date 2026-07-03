@@ -135,6 +135,16 @@ function main() {
           ],
         },
       ],
+      Stop: [
+        {
+          hooks: [
+            {
+              type: "command",
+              command: 'node "${CLAUDE_PLUGIN_ROOT}/skills/reprompter/scripts/stop-gate.js"',
+            },
+          ],
+        },
+      ],
     },
   });
 

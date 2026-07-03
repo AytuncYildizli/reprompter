@@ -379,6 +379,9 @@ module.exports = {
   scorePrompt,
   shouldNudge,
   buildNudge,
+  cacheDir,
+  defaultStatePath,
+  hashedSessionId,
 };
 
 if (require.main === module) {

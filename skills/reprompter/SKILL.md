@@ -13,12 +13,12 @@ compatibility: |
   Workflow preflight lane + Repromptverse Option H target Claude Code's dynamic `Workflow` tool (JS-scripted background fan-out with schema-validated returns and resume); additive, detected by tool presence, with first-class ultracode.
 metadata:
   author: AytuncYildizli
-  version: 12.11.0
+  version: 12.12.0
 ---
 
-# RePrompter v12.11.0
+# RePrompter v12.12.0
 
-> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.11.0 wires tool-description quality into live pattern selection, documents ambient/plugin verification, closes benchmark archive parity, and marks observability GREEN while preserving all prior Claude Code, Codex, OpenClaw, Grok CLI, and Hermes behavior.**
+> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.12.0 closes the ambient-gate nudge loop with a privacy-safe Claude Code Stop hook that records one boolean acceptance outcome per nudged session while preserving all prior Claude Code, Codex, OpenClaw, Grok CLI, and Hermes behavior.**
 
 ---
 
@@ -1597,26 +1597,31 @@ Always include explicit permission for the model to express uncertainty rather t
 
 ---
 
-## Ambient Prompt Gate (Claude Code plugin/UserPromptSubmit hook)
+## Ambient Prompt Gate (Claude Code plugin/UserPromptSubmit + Stop hooks)
 
 The Ambient Prompt Gate is a Claude Code `UserPromptSubmit` hook that scores every incoming prompt with the same six RePrompter quality dimensions (clarity, specificity, structure, constraints, verifiability, decomposition). It stays silent for slash commands, acknowledgements, short prompts, non-task prompts, concise direct atomic tasks, prompts that already mention reprompting, and prompts above the configured threshold. For task-shaped prompts below threshold, it injects one line of model-facing context suggesting a one-time offer to structure the request via RePrompter before proceeding.
 
 Local-only, nothing ever leaves the machine. The hook NEVER blocks a prompt. It is fail-soft: malformed stdin, unreadable state, telemetry errors, or any internal failure produce empty stdout and exit 0. It never writes prompt text to telemetry or state; telemetry contains only score, weakest dimensions, whether it nudged, the reason, and a hashed session correlation id.
 
-Recommended Claude Code install: install the plugin. The plugin registers both the `/reprompter:reprompter` skill namespace and the Ambient Prompt Gate hook automatically:
+The plugin also registers a Claude Code `Stop` hook that measures whether a nudged session later accepted the nudge. It reads the local transcript only inside the hook process, derives a boolean, and records at most one `gate_outcome` event per session with `metadata.accepted: true|false`. It never prints output, never exits 2, never blocks stopping, and never persists transcript text.
+
+Recommended Claude Code install: install the plugin. The plugin registers the `/reprompter:reprompter` skill namespace plus both Ambient Prompt Gate hooks automatically:
 
 ```text
 /plugin marketplace add AytuncYildizli/reprompter
 /plugin install reprompter@reprompter
 ```
 
-For copy-based installs only, add the `UserPromptSubmit` hook in `Claude Code settings file`:
+For copy-based installs only, add both hooks in `Claude Code settings file`:
 
 ```json
 {
   "hooks": {
     "UserPromptSubmit": [
       { "hooks": [ { "type": "command", "command": "node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js" } ] }
+    ],
+    "Stop": [
+      { "hooks": [ { "type": "command", "command": "node /absolute/path/to/skills/reprompter/scripts/stop-gate.js" } ] }
     ]
   }
 }
@@ -1629,11 +1634,11 @@ Plugin hooks can still be globally disabled by Claude Code's `disableAllHooks`; 
 | `REPROMPTER_AMBIENT` | `"0"` / unset | Kill switch. `"0"` disables all nudges. |
 | `REPROMPTER_AMBIENT_THRESHOLD` | number | Overall score threshold for nudging. Default `5`. |
 | `REPROMPTER_AMBIENT_COOLDOWN_MIN` | number | Per-session cooldown after a nudge. Default `15`. |
-| `REPROMPTER_TELEMETRY` | `"0"` / unset | `"0"` disables the privacy-safe `gate_prompt` telemetry event. |
+| `REPROMPTER_TELEMETRY` | `"0"` / unset | `"0"` disables privacy-safe `gate_prompt` and `gate_outcome` telemetry events. |
 
-State lives under the user's cache directory (`$XDG_CACHE_HOME/reprompter/ambient-gate.json`, or `~/.cache/reprompter/ambient-gate.json`) and stores only session ids plus last-nudge timestamps. Telemetry, when enabled, is written under that same cache root, never into the user's project cwd.
+State lives under the user's cache directory (`$XDG_CACHE_HOME/reprompter/ambient-gate.json`, or `~/.cache/reprompter/ambient-gate.json`) and stores only session ids plus last-nudge timestamps. Telemetry, when enabled, is written under that same cache root, never into the user's project cwd; `gate_outcome` events contain only the accepted boolean.
 
-Other runtimes (Codex hooks, Hermes) are a documented follow-up; v12.8.0 is Claude Code-only.
+Other runtimes (Codex hooks, Hermes) are a documented follow-up; the ambient hooks remain Claude Code-only.
 
 ---
 
