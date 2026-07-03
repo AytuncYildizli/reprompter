@@ -8,9 +8,9 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-12.14.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-12.15.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-330%20passing-2da44e)](#testing)
+[![Tests](https://img.shields.io/badge/tests-340%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 
 RePrompter is a prompt engineering skill for AI coding agents. It takes rough, low-quality prompts and transforms them into structured, high-scoring prompts that produce dramatically better results. Templates are aligned with 2026 vendor guidance: clear sectioning, calibrated emphasis, outcome-first instructions, load-bearing constraints, structured-output routing, context budgeting, and tool-description quality. Works with Claude Code, OpenClaw, Codex, Grok CLI, Hermes Agent, or any LLM that accepts structured prompts.
@@ -326,6 +326,8 @@ Exemplar output → EXTRACT structure → ANALYZE task type + domain + tone
 
 **Agent Cards** - Plan Cards (before execution), Status Line (during), Result Cards (after). Full transparency into what agents will do, are doing, and found.
 
+**Advisory Run Supervisor (v12.15)** - `scripts/run-supervisor.js --advise` reads local run telemetry and returns healthy, stalled, failing-evals, completed, or unknown verdicts for the orchestrator. It is read-only and advisory: it never kills, restarts, spawns, or messages workers.
+
 **Dimension Interview** - Low-scoring prompt dimensions trigger targeted questions for interactive use. Autonomous goal/workflow/team lanes document reasonable defaults in `<assumptions>` instead of blocking on low-value questions.
 
 **Pattern Library** - 7 pluggable prompt engineering patterns: runtime-aware constraint placement (`constraint-first-framing` compatibility key), uncertainty labeling, self-critique checkpoints, delta retry scaffolds, evidence-strength labeling, context-manifest transparency, and tool-description quality.
@@ -378,12 +380,13 @@ npm run test:reverse-engineer  # individual suite example
 | Version check | 21 |
 | Prompt gate | 32 |
 | Stop gate | 8 |
+| Run supervisor | 10 |
 | Hermes package | 8 |
 | Claude Code plugin package | 10 |
 | Telemetry schema/store | 6 |
 | Observability report | 2 |
 | Observability contract | 3 |
-| **Total** | **330** |
+| **Total** | **340** |
 
 All benchmarks at 100%: swarm routing (9/9), real-world routing (64/64), artifacts (84/84), flywheel (13/13), provider (9/9).
 

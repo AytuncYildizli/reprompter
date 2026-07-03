@@ -1,3 +1,20 @@
+## v12.15.0 (2026-07-03) — Advisory run supervisor
+
+### Added
+
+- Added `scripts/run-supervisor.js`, a read-only single-shot analyzer for Repromptverse telemetry that reports `healthy`, `stalled`, `failing-evals`, `completed`, or `unknown` verdicts without actuation.
+- Added `scripts/run-supervisor.test.js` with fabricated event coverage for all verdict classes, gate-run auto-pick exclusion, CLI JSON output, and fail-soft missing telemetry.
+
+### Changed
+
+- Wired `npm run test:run-supervisor` into `npm run check` after `test:stop-gate`.
+- Documented optional SKILL.md polling/Phase 4 usage while preserving existing poll budgets and loop structure; Option H only consults the supervisor after the workflow returns.
+- `package.json`, `package-lock.json`, generated plugin, and generated Hermes package — version `12.15.0`.
+
+### Verification
+
+- `npm run test:run-supervisor` — 10 tests passing.
+
 ## v12.14.0 (2026-07-03) — Privacy-safe fleet flywheel sync
 
 ### Added
