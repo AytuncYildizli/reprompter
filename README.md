@@ -8,9 +8,9 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-12.13.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-12.14.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-325%20passing-2da44e)](#testing)
+[![Tests](https://img.shields.io/badge/tests-330%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 
 RePrompter is a prompt engineering skill for AI coding agents. It takes rough, low-quality prompts and transforms them into structured, high-scoring prompts that produce dramatically better results. Templates are aligned with 2026 vendor guidance: clear sectioning, calibrated emphasis, outcome-first instructions, load-bearing constraints, structured-output routing, context budgeting, and tool-description quality. Works with Claude Code, OpenClaw, Codex, Grok CLI, Hermes Agent, or any LLM that accepts structured prompts.
@@ -318,7 +318,7 @@ Exemplar output → EXTRACT structure → ANALYZE task type + domain + tone
 
 ## Key Features
 
-**Closed-Loop Flywheel (v12)** - The loop is now end-to-end. Every prompt emits a `<success_criteria>` block of testable assertions. After execution, `scripts/outcome-record.js` writes a structured record joining prompt + criteria + output; `scripts/evaluate-outcome.js` scores it against the criteria (regex / predicate / llm_judge / manual). Records feed into a local flywheel via `npm run flywheel:ingest`. At generation time, `REPROMPTER_FLYWHEEL_BIAS=1` makes the skill consult past outcomes and bias toward historically winning recipes. `npm run flywheel:ab` compares bias-on vs bias-off effectiveness so you can *prove* whether the bias is helping. All data local.
+**Closed-Loop Flywheel (v12)** - The loop is now end-to-end. Every prompt emits a `<success_criteria>` block of testable assertions. After execution, `scripts/outcome-record.js` writes a structured record joining prompt + criteria + output; `scripts/evaluate-outcome.js` scores it against the criteria (regex / predicate / llm_judge / manual). Records feed into a local flywheel via `npm run flywheel:ingest`. At generation time, `REPROMPTER_FLYWHEEL_BIAS=1` makes the skill consult past outcomes and bias toward historically winning recipes. `npm run flywheel:ab` compares bias-on vs bias-off effectiveness so you can *prove* whether the bias is helping. `npm run flywheel:export` and `npm run flywheel:import` move privacy-sanitized aggregate ledger packs across your own fleet without RePrompter networking. All data local.
 
 **Prompt Flywheel Recipe Fingerprinting** - Every prompt carries a deterministic recipe fingerprint (template + patterns + capability tier + domain + context layers + quality bucket). Strategy learner groups outcomes by fingerprint so recommendations are grounded in repeated evidence, not one-off runs.
 
@@ -343,6 +343,8 @@ RePrompter never transmits or collects anything from anyone. The Ambient Prompt 
 
 No prompt or transcript text is ever persisted. Session ids are sha256-hashed before they are written.
 
+Fleet flywheel packs are sanitized aggregates only: no prompt text, prompt hashes, task slugs, role labels, or hostnames are exported.
+
 The single network call in the entire product is the version self-check (`scripts/version-check.js`) querying the GitHub releases API for the latest RePrompter release. It sends no user data and can be disabled with `REPROMPTER_VERSION_CHECK=0`.
 
 You can inspect the local files, delete them anytime, and kill the gate log with `REPROMPTER_TELEMETRY=0`. To verify the local-only gate directly, read `scripts/prompt-gate.js` and `scripts/stop-gate.js`: they have no network imports.
@@ -352,7 +354,7 @@ You can inspect the local files, delete them anytime, and kill the gate log with
 ## Testing
 
 ```bash
-npm run check    # 325 tests + 4 benchmarks
+npm run check    # 330 tests + 4 benchmarks
 npm run test:reverse-engineer  # individual suite example
 ```
 
@@ -368,6 +370,7 @@ npm run test:reverse-engineer  # individual suite example
 | Pattern selector | 10 |
 | Runtime adapter | 5 |
 | Flywheel E2E | 5 |
+| Flywheel sync | 5 |
 | Context builder | 3 |
 | Artifact evaluator | 4 |
 | Goal command | 11 |
@@ -380,7 +383,7 @@ npm run test:reverse-engineer  # individual suite example
 | Telemetry schema/store | 6 |
 | Observability report | 2 |
 | Observability contract | 3 |
-| **Total** | **325** |
+| **Total** | **330** |
 
 All benchmarks at 100%: swarm routing (9/9), real-world routing (64/64), artifacts (84/84), flywheel (13/13), provider (9/9).
 

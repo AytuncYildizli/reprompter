@@ -1,3 +1,21 @@
+## v12.14.0 (2026-07-03) — Privacy-safe fleet flywheel sync
+
+### Added
+
+- Added `scripts/flywheel-sync.js` with ledger-only `npm run flywheel:export` / `npm run flywheel:import` commands for fail-soft sanitized pack exchange.
+- Added deterministic privacy sanitization for exported rows: no raw prompt hashes/run IDs, no raw task slugs, no non-allowlisted domain/role labels, and no hostnames by default.
+- Added recipe fingerprint recomputation from sanitized vectors so identical recipes from different machines still group together in the learner.
+- Added `scripts/flywheel-sync.test.js` with sanitization determinism, domain allowlist, pack header rejection, import dedupe, learner round-trip, and pack privacy coverage.
+
+### Changed
+
+- Documented user-owned sync transport and the optional fleet cap setting without changing the default 500-row cap.
+- `package.json`, `package-lock.json`, generated plugin, and generated Hermes package — version `12.14.0`.
+
+### Verification
+
+- `npm run test:flywheel-sync` — 5 tests passing.
+
 ## v12.13.0 (2026-07-03) — Multi-runtime ambient gate
 
 ### Added

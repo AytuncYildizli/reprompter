@@ -13,12 +13,12 @@ compatibility: |
   Workflow preflight lane + Repromptverse Option H target Claude Code's dynamic `Workflow` tool (JS-scripted background fan-out with schema-validated returns and resume); additive, detected by tool presence, with first-class ultracode.
 metadata:
   author: AytuncYildizli
-  version: 12.13.0
+  version: 12.14.0
 ---
 
-# RePrompter v12.13.0
+# RePrompter v12.14.0
 
-> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.13.0 ports the Ambient Prompt Gate nudge path to Claude Code, Codex CLI, and Hermes Agent with the same local heuristics and privacy guarantees; Stop-hook acceptance recording remains Claude Code-only.**
+> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.14.0 adds privacy-safe fleet flywheel sync: sanitized ledger packs can be exported/imported across machines without prompt hashes, task slugs, role labels, or hostnames.**
 
 ---
 
@@ -382,6 +382,19 @@ When the flag is set, between the interview and the template pick:
    > Flywheel: no bias (cold start / low confidence)
 6. The bias changes **which template/patterns you start from.** The rest of the pipeline (interview content, generated prompt's XML structure, criteria emission) is unchanged. The flywheel never rewrites Claude's output.
 7. **Attribution (v3 part 3).** When bias is applied, remember the chosen recipe's `hash`, `confidence`, and `sampleCount` until the outcome is recorded for this run. Then stamp them onto the record via `scripts/outcome-record.js --applied-recommendation '{"recipe_hash":"<hash>","confidence":"<low|medium|high>","sample_count":<N>,"applied_at":"prompt_gen"}'`. Use `applied_at="phase_2"` for Repromptverse team-wide bias. **If no bias was applied (flag off, query returned null, or low confidence) OMIT the flag entirely** — the *absence* of `applied_recommendation` on a record is what marks it as the bias-off control group for `npm run flywheel:ab` analysis. Never stamp a zero/placeholder block; absence is the signal.
+
+#### Fleet sync (v12.14 privacy boundary)
+
+Fleet sync shares only sanitized aggregate ledger rows from `.reprompter/flywheel/outcomes.ndjson`. It never reads `.reprompter/outcomes/`, and a pack contains no prompt text, no raw prompt hashes, no raw task slugs, no raw role/domain labels outside the coarse allowlist, and no hostnames.
+
+```bash
+npm run flywheel:export -- --origin o-laptop
+npm run flywheel:import -- .reprompter/flywheel/packs/o-laptop-20260703.ndjson
+```
+
+Exported rows deterministically hash `runId`/`taskId`, coarsen non-allowlisted `recipe.vector.domain` labels, and recompute the recipe fingerprint from the sanitized vector. Identical sanitized recipes from different machines still group together in `flywheel:query`/`flywheel:report`, but raw prompt fingerprints and local task labels do not leave the machine.
+
+Transport is user-owned: put packs in a shared directory, rsync them, or move them through your own git/Tailscale/mesh workflow. RePrompter itself does not network for fleet sync. The default flywheel cap remains 500 rows; active fleets can opt into a larger local ledger with `REPROMPTER_FLYWHEEL_MAX_OUTCOMES=5000`.
 
 ### Generate after interview
 
