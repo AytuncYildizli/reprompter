@@ -11,6 +11,8 @@ honor its STOP conditions. The reviewer maintains this index.
 | 001  | Ambient Prompt Gate (opt-in UserPromptSubmit hook, v12.8.0) | P1 | M | — | DONE (executor: Codex gpt-5.5; reviewed + dogfooded + calibration-tuned; PR #59) |
 | 002  | Claude Code plugin distribution (marketplace + auto-registered hook, v12.9.0) | P1 | M | 001 | DONE (executor: Codex gpt-5.5; reviewed + live-dogfooded; shipped as PR #61, released v12.9.0) |
 | 003  | 2026 best-practices template alignment (v12.10.0) | P1 | L | — | DONE (research: 105-agent deep-research pass; executor: Codex gpt-5.5; reviewed FIX_FIRST→fixed; shipped as PR #63, released v12.10.0) |
+| 004  | Stop-hook nudge-outcome recording (v12.12.0) | P1 | M | 001, 002 | DONE (executor: Codex gpt-5.5; reviewer-run e2e verified; PR #66) |
+| 005  | Multi-runtime gate: Codex CLI + Hermes (v12.13.0) | P1 | M | 004 | DONE (hooks research verified on live installs; executor: Codex gpt-5.5; PR #67) |
 
 ## Dependency notes
 
