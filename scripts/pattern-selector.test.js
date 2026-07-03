@@ -2,7 +2,16 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { selectPatterns, renderPatternGuidance, getPatternById } = require("./pattern-selector");
+const {
+  PATTERN_CATALOG,
+  selectPatterns,
+  renderPatternGuidance,
+  getPatternById,
+} = require("./pattern-selector");
+
+test("catalog exposes seven selectable patterns", () => {
+  assert.equal(PATTERN_CATALOG.length, 7);
+});
 
 test("selects evidence and uncertainty patterns for security audit task", () => {
   const result = selectPatterns(
@@ -34,6 +43,26 @@ test("enabledPatterns acts as allow-list", () => {
   );
 
   assert.deepEqual(result.patternIds, ["delta-retry-scaffold"]);
+});
+
+test("selects tool description quality for agent tool tasks", () => {
+  const result = selectPatterns(
+    { task: "document MCP callable capabilities and tool descriptions for new agent tools" },
+    "engineering",
+    { maxPatterns: 7 }
+  );
+
+  assert.ok(result.patternIds.includes("tool-description-quality"));
+});
+
+test("does not select tool description quality on non-tool word fragments", () => {
+  const result = selectPatterns(
+    { task: "clean up stool descriptions in the office inventory" },
+    "engineering",
+    { maxPatterns: 7 }
+  );
+
+  assert.equal(result.patternIds.includes("tool-description-quality"), false);
 });
 
 test("renderPatternGuidance returns bullet list output", () => {

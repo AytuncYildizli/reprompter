@@ -12,3 +12,7 @@
 /docs       export-ignore
 /plans      export-ignore
 /.github    export-ignore
+/scripts/run-swarm-benchmark.js export-ignore
+/scripts/run-provider-benchmark.js export-ignore
+/scripts/run-realworld-benchmark.js export-ignore
+/scripts/run-flywheel-benchmark.js export-ignore

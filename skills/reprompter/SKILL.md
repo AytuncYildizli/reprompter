@@ -13,12 +13,12 @@ compatibility: |
   Workflow preflight lane + Repromptverse Option H target Claude Code's dynamic `Workflow` tool (JS-scripted background fan-out with schema-validated returns and resume); additive, detected by tool presence, with first-class ultracode.
 metadata:
   author: AytuncYildizli
-  version: 12.10.0
+  version: 12.11.0
 ---
 
-# RePrompter v12.10.0
+# RePrompter v12.11.0
 
-> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.10.0 aligns RePrompter templates with 2026 vendor guidance: clear sectioning over XML absolutism, calibrated emphasis, outcome-first instructions, structured-output routing, runtime-aware constraints, documented assumptions for autonomous lanes, context-budget awareness, and tool-description quality. All prior Claude Code, Codex, OpenClaw, Grok CLI, and Hermes behavior is preserved.**
+> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.11.0 wires tool-description quality into live pattern selection, documents ambient/plugin verification, closes benchmark archive parity, and marks observability GREEN while preserving all prior Claude Code, Codex, OpenClaw, Grok CLI, and Hermes behavior.**
 
 ---
 
@@ -1773,7 +1773,7 @@ Same audit task, 4 Opus agents:
 
 ## Test scenarios
 
-See the root repository TESTING.md for the full verification scenarios and anti-pattern examples.
+See TESTING.md for 45 verification scenarios + anti-pattern examples.
 
 ---
 

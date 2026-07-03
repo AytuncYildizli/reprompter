@@ -10,7 +10,7 @@ Pluggable pattern set for benchmark-driven prompt/context engineering.
 - `delta-retry-scaffold`
 - `evidence-strength-labeling`
 - `context-manifest-transparency`
-- `tool-description-quality` — When the task involves agent tools, MCP servers, or callable capabilities, write tool descriptions as if onboarding a new hire: make implicit context explicit, name when to use the tool, inputs/outputs, side effects, limits, and examples of good calls. Catalog-only in v12.10.0; selector wiring is a follow-up because the runtime selector uses a static in-code catalog.
+- `tool-description-quality` — When the task involves agent tools, MCP servers, or callable capabilities, write tool descriptions as if onboarding a new hire: make implicit context explicit, name when to use the tool, inputs/outputs, side effects, limits, and examples of good calls.
 
 ## Usage
 

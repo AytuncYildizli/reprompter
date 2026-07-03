@@ -1,3 +1,13 @@
+## v12.11.0 (2026-07-03) — Small follow-up hardening
+
+### Changed
+
+- Wired `tool-description-quality` into `scripts/pattern-selector.js` with selector coverage for agent tools, MCP, tool descriptions, and callable capabilities.
+- Added TESTING.md manual scenarios for Ambient Prompt Gate nudges, atomic-task silence, `REPROMPTER_AMBIENT=0`, cooldown behavior, and Claude Code plugin smoke telemetry evidence.
+- Added source-archive `export-ignore` parity for benchmark runner scripts so runtime-only tarballs do not ship fixtureless benchmark entrypoints.
+- Marked observability implementation status GREEN with evidence for telemetry helpers, observability contract/report helpers, tests, and the wired `gate_prompt` stage.
+- `package.json`, `package-lock.json`, generated plugin, and generated Hermes package — version `12.11.0`.
+
 ## v12.10.0 (2026-07-02) — 2026 prompt-practice alignment
 
 ### Changed
