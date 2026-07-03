@@ -15,6 +15,7 @@ const STAGES = new Set([
   "fingerprint_recipe",
   "collect_outcome",
   "gate_prompt",
+  "gate_outcome",
   "learn_strategy",
 ]);
 

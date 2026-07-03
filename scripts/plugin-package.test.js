@@ -22,6 +22,25 @@ function listFiles(dir) {
   });
 }
 
+function gateEnv(cacheDir, overrides = {}) {
+  return {
+    ...process.env,
+    REPROMPTER_AMBIENT: "1",
+    REPROMPTER_TELEMETRY: "1",
+    REPROMPTER_AMBIENT_THRESHOLD: "5",
+    REPROMPTER_AMBIENT_COOLDOWN_MIN: "15",
+    XDG_CACHE_HOME: cacheDir,
+    ...overrides,
+  };
+}
+
+function resolveHookCommand(command) {
+  return command
+    .replace(/^node\s+/, "")
+    .replace(/^"|"$/g, "")
+    .replace("${CLAUDE_PLUGIN_ROOT}", pluginRoot);
+}
+
 test("plugin manifest matches package metadata and marketplace version", () => {
   const packageJson = readJson("package.json");
   const pluginJson = readJson("plugin/.claude-plugin/plugin.json");
@@ -38,17 +57,19 @@ test("plugin manifest matches package metadata and marketplace version", () => {
   assert.equal(marketplace.plugins[0].version, pluginJson.version);
 });
 
-test("plugin hook uses CLAUDE_PLUGIN_ROOT and resolves to a generated script", () => {
+test("plugin hooks use CLAUDE_PLUGIN_ROOT and resolve to generated scripts", () => {
   const hooksJson = readJson("plugin/hooks/hooks.json");
-  const command = hooksJson.hooks.UserPromptSubmit[0].hooks[0].command;
+  const commands = [
+    hooksJson.hooks.UserPromptSubmit[0].hooks[0],
+    hooksJson.hooks.Stop[0].hooks[0],
+  ];
 
-  assert.equal(hooksJson.hooks.UserPromptSubmit[0].hooks[0].type, "command");
-  assert.ok(command.includes("${CLAUDE_PLUGIN_ROOT}"));
-  const resolved = command
-    .replace(/^node\s+/, "")
-    .replace(/^"|"$/g, "")
-    .replace("${CLAUDE_PLUGIN_ROOT}", pluginRoot);
-  assert.ok(fs.existsSync(resolved), `missing generated hook script: ${resolved}`);
+  for (const hook of commands) {
+    assert.equal(hook.type, "command");
+    assert.ok(hook.command.includes("${CLAUDE_PLUGIN_ROOT}"));
+    const resolved = resolveHookCommand(hook.command);
+    assert.ok(fs.existsSync(resolved), `missing generated hook script: ${resolved}`);
+  }
 });
 
 test("plugin hook manifest matches the documented shape exactly", () => {
@@ -62,6 +83,16 @@ test("plugin hook manifest matches the documented shape exactly", () => {
             {
               type: "command",
               command: 'node "${CLAUDE_PLUGIN_ROOT}/skills/reprompter/scripts/prompt-gate.js"',
+            },
+          ],
+        },
+      ],
+      Stop: [
+        {
+          hooks: [
+            {
+              type: "command",
+              command: 'node "${CLAUDE_PLUGIN_ROOT}/skills/reprompter/scripts/stop-gate.js"',
             },
           ],
         },
@@ -80,6 +111,7 @@ test("plugin skill is byte-identical to root SKILL.md", () => {
 test("plugin package includes references and prompt-gate runtime dependencies", () => {
   assert.ok(fs.existsSync(path.join(pluginRoot, "skills/reprompter/references/runtime/codex-runtime.md")));
   assert.ok(fs.existsSync(path.join(pluginRoot, "skills/reprompter/scripts/prompt-gate.js")));
+  assert.ok(fs.existsSync(path.join(pluginRoot, "skills/reprompter/scripts/stop-gate.js")));
   assert.ok(fs.existsSync(path.join(pluginRoot, "skills/reprompter/scripts/telemetry-store.js")));
 });
 
@@ -122,7 +154,7 @@ test("generated prompt gate runs from the plugin package", () => {
       prompt: "uhh build a crypto dashboard, maybe coingecko data, add caching, test it too",
     }),
     encoding: "utf8",
-    env: { ...process.env, XDG_CACHE_HOME: cacheDir },
+    env: gateEnv(cacheDir),
   });
 
   assert.equal(result.status, 0);
@@ -137,7 +169,7 @@ test("generated prompt gate honors REPROMPTER_AMBIENT=0", () => {
       prompt: "uhh build a crypto dashboard, maybe coingecko data, add caching, test it too",
     }),
     encoding: "utf8",
-    env: { ...process.env, REPROMPTER_AMBIENT: "0", XDG_CACHE_HOME: cacheDir },
+    env: gateEnv(cacheDir, { REPROMPTER_AMBIENT: "0" }),
   });
 
   assert.equal(result.status, 0);
