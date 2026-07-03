@@ -13,12 +13,12 @@ compatibility: |
   Workflow preflight lane + Repromptverse Option H target Claude Code's dynamic `Workflow` tool (JS-scripted background fan-out with schema-validated returns and resume); additive, detected by tool presence, with first-class ultracode.
 metadata:
   author: AytuncYildizli
-  version: 12.14.0
+  version: 12.15.0
 ---
 
-# RePrompter v12.14.0
+# RePrompter v12.15.0
 
-> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.14.0 adds privacy-safe fleet flywheel sync: sanitized ledger packs can be exported/imported across machines without prompt hashes, task slugs, role labels, or hostnames.**
+> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.15.0 adds an advisory run supervisor: mid-run health verdicts from local telemetry, read-only guidance only, never actuation.**
 
 ---
 
@@ -735,6 +735,7 @@ Agents: ✅ 2/4  ⏳ 1/4  🔄 1/4 (retry 1)
 - Replace verbose poll output with this compact format
 - Platform-dependent: TeamCreate uses TaskList status; tmux uses best-effort pane parsing; sequential is trivial
 - Show retry count for retrying agents
+- Each poll cycle MAY consult `node scripts/run-supervisor.js --advise --run-id {runId} --json` and fold its verdict into the Status Line. On `stalled`, follow the current Option's stall runbook; on `failing-evals`, begin drafting Phase-4 delta prompts early. The supervisor is advisory and read-only.
 
 #### Result Cards — rendered at start of Phase 4
 
@@ -928,6 +929,8 @@ tmux kill-session -t {session}
 | Unique taskname per run | Prevents collisions between concurrent sessions |
 
 ### Phase 4: Evaluate + retry
+
+Before deciding retries, MAY consult `node scripts/run-supervisor.js --advise --run-id {runId} --json`; use its advisory verdict as context, not as actuation.
 
 1. Read each agent's report
 2. Score against success criteria from Phase 2:
@@ -1154,6 +1157,8 @@ echo "Agents: ✅ $done/$total  ⏳ `expr "$total" - "$done"`/$total"
 #### Option H: Claude dynamic Workflow tool
 
 When a tool named `Workflow` is present in the current toolset (Claude dynamic Workflow runtime), Phase 3 can compile the Phase-2 per-agent prompts into a single runnable `.workflow.js` and run it via `Workflow({ scriptPath, args })`. Picked at Order 4 — **below Option B**, because the Workflow tool has **no mid-run cross-agent messaging**; data flows only through `pipeline()`/`parallel()` return values.
+
+Because Option H has no mid-run messaging seam, `node scripts/run-supervisor.js --advise --run-id {runId} --json` applies only after the workflow returns.
 
 Each Phase-2 reprompted prompt becomes an `agent(prompt, { schema })` call. Three emission patterns:
 

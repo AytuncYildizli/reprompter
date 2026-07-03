@@ -1,6 +1,6 @@
 {
   "name": "reprompter",
-  "version": "12.14.0",
+  "version": "12.15.0",
   "private": true,
   "description": "Prompt engineering skill for Claude Code, OpenClaw, Codex, Grok CLI, and Hermes Agent",
   "scripts": {
@@ -22,6 +22,7 @@
     "test:version-check": "node --test scripts/version-check.test.js",
     "test:prompt-gate": "node --test scripts/prompt-gate.test.js",
     "test:stop-gate": "node --test scripts/stop-gate.test.js",
+    "test:run-supervisor": "node --test scripts/run-supervisor.test.js",
     "test:hermes-package": "node --test scripts/hermes-package.test.js",
     "test:plugin-package": "node --test scripts/plugin-package.test.js",
     "test:repromptverse-runtime": "node --test scripts/repromptverse-runtime.test.js",
@@ -46,7 +47,7 @@
     "flywheel:ingest": "node scripts/outcome-collector.js --ingest-dir",
     "flywheel:export": "node scripts/flywheel-sync.js --export",
     "flywheel:import": "node scripts/flywheel-sync.js --import",
-    "check": "npm run validate:templates && npm run validate:tool-refs && npm run test:intent-router && npm run test:capability-policy && npm run test:context-builder && npm run test:artifact-evaluator && npm run test:pattern-selector && npm run test:runtime-adapter && npm run test:goal-command && npm run test:workflow-command && npm run test:version-check && npm run test:prompt-gate && npm run test:stop-gate && npm run test:hermes-package && npm run test:plugin-package && npm run check:hermes-package && npm run check:plugin-package && npm run test:repromptverse-runtime && npm run test:telemetry-schema && npm run test:telemetry-store && npm run test:observability-report && npm run test:observability-contract && npm run test:recipe-fingerprint && npm run test:outcome-collector && npm run test:strategy-learner && npm run test:reverse-engineer && npm run test:flywheel-e2e && npm run test:flywheel-sync && npm run benchmark:swarms && npm run benchmark:provider && npm run benchmark:realworld && npm run benchmark:flywheel"
+    "check": "npm run validate:templates && npm run validate:tool-refs && npm run test:intent-router && npm run test:capability-policy && npm run test:context-builder && npm run test:artifact-evaluator && npm run test:pattern-selector && npm run test:runtime-adapter && npm run test:goal-command && npm run test:workflow-command && npm run test:version-check && npm run test:prompt-gate && npm run test:stop-gate && npm run test:run-supervisor && npm run test:hermes-package && npm run test:plugin-package && npm run check:hermes-package && npm run check:plugin-package && npm run test:repromptverse-runtime && npm run test:telemetry-schema && npm run test:telemetry-store && npm run test:observability-report && npm run test:observability-contract && npm run test:recipe-fingerprint && npm run test:outcome-collector && npm run test:strategy-learner && npm run test:reverse-engineer && npm run test:flywheel-e2e && npm run test:flywheel-sync && npm run benchmark:swarms && npm run benchmark:provider && npm run benchmark:realworld && npm run benchmark:flywheel"
   },
   "repository": {
     "type": "git",
