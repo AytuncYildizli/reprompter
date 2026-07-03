@@ -1,0 +1,51 @@
+name: check
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version:
+          - 20
+          - 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm run check
+
+  install-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # Tarball path: what curl|tar users get. plugin/ and .claude-plugin/ are
+      # export-ignored, so this tree must NOT be used for plugin checks.
+      - run: |
+          mkdir -p /tmp/fresh
+          git archive HEAD | tar -x -C /tmp/fresh
+
+          test ! -e /tmp/fresh/plugin
+          test ! -e /tmp/fresh/.claude-plugin
+
+          printf '%s\n' '{"session_id":"ci","prompt":"uhh build a crypto dashboard, maybe coingecko data, add caching, test it too"}' \
+            | XDG_CACHE_HOME="$(mktemp -d)" node /tmp/fresh/scripts/prompt-gate.js \
+            | grep reprompter-ambient-gate
+
+      # Clone path: what /plugin marketplace add users get (git clone keeps
+      # export-ignored paths). Validate manifests + gate from the checkout.
+      - run: |
+          node -e "for (const f of ['.claude-plugin/marketplace.json','plugin/.claude-plugin/plugin.json']) JSON.parse(require('node:fs').readFileSync(f,'utf8'))"
+
+          printf '%s\n' '{"session_id":"ci","prompt":"uhh build a crypto dashboard, maybe coingecko data, add caching, test it too"}' \
+            | XDG_CACHE_HOME="$(mktemp -d)" node plugin/skills/reprompter/scripts/prompt-gate.js \
+            | grep reprompter-ambient-gate
