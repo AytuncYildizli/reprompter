@@ -8,9 +8,9 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-12.12.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-12.13.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-316%20passing-2da44e)](#testing)
+[![Tests](https://img.shields.io/badge/tests-325%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 
 RePrompter is a prompt engineering skill for AI coding agents. It takes rough, low-quality prompts and transforms them into structured, high-scoring prompts that produce dramatically better results. Templates are aligned with 2026 vendor guidance: clear sectioning, calibrated emphasis, outcome-first instructions, load-bearing constraints, structured-output routing, context budgeting, and tool-description quality. Works with Claude Code, OpenClaw, Codex, Grok CLI, Hermes Agent, or any LLM that accepts structured prompts.
@@ -322,7 +322,7 @@ Exemplar output → EXTRACT structure → ANALYZE task type + domain + tone
 
 **Prompt Flywheel Recipe Fingerprinting** - Every prompt carries a deterministic recipe fingerprint (template + patterns + capability tier + domain + context layers + quality bucket). Strategy learner groups outcomes by fingerprint so recommendations are grounded in repeated evidence, not one-off runs.
 
-**Ambient Prompt Gate (v12.12)** - Opt-in Claude Code `UserPromptSubmit` and `Stop` hooks score task-shaped prompts locally, silently nudge only when the request is below threshold, and measure whether nudged sessions accept the nudge. They are fail-soft, never block a prompt or stop event, dedupe outcomes, and write no prompt or transcript text to the local outcome log (called telemetry in the code) or state.
+**Ambient Prompt Gate (v12.13)** - Opt-in Claude Code, Codex CLI, and Hermes Agent prompt hooks score task-shaped prompts locally and silently nudge only when the request is below threshold. Claude Code also records the boolean Stop-hook acceptance outcome. The gate is fail-soft, never blocks a prompt, dedupes outcomes, and writes no prompt or transcript text to the local outcome log (called telemetry in the code) or state.
 
 **Agent Cards** - Plan Cards (before execution), Status Line (during), Result Cards (after). Full transparency into what agents will do, are doing, and found.
 
@@ -352,7 +352,7 @@ You can inspect the local files, delete them anytime, and kill the gate log with
 ## Testing
 
 ```bash
-npm run check    # 316 tests + 4 benchmarks
+npm run check    # 325 tests + 4 benchmarks
 npm run test:reverse-engineer  # individual suite example
 ```
 
@@ -373,14 +373,14 @@ npm run test:reverse-engineer  # individual suite example
 | Goal command | 11 |
 | Workflow command | 20 |
 | Version check | 21 |
-| Prompt gate | 23 |
+| Prompt gate | 32 |
 | Stop gate | 8 |
 | Hermes package | 8 |
 | Claude Code plugin package | 10 |
 | Telemetry schema/store | 6 |
 | Observability report | 2 |
 | Observability contract | 3 |
-| **Total** | **316** |
+| **Total** | **325** |
 
 All benchmarks at 100%: swarm routing (9/9), real-world routing (64/64), artifacts (84/84), flywheel (13/13), provider (9/9).
 
@@ -396,6 +396,7 @@ All benchmarks at 100%: swarm routing (9/9), real-world routing (64/64), artifac
 | Multi-agent parallel | yes | yes | yes | yes | yes | - |
 | Multi-agent sequential | yes | yes | yes | yes | yes | yes |
 | Workflow preflight / Option H | yes³ | - | - | - | - | - |
+| Ambient gate | yes | yes | - | - | yes⁴ | - |
 
 ¹ Claude Code `/goal` requires CLI v2.1.139+ (shipped 2026-05-11) and depends on the hooks layer. Under `disableAllHooks` or `allowManagedHooksOnly` in `settings.json`, `/goal` is unavailable on any version — v2.1.140 only upgraded the failure mode from a silent hang to a clear error message. No config flag needed beyond the version pin in environments that permit hooks; managed environments that block hooks must use Single mode for goal-shaped work.
 
@@ -409,13 +410,15 @@ Hermes parallel paths: **G1 `delegate_task` batch** for normal Repromptverse, **
 
 ³ Claude dynamic Workflow tool (**Option H** + the **Workflow preflight** lane): RePrompter compiles the reprompted task into a runnable `.workflow.js` (JS-scripted background fan-out — `agent()`/`parallel()`/`pipeline()` with schema-validated returns and `resumeFromRunId`). Picked at Order 4, just below Option B, because the Workflow tool has no mid-run cross-agent messaging. First-class ultracode (adversarial verify + completeness critic + budget-scaled fleets) with a `--no-ultracode` off-ramp. See `references/runtime/claude-workflow-runtime.md`. Compiler: `scripts/workflow-command.js`.
 
+⁴ Hermes Agent installs ship no `scripts/` helpers, so the Ambient Prompt Gate needs a git clone or copied checkout that includes `scripts/prompt-gate.js`.
+
 ---
 
 ## Configuration
 
-### Ambient Prompt Gate (Claude Code)
+### Ambient Prompt Gate (Claude Code, Codex CLI, Hermes Agent)
 
-Plugin installs register these hooks automatically. For copy-based installs, add them manually:
+Claude Code plugin installs register the prompt and Stop hooks automatically. For copy-based Claude Code installs, add them manually:
 
 ```json
 {
@@ -430,7 +433,40 @@ Plugin installs register these hooks automatically. For copy-based installs, add
 }
 ```
 
-Ambient flags: `REPROMPTER_AMBIENT=0` disables nudges and outcome recording, `REPROMPTER_AMBIENT_THRESHOLD` changes the default score threshold (`5`), `REPROMPTER_AMBIENT_COOLDOWN_MIN` changes the per-session cooldown (`15`), and `REPROMPTER_TELEMETRY=0` disables the privacy-safe gate local outcome log. Claude Code's `disableAllHooks` still wins globally. The gate never blocks prompts or Stop events and never persists prompt or transcript text.
+For Codex CLI copy-based installs, add a documented hook definition:
+
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js --format=codex",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Review and trust the command via `/hooks`; changing the command requires re-trusting because Codex keys trust to the hook definition hash. Codex's `[features] hooks = false` disables all hooks.
+
+For Hermes Agent, use a clone or copied checkout that includes `scripts/`, then document the shell hook in `~/.hermes/config.yaml`:
+
+```yaml
+hooks:
+  pre_llm_call:
+    - command: "node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js --format=hermes"
+      timeout: 5
+```
+
+Hermes asks for first-use approval per `(event, command)`; non-TTY runs need `HERMES_ACCEPT_HOOKS=1` or `hooks_auto_accept: true`. `pre_llm_call` cannot block, matching RePrompter's never-block contract.
+
+Ambient flags: `REPROMPTER_AMBIENT=0` disables nudges and outcome recording, `REPROMPTER_AMBIENT_THRESHOLD` changes the default score threshold (`5`), `REPROMPTER_AMBIENT_COOLDOWN_MIN` changes the per-session cooldown (`15`), and `REPROMPTER_TELEMETRY=0` disables the privacy-safe gate local outcome log. Runtime-wide hook kill switches still win globally. The gate never blocks prompts or Stop events and never persists prompt or transcript text.
 
 ### Repromptverse
 

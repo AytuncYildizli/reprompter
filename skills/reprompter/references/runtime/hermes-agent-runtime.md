@@ -63,6 +63,23 @@ max_turns = 20
 
 ---
 
+## Ambient Prompt Gate via `pre_llm_call`
+
+Hermes Agent can run the same local Ambient Prompt Gate before model calls. Use a RePrompter git clone or copied checkout that includes `scripts/` (Hermes skill installs ship no `scripts/` helpers), then document this shell hook in `Hermes config file`:
+
+```yaml
+hooks:
+  pre_llm_call:
+    - command: "node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js --format=hermes"
+      timeout: 5
+```
+
+Hermes passes the prompt as `extra.user_message`; the gate returns `{"context":"..."}` only when it nudges and otherwise prints nothing. `pre_llm_call` cannot block, which matches the gate's never-block design. First-use approval is per `(event, command)` and is persisted to `~/.hermes/shell-hooks-allowlist.json`; non-TTY runs need `HERMES_ACCEPT_HOOKS=1` or `hooks_auto_accept: true`.
+
+The full multi-runtime gate setup, shared kill switches, and Claude Code-only Stop acceptance note live in `SKILL.md` under "Ambient Prompt Gate".
+
+---
+
 ## When to pick G1, G2, or G3
 
 | Situation | Pick |

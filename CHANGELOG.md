@@ -1,3 +1,18 @@
+## v12.13.0 (2026-07-03) — Multi-runtime ambient gate
+
+### Added
+
+- Added `--format=claude|codex|hermes` and `REPROMPTER_GATE_FORMAT` support to `scripts/prompt-gate.js`, keeping `claude` as the default and preserving the existing plain-text output byte-for-byte.
+- Added Codex `UserPromptSubmit` JSON output and Hermes `pre_llm_call` JSON output adapters while preserving the same scoring, cooldown, privacy, and fail-soft behavior.
+- Added prompt-gate tests for Codex and Hermes nudges, silent skips, malformed stdin, unknown-format fallback, flag precedence, Claude fixture stability, and telemetry `runtime`.
+
+### Changed
+
+- Prompt-gate telemetry now includes an additive `runtime` field (`claude-code`, `codex`, or `hermes`); the existing telemetry sanitizer already accepts it.
+- Documented Codex and Hermes Ambient Prompt Gate setup snippets, including Codex `/hooks` trust and Hermes approval/non-TTY notes. Stop-hook acceptance recording remains Claude Code-only.
+- Fixed the stale Codex runtime reference that said Codex had no hook equivalents; current Codex CLI exposes stable hooks including `UserPromptSubmit`, `PreToolUse`, and `PostToolUse`.
+- `package.json`, `package-lock.json`, generated plugin, and generated Hermes package — version `12.13.0`.
+
 ## v12.12.0 (2026-07-03) — Stop-hook nudge acceptance
 
 ### Added
