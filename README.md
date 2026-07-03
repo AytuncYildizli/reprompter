@@ -13,6 +13,8 @@
 [![Tests](https://img.shields.io/badge/tests-340%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 
+> **What's new (v12.8–v12.15):** ambient prompt gate, one-command plugin install, template refresh, fleet learning — [digest](https://github.com/AytuncYildizli/reprompter/issues/74)
+
 RePrompter is a prompt engineering skill for AI coding agents. It takes rough, low-quality prompts and transforms them into structured, high-scoring prompts that produce dramatically better results. Templates are aligned with 2026 vendor guidance: clear sectioning, calibrated emphasis, outcome-first instructions, load-bearing constraints, structured-output routing, context budgeting, and tool-description quality. Works with Claude Code, OpenClaw, Codex, Grok CLI, Hermes Agent, or any LLM that accepts structured prompts.
 
 <br/>
