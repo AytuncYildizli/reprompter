@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Ambient prompt gate for opt-in Claude Code UserPromptSubmit hooks.
+// Ambient prompt gate for opt-in Claude Code, Codex CLI, and Hermes hooks.
 //
 // Design rules:
 //   - FAIL-SOFT: any internal error resolves to empty stdout and exit 0. The
@@ -29,6 +29,11 @@ const WEIGHTS = {
 const DEFAULT_THRESHOLD = 5;
 const DEFAULT_COOLDOWN_MIN = 15;
 const STATE_TTL_MS = 24 * 60 * 60 * 1000;
+const FORMAT_RUNTIMES = {
+  claude: "claude-code",
+  codex: "codex",
+  hermes: "hermes",
+};
 
 const TASK_VERBS = [
   "build",
@@ -328,7 +333,50 @@ function hashedSessionId(sessionId) {
   return crypto.createHash("sha256").update(String(sessionId || "anonymous")).digest("hex").slice(0, 12);
 }
 
-function emitTelemetry({ env, sessionId, decision, score }) {
+function normalizeFormat(value) {
+  const normalized = String(value || "claude").trim().toLowerCase();
+  return Object.prototype.hasOwnProperty.call(FORMAT_RUNTIMES, normalized) ? normalized : "claude";
+}
+
+function parseFormatArg(argv = process.argv, env = process.env) {
+  let format = env.REPROMPTER_GATE_FORMAT || "claude";
+  for (let index = 2; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg === "--format" && index + 1 < argv.length) {
+      format = argv[index + 1];
+      index += 1;
+    } else if (arg.startsWith("--format=")) {
+      format = arg.slice("--format=".length);
+    }
+  }
+  return normalizeFormat(format);
+}
+
+function promptFromPayload(payload, format) {
+  if (format === "hermes") {
+    if (typeof payload?.extra?.user_message === "string") return payload.extra.user_message;
+    if (typeof payload?.user_message === "string") return payload.user_message;
+    return "";
+  }
+  return typeof payload?.prompt === "string" ? payload.prompt : "";
+}
+
+function formatNudgeOutput(advisory, format) {
+  if (format === "codex") {
+    return `${JSON.stringify({
+      hookSpecificOutput: {
+        hookEventName: "UserPromptSubmit",
+        additionalContext: advisory,
+      },
+    })}\n`;
+  }
+  if (format === "hermes") {
+    return `${JSON.stringify({ context: advisory })}\n`;
+  }
+  return `${advisory}\n`;
+}
+
+function emitTelemetry({ env, sessionId, decision, score, runtime }) {
   if (env.REPROMPTER_TELEMETRY === "0") return;
   try {
     const { createTelemetryStore } = require("./telemetry-store");
@@ -339,6 +387,7 @@ function emitTelemetry({ env, sessionId, decision, score }) {
       taskId: "ambient-gate",
       stage: "gate_prompt",
       status: "ok",
+      runtime,
       metadata: {
         overall: scoreResult.overall,
         weakest: scoreResult.weakest,
@@ -359,19 +408,21 @@ function runHookMode() {
   const raw = readStdin();
   if (!raw.trim()) return;
 
+  const format = parseFormatArg();
   const payload = JSON.parse(raw);
-  const prompt = typeof payload.prompt === "string" ? payload.prompt : "";
+  const prompt = promptFromPayload(payload, format);
   const sessionId = typeof payload.session_id === "string" && payload.session_id.trim()
     ? payload.session_id.trim()
     : "anonymous";
   const env = process.env;
   const decision = shouldNudge(prompt, { env, sessionId });
   const score = decision.score || null;
+  const runtime = FORMAT_RUNTIMES[format];
 
-  emitTelemetry({ env, sessionId, decision, score });
+  emitTelemetry({ env, sessionId, decision, score, runtime });
 
   if (decision.nudge) {
-    process.stdout.write(`${buildNudge(score)}\n`);
+    process.stdout.write(formatNudgeOutput(buildNudge(score), format));
   }
 }
 
@@ -382,12 +433,17 @@ module.exports = {
   cacheDir,
   defaultStatePath,
   hashedSessionId,
+  normalizeFormat,
+  parseFormatArg,
+  promptFromPayload,
+  formatNudgeOutput,
 };
 
 if (require.main === module) {
   try {
-    if (process.argv[2] === "--score") {
-      process.stdout.write(`${JSON.stringify(scorePrompt(process.argv[3] || ""), null, 2)}\n`);
+    const scoreIndex = process.argv.indexOf("--score");
+    if (scoreIndex !== -1) {
+      process.stdout.write(`${JSON.stringify(scorePrompt(process.argv[scoreIndex + 1] || ""), null, 2)}\n`);
     } else {
       runHookMode();
     }

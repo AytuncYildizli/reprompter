@@ -267,12 +267,33 @@ One agent stalled. Inspect `/tmp/rpt-${TASKNAME}-*.stdout` for the stuck session
 
 ---
 
-## What Codex CLI does NOT provide (as of 0.121.0)
+## What Codex CLI does NOT provide (current hooks era)
 
 - No `TaskList` equivalent → use filesystem polling (D2) or rely on native subagent join (D1).
 - No cross-agent messaging mid-run → if agents need to talk, use Option B (TeamCreate in Claude Code) instead.
 - No built-in retry → Phase 4 drives retries with fresh `codex exec` calls or subagent respawns.
-- No per-file tool-call interception (Claude Code's `PreToolUse`/`PostToolUse` has no Codex equivalent as of 0.121.0).
+
+Historical note: this reference used to say Codex had no `PreToolUse` / `PostToolUse` equivalent as of 0.121.0. That is stale in the current hooks era: Codex CLI now exposes stable hooks including `UserPromptSubmit`, `PreToolUse`, and `PostToolUse` (verified against the 0.14x series and the Codex hooks documentation). For the Ambient Prompt Gate, use `UserPromptSubmit` with JSON context injection:
+
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /path/to/skills/reprompter/scripts/prompt-gate.js --format=codex",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+The gate emits `{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"..."}}` and never emits a blocking decision.
 
 ---
 
@@ -287,3 +308,7 @@ All accessed 2026-04-18:
 - [Issue #11435 — multiple parallel codex exec instances interfere via shared session restore](https://github.com/openai/codex/issues/11435)
 - [Issue #14866 — subagent stuck in awaiting-instruction](https://github.com/openai/codex/issues/14866)
 - [Issue #15177 — subagent model override metadata leak](https://github.com/openai/codex/issues/15177)
+
+Hooks update verified 2026-07-03:
+
+- [Codex Hooks — OpenAI Developers](https://developers.openai.com/codex/hooks)

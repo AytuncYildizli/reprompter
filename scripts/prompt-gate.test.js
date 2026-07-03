@@ -10,13 +10,14 @@ const assert = require("node:assert/strict");
 const { scorePrompt, shouldNudge } = require("./prompt-gate");
 
 const roughPrompt = "uhh build a crypto dashboard, maybe coingecko data, add caching, test it too";
+const claudeNudgeFixture = `<reprompter-ambient-gate>Heuristic prompt quality: 2/10 (weakest: constraints, structure). If this request is a nontrivial task, briefly offer once for this request to structure it first via the reprompter skill (user can say "reprompt this"); if the user declines or the task is trivial, proceed normally.</reprompter-ambient-gate>\n`;
 
 function tmpDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), "rpt-prompt-gate-"));
 }
 
-function runGate(input, env = {}) {
-  return execFileSync(process.execPath, ["scripts/prompt-gate.js"], {
+function runGate(input, env = {}, args = []) {
+  return execFileSync(process.execPath, ["scripts/prompt-gate.js", ...args], {
     cwd: path.join(__dirname, ".."),
     input,
     env: {
@@ -30,6 +31,12 @@ function runGate(input, env = {}) {
     },
     encoding: "utf8",
   });
+}
+
+function runGateWithCache(input, env = {}, args = []) {
+  const cache = tmpDir();
+  const stdout = runGate(input, { XDG_CACHE_HOME: cache, ...env }, args);
+  return { stdout, cache };
 }
 
 function nudgeOptions(sessionId, options = {}) {
@@ -244,6 +251,66 @@ test("hook CLI nudges for low-quality JSON", () => {
   assert.match(stdout, /<reprompter-ambient-gate>/);
 });
 
+test("hook CLI default claude format remains byte-identical", () => {
+  const stdout = runGate(JSON.stringify({ session_id: "byte-fixture", prompt: roughPrompt }));
+  assert.equal(stdout, claudeNudgeFixture);
+});
+
+test("hook CLI codex format emits additionalContext JSON", () => {
+  const stdout = runGate(JSON.stringify({ session_id: "codex-nudge", prompt: roughPrompt }), {}, [
+    "--format=codex",
+  ]);
+  const parsed = JSON.parse(stdout);
+
+  assert.deepEqual(Object.keys(parsed), ["hookSpecificOutput"]);
+  assert.equal(parsed.hookSpecificOutput.hookEventName, "UserPromptSubmit");
+  assert.equal(parsed.hookSpecificOutput.additionalContext, claudeNudgeFixture.trimEnd());
+  assert.equal(parsed.decision, undefined);
+});
+
+test("hook CLI codex format stays silent on skip", () => {
+  const prompt = "implement scripts/prompt-gate.js with tests, must preserve privacy, verify npm run check, update docs";
+  const stdout = runGate(JSON.stringify({ session_id: "codex-skip", prompt }), {
+    REPROMPTER_AMBIENT_THRESHOLD: "2",
+  }, ["--format=codex"]);
+  assert.equal(stdout, "");
+});
+
+test("hook CLI hermes format emits context JSON from extra.user_message", () => {
+  const stdout = runGate(
+    JSON.stringify({ session_id: "hermes-nudge", extra: { user_message: roughPrompt } }),
+    {},
+    ["--format=hermes"]
+  );
+  const parsed = JSON.parse(stdout);
+
+  assert.deepEqual(parsed, { context: claudeNudgeFixture.trimEnd() });
+  assert.equal(parsed.decision, undefined);
+});
+
+test("hook CLI hermes format accepts top-level user_message fallback", () => {
+  const stdout = runGate(JSON.stringify({ session_id: "hermes-top-level", user_message: roughPrompt }), {}, [
+    "--format=hermes",
+  ]);
+  assert.deepEqual(JSON.parse(stdout), { context: claudeNudgeFixture.trimEnd() });
+});
+
+test("hook CLI unknown format falls back to claude", () => {
+  const stdout = runGate(JSON.stringify({ session_id: "unknown-format", prompt: roughPrompt }), {}, [
+    "--format=wat",
+  ]);
+  assert.equal(stdout, claudeNudgeFixture);
+});
+
+test("hook CLI format flag takes precedence over REPROMPTER_GATE_FORMAT", () => {
+  const stdout = runGate(
+    JSON.stringify({ session_id: "flag-precedence", prompt: roughPrompt, extra: { user_message: "ignored" } }),
+    { REPROMPTER_GATE_FORMAT: "hermes" },
+    ["--format=codex"]
+  );
+  assert.ok(JSON.parse(stdout).hookSpecificOutput.additionalContext);
+});
+
 test("hook CLI stays silent for high-quality prompts", () => {
   const prompt = "implement scripts/prompt-gate.js with tests, must preserve privacy, verify npm run check, update docs";
   const stdout = runGate(JSON.stringify({ session_id: "s1", prompt }), {
@@ -254,6 +321,12 @@ test("hook CLI stays silent for high-quality prompts", () => {
 
 test("hook CLI stays silent for malformed stdin", () => {
   assert.equal(runGate("not json"), "");
+});
+
+test("hook CLI stays silent for malformed stdin in every format", () => {
+  for (const args of [[], ["--format=claude"], ["--format=codex"], ["--format=hermes"], ["--format=unknown"]]) {
+    assert.equal(runGate("not json", {}, args), "");
+  }
 });
 
 test("hook CLI honors REPROMPTER_AMBIENT=0", () => {
@@ -287,4 +360,26 @@ test("telemetry never persists raw prompt text", () => {
   assert.doesNotMatch(events, /gate-privacy/);
   assert.match(events, new RegExp(`gate-${hashedSession}`));
   assert.match(events, /gate_prompt/);
+});
+
+test("telemetry records runtime for each format without prompt text", () => {
+  const cases = [
+    { args: ["--format=claude"], input: { session_id: "runtime-claude", prompt: roughPrompt }, runtime: "claude-code" },
+    { args: ["--format=codex"], input: { session_id: "runtime-codex", prompt: roughPrompt }, runtime: "codex" },
+    {
+      args: ["--format=hermes"],
+      input: { session_id: "runtime-hermes", extra: { user_message: roughPrompt } },
+      runtime: "hermes",
+    },
+  ];
+
+  for (const { args, input, runtime } of cases) {
+    const { cache } = runGateWithCache(JSON.stringify(input), {}, args);
+    const eventsPath = path.join(cache, "reprompter", "telemetry", "events.ndjson");
+    const events = fs.readFileSync(eventsPath, "utf8").trim().split("\n").map((line) => JSON.parse(line));
+
+    assert.equal(events.length, 1);
+    assert.equal(events[0].runtime, runtime);
+    assert.doesNotMatch(JSON.stringify(events[0]), /crypto dashboard/);
+  }
 });
