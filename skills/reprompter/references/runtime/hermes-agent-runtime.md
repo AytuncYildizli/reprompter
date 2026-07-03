@@ -65,7 +65,7 @@ max_turns = 20
 
 ## Ambient Prompt Gate via `pre_llm_call`
 
-Hermes Agent can run the same local Ambient Prompt Gate before model calls. Use a RePrompter git clone or copied checkout that includes `scripts/` (Hermes skill installs ship no `scripts/` helpers), then document this shell hook in `Hermes config file`:
+Hermes Agent's Ambient Prompt Gate integration requires RePrompter's `scripts/` directory, which Hermes skill installs do not include; repository README setup guidance covers other runtimes.
 
 ```yaml
 hooks:

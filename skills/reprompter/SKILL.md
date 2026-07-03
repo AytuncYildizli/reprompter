@@ -1669,7 +1669,7 @@ For Codex CLI copy-based installs, add a hook definition to `~/.codex/hooks.json
 
 Review and trust the hook via `/hooks`. Codex keys trust to the SHA-256 of the hook definition, so editing the command requires re-trusting it. Keep an explicit short timeout; Codex's default hook timeout is much longer than this gate needs. Codex's `[features] hooks = false` disables all hooks; `REPROMPTER_AMBIENT=0` remains the RePrompter-specific off switch.
 
-For Hermes Agent, use a git clone or copied RePrompter checkout that includes `scripts/` (Hermes installs ship no `scripts/` helpers), then add the shell hook in `Hermes config file`:
+For Hermes Agent, the Ambient Prompt Gate requires RePrompter's `scripts/` directory, which Hermes skill installs do not include; repository README setup guidance covers other runtimes.
 
 ```yaml
 hooks:

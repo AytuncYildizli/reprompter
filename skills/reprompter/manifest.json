@@ -12,13 +12,13 @@
     "root_skill": "SKILL.md",
     "root_skill_sha256": "726dbbd7ed6a2300a23e6bc1260bdc527dcff49adfe9cb32fc5c4ab1dd198230",
     "sanitizer": "scripts/hermes-sanitizer.json",
-    "sanitizer_sha256": "cf81c7838e249bb653db2339d340f779098a56e08181c6271e88c31643396add"
+    "sanitizer_sha256": "836f2e674e16b99416eddb7f8d7d081d3250ec5b2c7392c0a5ec6befa057f919"
   },
   "files": [
     {
       "path": "SKILL.md",
       "source_sha256": "726dbbd7ed6a2300a23e6bc1260bdc527dcff49adfe9cb32fc5c4ab1dd198230",
-      "generated_sha256": "82499d2b7957656d6d24d6f61dea421f2767c679d3e95a45ef3dcc0d00794ec2"
+      "generated_sha256": "8a41f0bdb61a0719e793b7bdde5f37ea8f5d23bf23e27df3d30987faa79e1216"
     },
     {
       "path": "references/api-template.md",
@@ -128,7 +128,7 @@
     {
       "path": "references/runtime/hermes-agent-runtime.md",
       "source_sha256": "e965ccbce050c821e8b01a5f68872e517dfc34bb6c16cb936c024dbe6f25de56",
-      "generated_sha256": "8c7f9e7351c0563a4b62e1eba10605d4320d27014c7dec358a26ba14db06faf5"
+      "generated_sha256": "07b1bb3668e86cda520e4a4081a1708c41f91e6171f4bb3bdbb325e4a1016ce1"
     },
     {
       "path": "references/security-template.md",
