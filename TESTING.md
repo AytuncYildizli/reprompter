@@ -476,6 +476,45 @@ Verification scenarios for the RePrompter skill. Run these manually to validate 
 **Expected:** Team plan adjusted per user request. Plan Cards re-rendered with updated agent roster.
 **Verify:** Updated Plan Cards table reflects the change. User confirmation gate asked again with new plan.
 
+## Scenario 45: Ambient Prompt Gate + Claude Code Plugin Smoke
+
+### 45a: Rough Prompt Nudges
+**Command:**
+```bash
+printf '%s\n' '{"session_id":"gate-rough","prompt":"make the dashboard better maybe add stuff and fix issues"}' | node scripts/prompt-gate.js
+```
+**Expected:** stdout contains `<reprompter-ambient-gate>` with an advisory to offer structuring through the reprompter skill.
+
+### 45b: Atomic Task Stays Silent
+**Command:**
+```bash
+printf '%s\n' '{"session_id":"gate-atomic","prompt":"rename README.md heading from Install to Installation"}' | node scripts/prompt-gate.js
+```
+**Expected:** stdout is empty.
+
+### 45c: Ambient Kill Switch
+**Command:**
+```bash
+printf '%s\n' '{"session_id":"gate-off","prompt":"make the dashboard better maybe add stuff and fix issues"}' | REPROMPTER_AMBIENT=0 node scripts/prompt-gate.js
+```
+**Expected:** stdout is empty because `REPROMPTER_AMBIENT=0` disables nudges.
+
+### 45d: Cooldown Suppresses Repeat Nudges
+**Command:**
+```bash
+export XDG_CACHE_HOME="$(mktemp -d)"
+printf '%s\n' '{"session_id":"gate-cooldown","prompt":"make the dashboard better maybe add stuff and fix issues"}' | node scripts/prompt-gate.js
+printf '%s\n' '{"session_id":"gate-cooldown","prompt":"make the dashboard better maybe add stuff and fix issues"}' | node scripts/prompt-gate.js
+```
+**Expected:** first command prints `<reprompter-ambient-gate>`; second command is silent while the default cooldown window is active.
+
+### 45e: Plugin Smoke
+**Command:**
+```bash
+REPROMPTER_TELEMETRY=1 XDG_CACHE_HOME="$(mktemp -d)" claude --plugin-dir ./plugin headless run "make the dashboard better maybe add stuff and fix issues"
+```
+**Expected:** Claude Code loads the local plugin, the Ambient Prompt Gate can fire through `UserPromptSubmit`, and privacy-safe telemetry evidence appears under `$XDG_CACHE_HOME/reprompter/telemetry/events.ndjson` with `gate_prompt` but no raw prompt text.
+
 ---
 
 ## Anti-Patterns (Should NOT Happen)

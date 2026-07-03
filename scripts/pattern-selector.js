@@ -46,6 +46,23 @@ const PATTERN_CATALOG = [
     domains: ["all"],
     outcomes: ["all"],
   },
+  {
+    id: "tool-description-quality",
+    title: "Tool Description Quality",
+    guidance:
+      "Write tool descriptions as if onboarding a new hire: make implicit context explicit, name when to use the tool, inputs/outputs, side effects, limits, and examples of good calls.",
+    domains: ["all"],
+    outcomes: ["all"],
+    keywords: [
+      "agent tool",
+      "agent tools",
+      "mcp",
+      "tool description",
+      "tool descriptions",
+      "callable capability",
+      "callable capabilities",
+    ],
+  },
 ];
 
 function normalizeText(value) {
@@ -70,9 +87,14 @@ function matchesOutcome(pattern, outcome) {
   return pattern.outcomes.includes(outcome);
 }
 
+function keywordMatches(text, keyword) {
+  const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+");
+  return new RegExp(`(^|[^a-z0-9_])${escaped}([^a-z0-9_]|$)`, "i").test(text);
+}
+
 function matchesKeywords(pattern, text) {
   if (!pattern.keywords || pattern.keywords.length === 0) return true;
-  return pattern.keywords.some((keyword) => text.includes(keyword));
+  return pattern.keywords.some((keyword) => keywordMatches(text, keyword));
 }
 
 function selectPatterns(taskSpec = {}, domainInput = "", policy = {}) {

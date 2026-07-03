@@ -14,4 +14,4 @@ Surface: prompt transformation/service surface
 
 ## Implementation status
 
-RED until this repo has real helpers/tests/wiring. This directory is the source-control contract seed.
+GREEN: implementation has `scripts/telemetry-schema.js`, `scripts/telemetry-store.js`, `scripts/observability-contract.js`, `scripts/run-observability-report.js`, their test suites, and the wired `gate_prompt` stage.

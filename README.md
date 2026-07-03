@@ -8,9 +8,9 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-12.10.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-12.11.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-303%20passing-2da44e)](#testing)
+[![Tests](https://img.shields.io/badge/tests-306%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 
 RePrompter is a prompt engineering skill for AI coding agents. It takes rough, low-quality prompts and transforms them into structured, high-scoring prompts that produce dramatically better results. Templates are aligned with 2026 vendor guidance: clear sectioning, calibrated emphasis, outcome-first instructions, load-bearing constraints, structured-output routing, context budgeting, and tool-description quality. Works with Claude Code, OpenClaw, Codex, Grok CLI, Hermes Agent, or any LLM that accepts structured prompts.
@@ -352,7 +352,7 @@ You can inspect the local files, delete them anytime, and kill the gate log with
 ## Testing
 
 ```bash
-npm run check    # 303 tests + 4 benchmarks
+npm run check    # 306 tests + 4 benchmarks
 npm run test:reverse-engineer  # individual suite example
 ```
 
@@ -365,7 +365,7 @@ npm run test:reverse-engineer  # individual suite example
 | Recipe fingerprint | 14 |
 | Repromptverse runtime | 9 |
 | Capability policy | 7 |
-| Pattern selector | 7 |
+| Pattern selector | 10 |
 | Runtime adapter | 5 |
 | Flywheel E2E | 5 |
 | Context builder | 3 |
@@ -379,7 +379,7 @@ npm run test:reverse-engineer  # individual suite example
 | Telemetry schema/store | 6 |
 | Observability report | 2 |
 | Observability contract | 3 |
-| **Total** | **303** |
+| **Total** | **306** |
 
 All benchmarks at 100%: swarm routing (9/9), real-world routing (64/64), artifacts (84/84), flywheel (13/13), provider (9/9).
 
