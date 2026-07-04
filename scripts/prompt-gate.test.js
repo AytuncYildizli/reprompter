@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const crypto = require("node:crypto");
-const { execFileSync } = require("node:child_process");
+const { execFileSync, spawn } = require("node:child_process");
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const { scorePrompt, shouldNudge } = require("./prompt-gate");
@@ -37,6 +37,45 @@ function runGateWithCache(input, env = {}, args = []) {
   const cache = tmpDir();
   const stdout = runGate(input, { XDG_CACHE_HOME: cache, ...env }, args);
   return { stdout, cache };
+}
+
+function spawnGate(input, env = {}, args = []) {
+  return new Promise((resolve, reject) => {
+    let timedOut = false;
+    const child = spawn(process.execPath, ["scripts/prompt-gate.js", ...args], {
+      cwd: path.join(__dirname, ".."),
+      env: {
+        ...process.env,
+        REPROMPTER_AMBIENT: "1",
+        REPROMPTER_TELEMETRY: "1",
+        REPROMPTER_AMBIENT_THRESHOLD: "5",
+        REPROMPTER_AMBIENT_COOLDOWN_MIN: "15",
+        XDG_CACHE_HOME: tmpDir(),
+        ...env,
+      },
+    });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.setEncoding("utf8");
+    child.stderr.setEncoding("utf8");
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk;
+    });
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk;
+    });
+    const timer = setTimeout(() => {
+      timedOut = true;
+      child.kill();
+    }, 5000);
+    child.on("error", reject);
+    child.on("close", (status) => {
+      clearTimeout(timer);
+      resolve({ status, stdout, stderr, timedOut });
+    });
+    child.stdin.on("error", () => {});
+    child.stdin.write(input);
+  });
 }
 
 function nudgeOptions(sessionId, options = {}) {
@@ -327,6 +366,28 @@ test("hook CLI stays silent for malformed stdin in every format", () => {
   for (const args of [[], ["--format=claude"], ["--format=codex"], ["--format=hermes"], ["--format=unknown"]]) {
     assert.equal(runGate("not json", {}, args), "");
   }
+});
+
+test("hook CLI exits silently when stdin stays open past the internal deadline", async () => {
+  const started = Date.now();
+  const result = await spawnGate('{"session_id":"open-stdin","prompt":"partial', {
+    REPROMPTER_HOOK_DEADLINE_MS: "300",
+  });
+
+  assert.equal(result.status, 0);
+  assert.equal(result.stdout, "");
+  assert.equal(result.stderr, "");
+  assert.ok(Date.now() - started < 5000);
+});
+
+test("hook CLI exits silently when stdin exceeds the size cap", async () => {
+  const result = await spawnGate("x".repeat(2 * 1024 * 1024 + 1), {
+    REPROMPTER_HOOK_DEADLINE_MS: "300",
+  });
+
+  assert.equal(result.status, 0);
+  assert.equal(result.stdout, "");
+  assert.equal(result.stderr, "");
 });
 
 test("hook CLI honors REPROMPTER_AMBIENT=0", () => {

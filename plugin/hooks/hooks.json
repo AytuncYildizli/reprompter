@@ -5,7 +5,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/skills/reprompter/scripts/prompt-gate.js\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/skills/reprompter/scripts/prompt-gate.js\"",
+            "timeout": 10
           }
         ]
       }
@@ -15,7 +16,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/skills/reprompter/scripts/stop-gate.js\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/skills/reprompter/scripts/stop-gate.js\"",
+            "timeout": 10
           }
         ]
       }

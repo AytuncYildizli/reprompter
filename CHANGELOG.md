@@ -1,3 +1,18 @@
+## v12.15.1 (2026-07-04) — Hook stdin hardening
+
+### Changed
+
+- Hardened `scripts/prompt-gate.js` and `scripts/stop-gate.js` so hook stdin is read asynchronously with an internal deadline (`REPROMPTER_HOOK_DEADLINE_MS`, default 3000ms) and an approximately 2MB input cap.
+- Added `timeout: 10` to both generated Claude Code plugin hook entries as a harness-level backstop.
+- Preserved normal piped-input behavior, including the byte-identical Claude output fixture.
+- `package.json`, `package-lock.json`, generated plugin, and generated Hermes package — version `12.15.1`.
+
+### Verification
+
+- `npm run test:prompt-gate`
+- `npm run test:stop-gate`
+- `npm run test:plugin-package`
+
 ## v12.15.0 (2026-07-03) — Advisory run supervisor
 
 ### Added

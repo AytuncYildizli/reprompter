@@ -131,6 +131,7 @@ function main() {
             {
               type: "command",
               command: 'node "${CLAUDE_PLUGIN_ROOT}/skills/reprompter/scripts/prompt-gate.js"',
+              timeout: 10,
             },
           ],
         },
@@ -141,6 +142,7 @@ function main() {
             {
               type: "command",
               command: 'node "${CLAUDE_PLUGIN_ROOT}/skills/reprompter/scripts/stop-gate.js"',
+              timeout: 10,
             },
           ],
         },

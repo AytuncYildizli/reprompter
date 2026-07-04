@@ -28,6 +28,8 @@ const WEIGHTS = {
 
 const DEFAULT_THRESHOLD = 5;
 const DEFAULT_COOLDOWN_MIN = 15;
+const DEFAULT_HOOK_DEADLINE_MS = 3000;
+const MAX_STDIN_BYTES = 2 * 1024 * 1024;
 const STATE_TTL_MS = 24 * 60 * 60 * 1000;
 const FORMAT_RUNTIMES = {
   claude: "claude-code",
@@ -286,6 +288,13 @@ function cooldownMinFromEnv(env) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_COOLDOWN_MIN;
 }
 
+function hookDeadlineMsFromEnv(env) {
+  const raw = env.REPROMPTER_HOOK_DEADLINE_MS;
+  if (raw == null || String(raw).trim() === "") return DEFAULT_HOOK_DEADLINE_MS;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_HOOK_DEADLINE_MS;
+}
+
 function shouldNudge(prompt, options = {}) {
   const env = options.env || process.env;
   const sessionId = options.sessionId || "anonymous";
@@ -400,12 +409,54 @@ function emitTelemetry({ env, sessionId, decision, score, runtime }) {
   }
 }
 
-function readStdin() {
-  return fs.readFileSync(0, "utf8");
+function readStdinWithDeadline(options = {}) {
+  const stdin = options.stdin || process.stdin;
+  const env = options.env || process.env;
+  const deadlineMs = hookDeadlineMsFromEnv(env);
+
+  return new Promise((resolve) => {
+    let done = false;
+    let totalBytes = 0;
+    const chunks = [];
+
+    const finish = (value) => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      stdin.off("data", onData);
+      stdin.off("end", onEnd);
+      stdin.off("error", onError);
+      if (typeof stdin.pause === "function") {
+        stdin.pause();
+      }
+      resolve(value);
+    };
+
+    const onData = (chunk) => {
+      totalBytes += Buffer.byteLength(chunk);
+      if (totalBytes > MAX_STDIN_BYTES) {
+        finish(null);
+        return;
+      }
+      chunks.push(chunk);
+    };
+    const onEnd = () => finish(chunks.join(""));
+    const onError = () => finish(null);
+    const timer = setTimeout(() => finish(null), deadlineMs);
+
+    stdin.setEncoding("utf8");
+    stdin.on("data", onData);
+    stdin.on("end", onEnd);
+    stdin.on("error", onError);
+    if (typeof stdin.resume === "function") {
+      stdin.resume();
+    }
+  });
 }
 
-function runHookMode() {
-  const raw = readStdin();
+async function runHookMode() {
+  const raw = await readStdinWithDeadline();
+  if (raw == null) return;
   if (!raw.trim()) return;
 
   const format = parseFormatArg();
@@ -437,19 +488,22 @@ module.exports = {
   parseFormatArg,
   promptFromPayload,
   formatNudgeOutput,
+  readStdinWithDeadline,
 };
 
 if (require.main === module) {
-  try {
-    const scoreIndex = process.argv.indexOf("--score");
-    if (scoreIndex !== -1) {
-      process.stdout.write(`${JSON.stringify(scorePrompt(process.argv[scoreIndex + 1] || ""), null, 2)}\n`);
-    } else {
-      runHookMode();
+  (async () => {
+    try {
+      const scoreIndex = process.argv.indexOf("--score");
+      if (scoreIndex !== -1) {
+        process.stdout.write(`${JSON.stringify(scorePrompt(process.argv[scoreIndex + 1] || ""), null, 2)}\n`);
+      } else {
+        await runHookMode();
+      }
+    } catch {
+      /* Always fail soft and silent. */
+    } finally {
+      process.exit(0);
     }
-  } catch {
-    /* Always fail soft and silent. */
-  } finally {
-    process.exit(0);
-  }
+  })();
 }

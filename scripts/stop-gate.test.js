@@ -1,7 +1,7 @@
 "use strict";
 
 const assert = require("node:assert/strict");
-const { spawnSync } = require("node:child_process");
+const { spawn, spawnSync } = require("node:child_process");
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const os = require("node:os");
@@ -34,6 +34,37 @@ function runStop(payload, options = {}) {
     input: typeof payload === "string" ? payload : JSON.stringify(payload),
     encoding: "utf8",
     env: gateEnv(cache, options.env),
+  });
+}
+
+function spawnStop(input, env = {}) {
+  return new Promise((resolve, reject) => {
+    let timedOut = false;
+    const child = spawn(process.execPath, ["scripts/stop-gate.js"], {
+      cwd: repoRoot,
+      env: gateEnv(tmpDir(), env),
+    });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.setEncoding("utf8");
+    child.stderr.setEncoding("utf8");
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk;
+    });
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk;
+    });
+    const timer = setTimeout(() => {
+      timedOut = true;
+      child.kill();
+    }, 5000);
+    child.on("error", reject);
+    child.on("close", (status) => {
+      clearTimeout(timer);
+      resolve({ status, stdout, stderr, timedOut });
+    });
+    child.stdin.on("error", () => {});
+    child.stdin.write(input);
   });
 }
 
@@ -186,6 +217,24 @@ test("malformed stdin and missing transcript exit silently", () => {
 
   assertSilentSuccess(result);
   assert.equal(readEvents(cache).filter((event) => event.stage === "gate_outcome").length, 0);
+});
+
+test("stdin held open exits silently after the internal deadline", async () => {
+  const started = Date.now();
+  const result = await spawnStop('{"session_id":"open-stdin","transcript_path":"', {
+    REPROMPTER_HOOK_DEADLINE_MS: "300",
+  });
+
+  assertSilentSuccess(result);
+  assert.ok(Date.now() - started < 5000);
+});
+
+test("stdin larger than the cap exits silently", async () => {
+  const result = await spawnStop("x".repeat(2 * 1024 * 1024 + 1), {
+    REPROMPTER_HOOK_DEADLINE_MS: "300",
+  });
+
+  assertSilentSuccess(result);
 });
 
 test("spawned end-to-end persists only boolean outcome after prompt-gate nudge", () => {
