@@ -13,7 +13,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
-const { cacheDir, hashedSessionId } = require("./prompt-gate");
+const { cacheDir, hashedSessionId, readStdinWithDeadline } = require("./prompt-gate");
 
 function detectNudge(events, hashedId) {
   const runId = `gate-${hashedId}`;
@@ -44,12 +44,9 @@ function alreadyRecorded(events, hashedId) {
   });
 }
 
-function readStdin() {
-  return fs.readFileSync(0, "utf8");
-}
-
-function readPayload() {
-  const raw = readStdin();
+async function readPayload() {
+  const raw = await readStdinWithDeadline();
+  if (raw == null) return null;
   if (!raw.trim()) return null;
   const payload = JSON.parse(raw);
   return payload && typeof payload === "object" && !Array.isArray(payload) ? payload : null;
@@ -60,10 +57,10 @@ function telemetryStore(env) {
   return createTelemetryStore({ dirPath: path.join(cacheDir(env), "telemetry") });
 }
 
-function runHookMode(env = process.env) {
+async function runHookMode(env = process.env) {
   if (env.REPROMPTER_TELEMETRY === "0" || env.REPROMPTER_AMBIENT === "0") return;
 
-  const payload = readPayload();
+  const payload = await readPayload();
   if (!payload) return;
 
   const sessionId = typeof payload.session_id === "string" && payload.session_id.trim()
@@ -98,11 +95,13 @@ module.exports = {
 };
 
 if (require.main === module) {
-  try {
-    runHookMode();
-  } catch {
-    /* Always fail soft and silent. */
-  } finally {
-    process.exit(0);
-  }
+  (async () => {
+    try {
+      await runHookMode();
+    } catch {
+      /* Always fail soft and silent. */
+    } finally {
+      process.exit(0);
+    }
+  })();
 }

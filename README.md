@@ -8,9 +8,9 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-12.15.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-12.15.1-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-340%20passing-2da44e)](#testing)
+[![Tests](https://img.shields.io/badge/tests-344%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 
 > **What's new (v12.8–v12.15):** ambient prompt gate, one-command plugin install, template refresh, fleet learning — [digest](https://github.com/AytuncYildizli/reprompter/issues/74)
@@ -358,7 +358,7 @@ You can inspect the local files, delete them anytime, and kill the gate log with
 ## Testing
 
 ```bash
-npm run check    # 330 tests + 4 benchmarks
+npm run check    # 334 tests + 4 benchmarks
 npm run test:reverse-engineer  # individual suite example
 ```
 
@@ -380,15 +380,15 @@ npm run test:reverse-engineer  # individual suite example
 | Goal command | 11 |
 | Workflow command | 20 |
 | Version check | 21 |
-| Prompt gate | 32 |
-| Stop gate | 8 |
+| Prompt gate | 34 |
+| Stop gate | 10 |
 | Run supervisor | 10 |
 | Hermes package | 8 |
 | Claude Code plugin package | 10 |
 | Telemetry schema/store | 6 |
 | Observability report | 2 |
 | Observability contract | 3 |
-| **Total** | **340** |
+| **Total** | **344** |
 
 All benchmarks at 100%: swarm routing (9/9), real-world routing (64/64), artifacts (84/84), flywheel (13/13), provider (9/9).
 

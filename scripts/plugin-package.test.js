@@ -66,6 +66,7 @@ test("plugin hooks use CLAUDE_PLUGIN_ROOT and resolve to generated scripts", () 
 
   for (const hook of commands) {
     assert.equal(hook.type, "command");
+    assert.equal(hook.timeout, 10);
     assert.ok(hook.command.includes("${CLAUDE_PLUGIN_ROOT}"));
     const resolved = resolveHookCommand(hook.command);
     assert.ok(fs.existsSync(resolved), `missing generated hook script: ${resolved}`);
@@ -83,6 +84,7 @@ test("plugin hook manifest matches the documented shape exactly", () => {
             {
               type: "command",
               command: 'node "${CLAUDE_PLUGIN_ROOT}/skills/reprompter/scripts/prompt-gate.js"',
+              timeout: 10,
             },
           ],
         },
@@ -93,6 +95,7 @@ test("plugin hook manifest matches the documented shape exactly", () => {
             {
               type: "command",
               command: 'node "${CLAUDE_PLUGIN_ROOT}/skills/reprompter/scripts/stop-gate.js"',
+              timeout: 10,
             },
           ],
         },

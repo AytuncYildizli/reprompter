@@ -13,12 +13,12 @@ compatibility: |
   Workflow preflight lane + Repromptverse Option H target Claude Code's dynamic `Workflow` tool (JS-scripted background fan-out with schema-validated returns and resume); additive, detected by tool presence, with first-class ultracode.
 metadata:
   author: AytuncYildizli
-  version: 12.15.0
+  version: 12.15.1
 ---
 
-# RePrompter v12.15.0
+# RePrompter v12.15.1
 
-> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.15.0 adds an advisory run supervisor: mid-run health verdicts from local telemetry, read-only guidance only, never actuation.**
+> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.15.1 hardens Ambient Prompt Gate hooks with internal stdin deadlines and plugin hook timeouts, with no behavior change for normal input.**
 
 ---
 
