@@ -11,15 +11,15 @@ compatibility: |
   `/goal` preflight mode works on Codex CLI (any version exposing the `goals` feature), Claude Code CLI v2.1.139+, and Hermes Agent; all three runtimes accept the same `/goal <objective>` shape. Disabled on Claude surfaces without `/goal` support, OpenClaw, and Grok CLI.
   Repromptverse mode supports Claude Code (TeamCreate or tmux → Option B/A), OpenClaw (sessions_spawn → Option C), Codex CLI (native subagents or `codex exec` → Option D), Grok CLI 4.3+ (spawn_subagent F1 or `grok -p` F2 → Option F), and Hermes Agent (delegate_task G1, shell-level G2, Kanban G3 → Option G). Sequential fallback (Option E) works with any LLM runtime.
   Workflow preflight lane + Repromptverse Option H target Claude Code's dynamic `Workflow` tool (JS-scripted background fan-out with schema-validated returns and resume); additive, detected by tool presence, with first-class ultracode.
-  A post-output delivery step can — offered once, only on the user's explicit yes, never auto-executed — hand a finished Single/Reverse prompt to the headless-relay skill (targets: Codex, GLM, Grok, Gemini) when that skill is installed; when it is not installed the step is invisible.
+  A post-output delivery step can — offered once as a structured choice over the relay targets that are actually available (built-in lanes plus user-connected custom/local targets), never auto-executed — hand a finished Single/Reverse prompt to the headless-relay skill; the orchestrator reviews the relayed answer against the prompt's success criteria by default. When the relay skill is not installed, or no target is available, the step is invisible.
 metadata:
   author: AytuncYildizli
-  version: 12.16.0
+  version: 12.17.0
 ---
 
-# RePrompter v12.16.0
+# RePrompter v12.17.0
 
-> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.16.0 adds a deliver-via-headless-relay post-output step for Single and Reverse lanes — silent unless the headless-relay skill is installed.**
+> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.17.0 makes relay delivery availability-gated and structured (only live targets offered, custom/local targets included) with orchestrator review of the relayed answer by default.**
 
 ---
 
@@ -1440,18 +1440,35 @@ is available in this session: it appears in the available-skills list as
 `headless-relay` or any harness-namespaced form of that name (for example
 `some-plugin:headless-relay`).
 
-**Relay available** — offer exactly once:
+**Relay present — build the live target list before offering.** Quietly run
+headless-relay's availability preflight (installed AND authenticated, per that
+skill's own preflight table) over its built-in lanes plus any user-connected
+custom targets it documents (local models and other one-shot CLIs count as
+first-class targets once the relay reports them available). Drop the
+orchestrator's own provider — same-provider delegation uses the harness's native
+subagent (headless-relay Check 1). If no target survives, stay silent: an offer
+with nothing available is noise, not a feature.
 
-> Deliver this prompt to Codex / GLM / Grok / Gemini via headless-relay?
+**Offer — exactly once, structured when possible.** If the harness has a
+structured-question tool (for example AskUserQuestion), render the offer as ONE
+question whose options are the available targets plus a decline option ("No —
+just the prompt"); the target choice IS the offer, so a bare yes/no is never
+shown. On harnesses without a structured-question tool, ask the same thing as one
+plain-text line listing only the available targets. Never pick a default and
+never fan out to several targets.
 
-On yes: if the user has not named exactly one target, ask once which of the four
-to use — never pick a default and never fan out to several. Then invoke the
+**On delivery — the orchestrator stays in the loop.** headless-relay exists to
+involve other models, not to sideline the orchestrating agent. Invoke the
 headless-relay skill and hand off three things — the finished prompt text, the
-chosen target model, and output expectations (for example "JSON only").
-headless-relay owns everything downstream: CLI preflight (installed and
-authenticated), provider-terms compliance, exact flags, and output parsing. Report
-the relayed model's answer back following that skill's own instructions. On no, or
-no answer: stop after the prompt artifact, exactly as if this step did not exist.
+chosen target, and output expectations (for example "JSON only").
+headless-relay owns everything downstream: CLI preflight detail, provider-terms
+compliance, exact flags, and output parsing. When the relayed answer returns,
+the orchestrator reviews it by default: score it against the prompt's own
+`<success_criteria>` (criterion-by-criterion pass/fail), flag gaps, and recommend
+accept or retry-with-delta. Report the relayed output AND the review verdict.
+The user can say "verbatim" or "no review" to get the raw relayed answer only.
+On decline, or no answer: stop after the prompt artifact, exactly as if this
+step did not exist.
 
 **Relay absent** — stay completely silent. Do not offer delivery, do not suggest
 installing headless-relay, do not name the skill. Output must be identical to a
@@ -1459,9 +1476,11 @@ session where this section does not apply.
 
 Hard rules:
 
-- Never auto-execute. Delivery always requires the user's explicit yes.
-- Claude is not a delivery target. Same-provider delegation uses the harness's
-  native subagent (headless-relay Check 1). Offer only Codex / GLM / Grok / Gemini.
+- Never auto-execute. Delivery always requires the user's explicit target choice.
+- Never offer an unavailable target, and never offer the orchestrator's own
+  provider (native subagent instead — headless-relay Check 1).
+- Custom/local targets connected through headless-relay's custom-target registry
+  are offered exactly like built-in lanes once available.
 - Deliver Gemini prompts sequentially, one at a time. This is the only relay
   mechanic repeated here; every other CLI detail defers to the headless-relay
   skill so the two never drift.

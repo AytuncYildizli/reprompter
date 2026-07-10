@@ -10,15 +10,15 @@
   },
   "source": {
     "root_skill": "SKILL.md",
-    "root_skill_sha256": "72574e1a779b76c304c18525ce428c52dcbf5553464064865aa294f0b69df981",
+    "root_skill_sha256": "f5e98164f3a4e9937b4323802f39a6a46d71da4e152fed4d9f23d6caa5cdc067",
     "sanitizer": "scripts/hermes-sanitizer.json",
     "sanitizer_sha256": "836f2e674e16b99416eddb7f8d7d081d3250ec5b2c7392c0a5ec6befa057f919"
   },
   "files": [
     {
       "path": "SKILL.md",
-      "source_sha256": "72574e1a779b76c304c18525ce428c52dcbf5553464064865aa294f0b69df981",
-      "generated_sha256": "610cd638ba4b546610a35aeee7d8331ca5acdbe2ca1eac6f59131032daa82e28"
+      "source_sha256": "f5e98164f3a4e9937b4323802f39a6a46d71da4e152fed4d9f23d6caa5cdc067",
+      "generated_sha256": "2f75b29dda858362fb058f078284d41d48d1b35e2b6bd36b2ad74c86a88726cd"
     },
     {
       "path": "references/api-template.md",
