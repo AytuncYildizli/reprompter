@@ -8,7 +8,7 @@
 
 ### Changed
 
-- Delivery targets are no longer a hardcoded four-model list; the offer reflects whatever headless-relay reports as available. The orchestrator's own provider is still never offered (native subagent instead).
+- Delivery targets are no longer a hardcoded four-model list; the offer reflects whatever headless-relay's availability preflight marks available (discovered once per session, cached; cannot-verify counts as unavailable). The orchestrator's own provider is still never offered (native subagent instead).
 - `package.json`, `package-lock.json`, generated plugin, and generated Hermes package — version `12.17.0`.
 
 ### Verification
