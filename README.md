@@ -8,12 +8,12 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-12.15.1-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-12.16.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-344%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 
-> **What's new (v12.8–v12.15):** ambient prompt gate, one-command plugin install, template refresh, fleet learning — [digest](https://github.com/AytuncYildizli/reprompter/issues/74)
+> **What's new (v12.8–v12.16):** ambient prompt gate, one-command plugin install, headless-relay delivery step, fleet learning — [digest](https://github.com/AytuncYildizli/reprompter/issues/74)
 
 RePrompter is a prompt engineering skill for AI coding agents. It takes rough, low-quality prompts and transforms them into structured, high-scoring prompts that produce dramatically better results. Templates are aligned with 2026 vendor guidance: clear sectioning, calibrated emphasis, outcome-first instructions, load-bearing constraints, structured-output routing, context budgeting, and tool-description quality. Works with Claude Code, OpenClaw, Codex, Grok CLI, Hermes Agent, or any LLM that accepts structured prompts.
 
@@ -33,6 +33,12 @@ RePrompter is a prompt engineering skill for AI coding agents. It takes rough, l
 | **Repromptverse** | Plan a team of 2-5 agents, reprompt each one, execute in parallel, evaluate, retry | `reprompter teams`, `repromptverse`, `smart run` |
 | **Reverse** | Show a great output, extract the prompt DNA that produced it | `reverse reprompt`, `learn from this`, `prompt dna` |
 | **Workflow preflight** | Compile a reprompted task into a runnable Claude `.workflow.js` (pure-literal `meta`, schema returns, bounded retry; ultracode adds adversarial verify + completeness critic); also Repromptverse Option H | `compile to workflow`, `workflow preflight`, `build a workflow script`, `dynamic workflow` |
+
+---
+
+## Relay delivery (post-output step)
+
+Not a sixth lane. When the [headless-relay](https://github.com/dorukardahan/headless-relay) skill is installed alongside RePrompter, the **Single** and **Reverse** lanes end with a one-time offer to deliver the finished prompt to Codex, GLM, Grok, or Gemini headlessly. RePrompter owns prompt quality; headless-relay owns CLI preflight, provider-terms compliance, and all CLI mechanics. Delivery never auto-executes, Claude is not a relay target (same-provider work uses the harness's native subagent), and Gemini prompts deliver sequentially. Without headless-relay installed, the step is invisible — no offer, no install nag. See `SKILL.md` section "Deliver via headless-relay (post-output step)".
 
 ---
 
@@ -405,6 +411,7 @@ All benchmarks at 100%: swarm routing (9/9), real-world routing (64/64), artifac
 | Multi-agent sequential | yes | yes | yes | yes | yes | yes |
 | Workflow preflight / Option H | yes³ | - | - | - | - | - |
 | Ambient gate | yes | yes | - | - | yes⁴ | - |
+| Relay delivery (headless-relay) | yes⁵ | yes⁵ | yes⁵ | - | yes⁵ | - |
 
 ¹ Claude Code `/goal` requires CLI v2.1.139+ (shipped 2026-05-11) and depends on the hooks layer. Under `disableAllHooks` or `allowManagedHooksOnly` in `settings.json`, `/goal` is unavailable on any version — v2.1.140 only upgraded the failure mode from a silent hang to a clear error message. No config flag needed beyond the version pin in environments that permit hooks; managed environments that block hooks must use Single mode for goal-shaped work.
 
@@ -419,6 +426,8 @@ Hermes parallel paths: **G1 `delegate_task` batch** for normal Repromptverse, **
 ³ Claude dynamic Workflow tool (**Option H** + the **Workflow preflight** lane): RePrompter compiles the reprompted task into a runnable `.workflow.js` (JS-scripted background fan-out — `agent()`/`parallel()`/`pipeline()` with schema-validated returns and `resumeFromRunId`). Picked at Order 4, just below Option B, because the Workflow tool has no mid-run cross-agent messaging. First-class ultracode (adversarial verify + completeness critic + budget-scaled fleets) with a `--no-ultracode` off-ramp. See `references/runtime/claude-workflow-runtime.md`. Compiler: `scripts/workflow-command.js`.
 
 ⁴ Hermes Agent installs ship no `scripts/` helpers, so the Ambient Prompt Gate needs a git clone or copied checkout that includes `scripts/prompt-gate.js`.
+
+⁵ Requires the [headless-relay](https://github.com/dorukardahan/headless-relay) skill (v1.3.1+) installed in the same session — its README documents install paths for Claude Code, Codex CLI, OpenClaw, and Hermes. When headless-relay is absent the step is completely silent. Grok CLI is a relay *target*, not a documented headless-relay host.
 
 ---
 
