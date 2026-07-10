@@ -1,3 +1,23 @@
+## v12.16.0 (2026-07-09) — Headless-relay delivery step
+
+### Added
+
+- New post-output step "Deliver via headless-relay": when the headless-relay skill (dorukardahan/headless-relay v1.3.1+) is installed, Single and Reverse lanes end with a one-time offer to deliver the finished prompt to Codex, GLM, Grok, or Gemini. Never auto-executes; Claude is not a relay target; Gemini delivers sequentially.
+- Silent-absence guarantee: without headless-relay installed, output is unchanged — no offer, no install suggestion.
+- README: Relay delivery section, Compatibility row + footnote ⁵.
+
+### Changed
+
+- Ownership boundary documented: RePrompter owns prompt quality; headless-relay owns CLI preflight, provider-terms compliance, and CLI mechanics. No relay CLI flags appear in RePrompter docs.
+- `package.json`, `package-lock.json`, generated plugin, and generated Hermes package — version `12.16.0`.
+
+### Verification
+
+- `npm run validate:templates`
+- `npm run validate:tool-refs`
+- `npm run test:plugin-package && npm run check:plugin-package`
+- `npm run test:hermes-package && npm run check:hermes-package`
+
 ## v12.15.1 (2026-07-04) — Hook stdin hardening
 
 ### Changed

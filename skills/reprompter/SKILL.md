@@ -11,14 +11,15 @@ compatibility: |
   `/goal` preflight mode works on Codex CLI (any version exposing the `goals` feature), Claude Code CLI v2.1.139+, and Hermes Agent; all three runtimes accept the same `/goal <objective>` shape. Disabled on Claude surfaces without `/goal` support, OpenClaw, and Grok CLI.
   Repromptverse mode supports Claude Code (TeamCreate or tmux → Option B/A), OpenClaw (sessions_spawn → Option C), Codex CLI (native subagents or `codex exec` → Option D), Grok CLI 4.3+ (spawn_subagent F1 or `grok -p` F2 → Option F), and Hermes Agent (delegate_task G1, shell-level G2, Kanban G3 → Option G). Sequential fallback (Option E) works with any LLM runtime.
   Workflow preflight lane + Repromptverse Option H target Claude Code's dynamic `Workflow` tool (JS-scripted background fan-out with schema-validated returns and resume); additive, detected by tool presence, with first-class ultracode.
+  A post-output delivery step hands finished Single/Reverse prompts to the headless-relay skill (targets: Codex, GLM, Grok, Gemini) when that skill is installed; when it is not installed the step is invisible.
 metadata:
   author: AytuncYildizli
-  version: 12.15.1
+  version: 12.16.0
 ---
 
-# RePrompter v12.15.1
+# RePrompter v12.16.0
 
-> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.15.1 hardens Ambient Prompt Gate hooks with internal stdin deadlines and plugin hook timeouts, with no behavior change for normal input.**
+> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.16.0 adds a deliver-via-headless-relay post-output step for Single and Reverse lanes — silent unless the headless-relay skill is installed.**
 
 ---
 
@@ -564,6 +565,11 @@ Auto-detect tech stack from current working directory ONLY:
 - Session-scoped — different directory = fresh context
 - Opt out with "no context", "generic", or "manual context"
 - Never scan parent directories or carry context between sessions
+
+### After the final prompt
+
+If the headless-relay skill is installed, apply **Deliver via headless-relay
+(post-output step)**. If it is not installed, say nothing about delivery.
 
 ---
 
@@ -1416,6 +1422,46 @@ The key borrowed insight is **dual-signal analysis**: Extraktor sends Claude bot
 | **Total** | **~650-1300** | **Lighter than Single mode** |
 
 Canonical implementation for structural analysis and classification lives in `the root repository reverse-engineering helper`. If docs and code ever diverge, the script is the source of truth.
+
+After the extracted prompt is emitted, apply **Deliver via headless-relay
+(post-output step)** — offer delivery only when that skill is installed;
+otherwise stay silent about it.
+
+---
+
+## Deliver via headless-relay (post-output step)
+
+Applies after the **Single** and **Reverse** lanes only. The other lanes own their
+execution path: `/goal` cards paste into a runtime, Workflow preflight runs via the
+Workflow tool, and Repromptverse Phase 3 owns runtime execution (Options A-H).
+
+After emitting the final prompt artifact, check whether the **headless-relay** skill
+is available in this session (it appears in the available-skills list as
+`headless-relay`).
+
+**Relay available** — offer exactly once:
+
+> Deliver this prompt to Codex / GLM / Grok / Gemini via headless-relay?
+
+On yes: invoke the headless-relay skill and hand off three things — the finished
+prompt text, the target model, and output expectations (for example "JSON only").
+headless-relay owns everything downstream: CLI preflight (installed and
+authenticated), provider-terms compliance, exact flags, and output parsing. Report
+the relayed model's answer back following that skill's own instructions. On no, or
+no answer: stop after the prompt artifact, exactly as if this step did not exist.
+
+**Relay absent** — stay completely silent. Do not offer delivery, do not suggest
+installing headless-relay, do not name the skill. Output must be identical to a
+session where this section does not apply.
+
+Hard rules:
+
+- Never auto-execute. Delivery always requires the user's explicit yes.
+- Claude is not a delivery target. Same-provider delegation uses the harness's
+  native subagent (headless-relay Check 1). Offer only Codex / GLM / Grok / Gemini.
+- Deliver Gemini prompts sequentially, one at a time. This is the only relay
+  mechanic repeated here; every other CLI detail defers to the headless-relay
+  skill so the two never drift.
 
 ---
 

@@ -14,12 +14,12 @@ compatibility: |
   A post-output delivery step hands finished Single/Reverse prompts to the headless-relay skill (targets: Codex, GLM, Grok, Gemini) when that skill is installed; when it is not installed the step is invisible.
 metadata:
   author: AytuncYildizli
-  version: 12.15.1
+  version: 12.16.0
 ---
 
-# RePrompter v12.15.1
+# RePrompter v12.16.0
 
-> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.15.1 hardens Ambient Prompt Gate hooks with internal stdin deadlines and plugin hook timeouts, with no behavior change for normal input.**
+> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.16.0 adds a deliver-via-headless-relay post-output step for Single and Reverse lanes — silent unless the headless-relay skill is installed.**
 
 ---
 
