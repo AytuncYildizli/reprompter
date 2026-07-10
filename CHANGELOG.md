@@ -1,3 +1,22 @@
+## v12.17.0 (2026-07-10) — Availability-gated relay delivery with orchestrator review
+
+### Added
+
+- Availability preflight before the delivery offer: only relay targets whose CLI is installed AND authenticated are offered — headless-relay's built-in lanes plus user-connected custom targets (local models included). Zero available targets → the step stays silent.
+- Structured offer: on harnesses with a structured-question tool (e.g. AskUserQuestion), the offer renders as one question whose options are the available targets plus a decline option — the target choice is the offer; a bare yes/no is never shown. Plain-text single-line fallback elsewhere.
+- Orchestrator review by default: after delivery, the orchestrating agent scores the relayed answer against the prompt's own `<success_criteria>` (per-criterion pass/fail, gaps, accept/retry recommendation) and reports output plus verdict. "verbatim" / "no review" skips it.
+
+### Changed
+
+- Delivery targets are no longer a hardcoded four-model list; the offer reflects whatever headless-relay's availability preflight marks available (discovered once per session, cached; cannot-verify counts as unavailable). The orchestrator's own provider is still never offered (native subagent instead).
+- `package.json`, `package-lock.json`, generated plugin, and generated Hermes package — version `12.17.0`.
+
+### Verification
+
+- `npm run validate:templates && npm run validate:tool-refs`
+- `npm run test:plugin-package && npm run check:plugin-package`
+- `npm run test:hermes-package && npm run check:hermes-package && npm run check:hermes-guard`
+
 ## v12.16.0 (2026-07-09) — Headless-relay delivery step
 
 ### Added

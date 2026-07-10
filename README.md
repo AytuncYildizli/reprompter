@@ -8,12 +8,12 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-12.16.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-12.17.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-344%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 
-> **What's new (v12.8–v12.16):** ambient prompt gate, one-command plugin install, headless-relay delivery step, fleet learning — [digest](https://github.com/AytuncYildizli/reprompter/issues/74)
+> **What's new (v12.8–v12.17):** ambient prompt gate, one-command plugin install, availability-gated relay delivery with orchestrator review, fleet learning — [digest](https://github.com/AytuncYildizli/reprompter/issues/74)
 
 RePrompter is a prompt engineering skill for AI coding agents. It takes rough, low-quality prompts and transforms them into structured, high-scoring prompts that produce dramatically better results. Templates are aligned with 2026 vendor guidance: clear sectioning, calibrated emphasis, outcome-first instructions, load-bearing constraints, structured-output routing, context budgeting, and tool-description quality. Works with Claude Code, OpenClaw, Codex, Grok CLI, Hermes Agent, or any LLM that accepts structured prompts.
 
@@ -38,7 +38,7 @@ RePrompter is a prompt engineering skill for AI coding agents. It takes rough, l
 
 ## Relay delivery (post-output step)
 
-Not a sixth lane. When the [headless-relay](https://github.com/dorukardahan/headless-relay) skill is installed alongside RePrompter, the **Single** and **Reverse** lanes end with a one-time offer to deliver the finished prompt to Codex, GLM, Grok, or Gemini headlessly. RePrompter owns prompt quality; headless-relay owns CLI preflight, provider-terms compliance, and all CLI mechanics. Delivery never auto-executes, Claude is not a relay target (same-provider work uses the harness's native subagent), and Gemini prompts deliver sequentially. Without headless-relay installed, the step is invisible — no offer, no install nag. See `SKILL.md` section "Deliver via headless-relay (post-output step)".
+Not a sixth lane. When the [headless-relay](https://github.com/dorukardahan/headless-relay) skill is installed alongside RePrompter, the **Single** and **Reverse** lanes end with a one-time structured offer to deliver the finished prompt to another model headlessly. The offer lists only targets that are actually available — headless-relay's built-in lanes plus any user-connected custom targets, local models included — and never the orchestrator's own provider (same-provider work uses the harness's native subagent). The orchestrating agent stays in the loop: by default it reviews the relayed answer against the prompt's own `<success_criteria>` and reports output plus verdict (say "verbatim" or "no review" to skip). RePrompter owns prompt quality; headless-relay owns CLI preflight, provider-terms compliance, and all CLI mechanics. Delivery never auto-executes, and Gemini prompts deliver sequentially. Without headless-relay installed — or with no target available — the step is invisible: no offer, no install nag. See `SKILL.md` section "Deliver via headless-relay (post-output step)".
 
 ---
 
@@ -427,7 +427,7 @@ Hermes parallel paths: **G1 `delegate_task` batch** for normal Repromptverse, **
 
 ⁴ Hermes Agent installs ship no `scripts/` helpers, so the Ambient Prompt Gate needs a git clone or copied checkout that includes `scripts/prompt-gate.js`.
 
-⁵ Requires the [headless-relay](https://github.com/dorukardahan/headless-relay) skill (v1.3.1+) installed in the same session — its README documents install paths for Claude Code, Codex CLI, OpenClaw, and Hermes. When headless-relay is absent the step is completely silent. Grok CLI is a relay *target*, not a documented headless-relay host.
+⁵ Requires the [headless-relay](https://github.com/dorukardahan/headless-relay) skill (v1.3.1+) installed in the same session — its README documents install paths for Claude Code, Codex CLI, OpenClaw, and Hermes. The offer is availability-gated: only targets whose CLI is installed and authenticated are listed (built-in lanes plus user-connected custom/local targets), and when none are available — or the relay skill is absent — the step is completely silent. Grok CLI is a relay *target*, not a documented headless-relay host.
 
 ---
 
