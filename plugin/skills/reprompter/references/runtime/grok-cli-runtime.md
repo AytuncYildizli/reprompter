@@ -34,6 +34,13 @@ separate from the sandbox/permission model. Note for F1: by the time Option F is
 auto-selected the Grok session is already running in the repo, so the upload may have happened at
 session start — the only real mitigation there is to not run Grok in the repo in the first place.
 
+**Second exposure (beyond the whole-repo bundle).** Even setting the bundle aside, Repromptverse
+workers are agentic: they read, write, and run commands in the repo to do the task, and everything
+they touch goes to xAI as model context. Unlike a pure prompt relay you cannot sandbox this away
+(`--sandbox strict` / tool-deny would stop the workers from doing their job). So for private or
+sensitive code the answer is not a sandbox tweak — it is to route the run to another runtime
+(Option B / C / D) or use a non-git copy of only the files the task needs, as above.
+
 > The `Deliver via headless-relay` post-output step is unaffected: it delegates to the
 > headless-relay skill, which (v2.0.0+) runs Grok in an isolated non-git directory (fail-closed).
 > Only the Repromptverse **execution** path (Option F, this file) runs Grok inside the repo.

@@ -117,8 +117,8 @@
     },
     {
       "path": "references/runtime/grok-cli-runtime.md",
-      "source_sha256": "aa126b6ce6939cde816b45caaf643863996919e6f0c929049797872d26e7d426",
-      "generated_sha256": "5eebe227e3c9d4d96852dca44f6a52bcb8c29c91523ada431fe8ea4bb464deb3"
+      "source_sha256": "678f54ddd53189fb76f26557b81064b4ba10802603a7f3d43be0cb131d164b38",
+      "generated_sha256": "d3702e35118d048f3b413ab7e296a664b6b43b2be4be12c3b77c2b71b675e5a6"
     },
     {
       "path": "references/runtime/claude-workflow-runtime.md",
