@@ -1976,6 +1976,8 @@ Hermes users can install this skill by copying the directory to `~/.hermes/skill
 
 When the current toolset includes `spawn_subagent` together with at least two of `run_command`, `todo_write`, `ask_user_question`, you are executing under Grok CLI (xAI Grok 4.3+). A normal Grok session will usually also expose `read_file`, `search_replace`, and `write`.
 
+**⚠️ Data egress — read before Repromptverse Option F on Grok.** Running Repromptverse on Grok CLI (Option F, below) executes `grok` in your project directory, which uploads the **whole tracked repo + git history** to xAI (confirmed incident; not stopped by `--sandbox`/`--yolo`). Before launching Option F while inside a git repo, warn the user once and get consent, or route the run to another runtime. Details and the required warning are in the "Data egress" section of `references/runtime/grok-cli-runtime.md`; full write-up at https://github.com/dorukardahan/headless-relay/blob/main/SECURITY.md. (The separate `Deliver via headless-relay` post-output step is unaffected — it isolates Grok fail-closed on headless-relay v2.0.0+.)
+
 In this environment:
 
 - Single mode, Smart Interview, Dimension Interview, pattern library usage, prompt generation (Phases 1–2), quality scoring, evaluation loop, flywheel, Reverse Reprompter, and all template logic remain 100% identical to other runtimes. No change in behavior or output format.

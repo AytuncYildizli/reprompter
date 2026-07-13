@@ -10,15 +10,15 @@
   },
   "source": {
     "root_skill": "SKILL.md",
-    "root_skill_sha256": "bc1f9c7f5835a622edee9b07cf5ec92b6382bcef6c60385a1e8e83a0d4ffcbf7",
+    "root_skill_sha256": "728696c33439e4f2699a76c1fb1035341cc7700d8b6b821ee7c8d9b829973908",
     "sanitizer": "scripts/hermes-sanitizer.json",
     "sanitizer_sha256": "836f2e674e16b99416eddb7f8d7d081d3250ec5b2c7392c0a5ec6befa057f919"
   },
   "files": [
     {
       "path": "SKILL.md",
-      "source_sha256": "bc1f9c7f5835a622edee9b07cf5ec92b6382bcef6c60385a1e8e83a0d4ffcbf7",
-      "generated_sha256": "2d21efff90b565dfcc61445112c483cd433ea600a75c36acccbe5f659887db31"
+      "source_sha256": "728696c33439e4f2699a76c1fb1035341cc7700d8b6b821ee7c8d9b829973908",
+      "generated_sha256": "1019a69a2b836dd4fa7d5e950db3db15cf9ef3579f6408ec1d0974afb65ca508"
     },
     {
       "path": "references/api-template.md",
@@ -117,8 +117,8 @@
     },
     {
       "path": "references/runtime/grok-cli-runtime.md",
-      "source_sha256": "cb43e0ff84ea151d561c79de84dc50f529430f4106ab9caccc1a954ca4e782ad",
-      "generated_sha256": "3de9e3c2246318b488bcdf9c1b314796a57ebb595cfd8d1a30eb8dff6d0a20a2"
+      "source_sha256": "7f8041f7226e5e69ec30a851d55675ba45f54a1010de3745801f7be2ac3de821",
+      "generated_sha256": "bdeb28e2bd451d514c33fcc8bba6fadac57dde26ab4841125125c5c5694f4962"
     },
     {
       "path": "references/runtime/claude-workflow-runtime.md",

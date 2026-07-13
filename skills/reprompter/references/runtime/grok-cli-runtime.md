@@ -6,6 +6,35 @@ Canonical reference for running Repromptverse on Grok CLI (xAI). Used by Phase 3
 
 ---
 
+## ⚠️ Data egress: Grok CLI uploads your whole repo
+
+**Read before running Repromptverse on Grok CLI.** Options F1 (`spawn_subagent`) and F2
+(shell-level `grok -p`) run the Grok Build CLI **in the caller's project directory**. When `grok`
+runs inside a git repository it packages the **entire tracked repo — full commit history and all
+tracked files, including a tracked `.env` — into a git bundle and uploads it** to xAI-controlled
+Google Cloud Storage (bucket `grok-code-session-traces`, `POST /v1/storage`), independent of which
+files the workers actually read. Confirmed by xAI's own Grok account on X and by independent
+mitmproxy wire capture; **not** stopped by `--sandbox`, `--yolo`, a read-only profile, or
+`--disable-web-search` (those govern tool permissions, not the separate repo-bundle upload). Full
+write-up, primary sources, and hardening:
+https://github.com/dorukardahan/headless-relay/blob/main/SECURITY.md
+
+**Required: warn once before Option F on a repo.** Before launching F1 or F2 while the working
+directory is inside a git repository, tell the user — once per session — that running Repromptverse
+on Grok CLI uploads this repository (full history) to xAI, and ask whether to proceed on Grok or
+route the run to another runtime. Proceed only on explicit consent. For private or sensitive code,
+prefer a different Repromptverse runtime (Option B / C / D on Claude / OpenClaw / Codex) or run Grok
+from an isolated throwaway checkout containing only the files the task needs. This is a data-egress
+concern, separate from the sandbox/permission model. Note for F1: by the time Option F is
+auto-selected the Grok session is already running in the repo, so the upload may have happened at
+session start — the only real mitigation there is to not run Grok in the repo in the first place.
+
+> The `Deliver via headless-relay` post-output step is unaffected: it delegates to the
+> headless-relay skill, which (v2.0.0+) runs Grok in an isolated non-git directory (fail-closed).
+> Only the Repromptverse **execution** path (Option F, this file) runs Grok inside the repo.
+
+---
+
 ## `/goal` preflight with RePrompter
 
 **Not supported on Grok CLI.**
@@ -118,6 +147,9 @@ Re-spawn only the failing agent with a delta prompt (Phase 4 of Repromptverse). 
 ## F2: Shell-level `grok -p` (external orchestration)
 
 ### Invocation (recommended pattern)
+
+> Reminder: this runs `grok` inside your repo, which uploads the whole repo + git history to xAI
+> (see "Data egress" above). Warn the user once and get consent before running it on a real repo.
 
 ```bash
 TASKNAME="audit-2026-05"
