@@ -1496,6 +1496,11 @@ Hard rules:
 - The available-target list is headless-relay's answer, not this skill's:
   user-connected custom/local targets it reports are offered exactly like
   built-in lanes, and no availability check is ever reimplemented here.
+- **Grok delivery target requires headless-relay v2.0.0+.** headless-relay only isolates Grok
+  fail-closed (non-git working dir) from v2.0.0 onward; this repo's documented relay minimum is
+  v1.3.1+, which is fine for the other targets. So if you cannot confirm the installed relay is
+  v2.0.0+ (e.g. its SKILL.md `metadata.version`), do NOT offer Grok as a delivery target — an
+  older relay would run Grok in the caller's repo and upload it. The other targets are unaffected.
 - Deliver Gemini prompts sequentially, one at a time. This is the only relay
   mechanic repeated here; every other CLI detail defers to the headless-relay
   skill so the two never drift.
@@ -1978,7 +1983,7 @@ Hermes users can install this skill by copying the directory to `Hermes skills d
 
 When the current toolset includes `spawn_subagent` together with at least two of `run_command`, `todo_write`, `ask_user_question`, you are executing under Grok CLI (xAI Grok 4.3+). A normal Grok session will usually also expose `read_file`, `search_replace`, and `write`.
 
-**⚠️ Data egress — read before Repromptverse Option F on Grok.** Running Repromptverse on Grok CLI (Option F, below) executes `grok` in your project directory, which uploads the **whole tracked repo + git history** to xAI (confirmed incident; not stopped by `--sandbox`/`--yolo`). Before launching Option F while inside a git repo, warn the user once and get consent, or route the run to another runtime. Details and the required warning are in the "Data egress" section of `references/runtime/grok-cli-runtime.md`; full write-up at https://github.com/dorukardahan/headless-relay/blob/main/SECURITY.md. (The separate `Deliver via headless-relay` post-output step is unaffected — it isolates Grok fail-closed on headless-relay v2.0.0+.)
+**⚠️ Data egress — read before Repromptverse Option F on Grok.** Running Repromptverse on Grok CLI (Option F, below) executes `grok` in your project directory, which uploads the **whole tracked repo + git history** to xAI (confirmed incident; not stopped by `--sandbox`/`--yolo`). Before launching Option F while inside a git repo, warn the user once and get consent, or route the run to another runtime. Details and the required warning are in the "Data egress" section of `references/runtime/grok-cli-runtime.md`; full write-up at https://github.com/dorukardahan/headless-relay/blob/main/SECURITY.md. (The separate `Deliver via headless-relay` post-output step delegates to the headless-relay skill; the Grok isolation it relies on exists **only in headless-relay v2.0.0+**. This repo's documented relay minimum is v1.3.1+, fine for the other targets — but for the **Grok** delivery target specifically, an older relay would run Grok in your repo unprotected. If you cannot confirm headless-relay v2.0.0+, do not deliver to Grok. See the delivery hard-rules below.)
 
 In this environment:
 
