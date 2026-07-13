@@ -24,7 +24,9 @@ directory is inside a git repository, tell the user — once per session — tha
 on Grok CLI uploads this repository (full history) to xAI, and ask whether to proceed on Grok or
 route the run to another runtime. Proceed only on explicit consent. For private or sensitive code,
 prefer a different Repromptverse runtime (Option B / C / D on Claude / OpenClaw / Codex) or run Grok
-from an isolated throwaway checkout containing only the files the task needs. This is a data-egress
+against a **non-git copy** of just the needed files — a plain directory with `.git` removed. A
+`git clone`, worktree, or shallow checkout is **still a git repository**, so Grok still bundles its
+tracked files and history; only a copy with no `.git` avoids the upload. This is a data-egress
 concern, separate from the sandbox/permission model. Note for F1: by the time Option F is
 auto-selected the Grok session is already running in the repo, so the upload may have happened at
 session start — the only real mitigation there is to not run Grok in the repo in the first place.

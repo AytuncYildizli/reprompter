@@ -816,7 +816,7 @@ Raw prompt scored {raw}/10. After reprompting, each agent prompt scores {min}-{m
 
 ### Phase 3: Execute
 
-Phase 3 has platform-specific execution methods. The reprompted prompts from Phase 2 work with any method — you just need to pick which one to run. In most runs you should not ask the user; auto-pick below and announce the decision so they can redirect if they want.
+Phase 3 has platform-specific execution methods. The reprompted prompts from Phase 2 work with any method — you just need to pick which one to run. In most runs you should not ask the user; auto-pick below and announce the decision so they can redirect if they want. (One exception: **Grok Option F inside a git repo** — get the user's explicit consent first, per the data-egress consent gate under the table below.)
 
 **Status Line (all platforms):** During polling, show compact agent status with each cycle. See Agent Cards section for format.
 
@@ -839,7 +839,7 @@ After picking, announce the selected option in one short line before starting Ph
 
 > Auto-picked **Option {letter}** ({runtime}) — {short detection reason}. Override by saying "use Option B", "use Option H (Workflow)", "use Option A (tmux)", "use Option D", "use Option G (Hermes)", or "use Option E" (sequential).
 
-**⚠️ Grok Option F — data-egress consent gate (overrides the "don't ask" default above).** Option F runs `grok` (F1 `spawn_subagent` / F2 `grok -p`) in the caller's working directory. When that directory is inside a git repository, Grok Build packages the **entire tracked repo + full git history** and uploads it to xAI (confirmed incident; not stopped by `--sandbox`, `--yolo`, or a read-only profile). So for Option F **only**, the "in most runs you should not ask the user" default does NOT apply: before launching F1 or F2 inside a git repo, warn the user once, get explicit consent, and offer to route the run to another runtime (or an isolated throwaway checkout containing only the files the task needs). Full detail and the required warning: the "Data egress" section of `references/runtime/grok-cli-runtime.md`.
+**⚠️ Grok Option F — data-egress consent gate (overrides the "don't ask" default above).** Option F runs `grok` (F1 `spawn_subagent` / F2 `grok -p`) in the caller's working directory. When that directory is inside a git repository, Grok Build packages the **entire tracked repo + full git history** and uploads it to xAI (confirmed incident; not stopped by `--sandbox`, `--yolo`, or a read-only profile). So for Option F **only**, the "in most runs you should not ask the user" default does NOT apply: before launching F1 or F2 inside a git repo, warn the user once, get explicit consent, and offer to route the run to another runtime (or a **non-git copy** of just the needed files — a plain directory with `.git` removed; a `git clone`/worktree is still a repository and still gets bundled). Full detail and the required warning: the "Data egress" section of `references/runtime/grok-cli-runtime.md`.
 
 Why F is first for Grok: when an unambiguous Grok signature is detected (`spawn_subagent` + at least two of the supporting tools), Repromptverse must use Grok-native execution (Option F) to honour the "full Grok runtime support" claim. This check is intentionally strict to prevent false positives on other runtimes. Option B (Claude native teams with cross-agent `SendMessage`) is preferred on Claude Code surfaces because it offers richer inter-agent messaging than Grok subagents currently provide. The rest of the priority order is unchanged.
 
