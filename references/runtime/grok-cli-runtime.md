@@ -42,7 +42,9 @@ sensitive code the answer is not a sandbox tweak — it is to route the run to a
 (Option B / C / D) or use a non-git copy of only the files the task needs, as above.
 
 > The `Deliver via headless-relay` post-output step is unaffected: it delegates to the
-> headless-relay skill, which (v2.0.0+) runs Grok in an isolated non-git directory (fail-closed).
+> headless-relay skill, which (v2.0.0+) runs Grok in an isolated non-git directory (fail-closed);
+> v2.0.3+ additionally uses a clean `GROK_HOME` and denies tools, so your global `~/.grok` rules
+> and machine files do not leak into that delivery turn either.
 > Only the Repromptverse **execution** path (Option F, this file) runs Grok inside the repo.
 
 ---
