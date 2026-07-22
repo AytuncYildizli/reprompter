@@ -10,7 +10,12 @@ Canonical reference for running Repromptverse on Grok CLI (xAI). Used by Phase 3
 
 **Read before running Repromptverse on Grok CLI.** Options F1 (`spawn_subagent`) and F2
 (shell-level `grok -p`) run the Grok Build CLI **in the caller's project directory**. There are two
-distinct exposures; the consent gate below covers both.
+distinct exposures (below). The consent gate governs the decision to run Grok here, but it **cannot
+undo egress that already happened**: it fires at Phase 3 auto-pick. For **F2** (`grok -p`) that is
+before the process launches, so consent is effective. For **F1** (`spawn_subagent`) the Grok session
+is already live in the repo by the time Option F is picked, so any session-start upload precedes
+consent — the only reliable protection for F1 is not to run Grok in a repo with private or sensitive
+code in the first place (see the F1 note below).
 
 **1. Historical whole-repo bundle — now off, but the reason the gate still exists.** Earlier shipped
 Grok Build versions, run inside a git repository, packaged the **entire tracked repo — full commit
