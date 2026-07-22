@@ -816,7 +816,7 @@ Raw prompt scored {raw}/10. After reprompting, each agent prompt scores {min}-{m
 
 ### Phase 3: Execute
 
-Phase 3 has platform-specific execution methods. The reprompted prompts from Phase 2 work with any method — you just need to pick which one to run. In most runs you should not ask the user; auto-pick below and announce the decision so they can redirect if they want.
+Phase 3 has platform-specific execution methods. The reprompted prompts from Phase 2 work with any method — you just need to pick which one to run. In most runs you should not ask the user; auto-pick below and announce the decision so they can redirect if they want. (One exception: **Grok Option F inside a git repo** — get the user's explicit consent first, per the data-egress consent gate under the table below.)
 
 **Status Line (all platforms):** During polling, show compact agent status with each cycle. See Agent Cards section for format.
 
@@ -826,7 +826,7 @@ If the user explicitly named an option in their request (e.g. "use tmux", "run i
 
 | Order | Capability check | If true, use |
 |-------|-----------------|--------------|
-| 1 | `spawn_subagent` is present **and** at least two of `run_command`, `todo_write`, `ask_user_question` are in the current toolset (unambiguous Grok 4.3+ signature). | **Option F** — Grok CLI native parallel (F1: `spawn_subagent` with `fork_context=true`, `persona`, `capability_mode`; F2: shell-level `grok -p "..." --yolo --sandbox workspace &` then `wait`). Full contract and gotchas in `references/runtime/grok-cli-runtime.md`. |
+| 1 | `spawn_subagent` is present **and** at least two of `run_command`, `todo_write`, `ask_user_question` are in the current toolset (unambiguous Grok 4.3+ signature). | **Option F** — Grok CLI native parallel (F1: `spawn_subagent` with `fork_context=true`, `persona`, `capability_mode`; F2: shell-level `grok -p "..." --yolo --sandbox workspace &` then `wait`). **⚠️ In a git repo, get the user's explicit consent BEFORE launching Option F — data-egress gate right after this table.** Full contract and gotchas in `references/runtime/grok-cli-runtime.md`. |
 | 2 | `delegate_task` is present **and** at least two of `terminal`, `process`, `read_file`, `write_file`, `patch`, `search_files`, `todo`, `skills_list`, or `skill_view` are in the current toolset (Hermes Agent signature). | **Option G** — Hermes Agent native parallel (G1: `delegate_task` batch; G2: shell-level `hermes -z` / `hermes chat -q` then `wait`; G3: Kanban only for durable workflows). Full contract and gotchas in `references/runtime/hermes-agent-runtime.md`. |
 | 3 | **All four** of `TeamCreate`, `Agent`, `SendMessage`, and `TeamDelete` are listed in your current toolset. (Gating on `TeamCreate` alone is not enough — Option B's spawn/shutdown path needs the whole set; without it the run fails mid-execution rather than falling through to another option.) | **Option B** — native Claude Code teams; teammates can message each other; no tmux init or send-keys timing risk |
 | 4 | A tool named `Workflow` is present in the current toolset (Claude dynamic Workflow runtime) — JS-scripted background orchestration with `agent()`/`parallel()`/`pipeline()` and schema-validated returns. Sits **below** Option B because the Workflow tool has **no** mid-run cross-agent messaging. | **Option H** — Claude dynamic Workflow tool; deterministic background fan-out via `pipeline`/`parallel` with schema-return handoffs and resumable runs; no mid-run cross-agent messaging. Full contract in `references/runtime/claude-workflow-runtime.md`. |
@@ -838,6 +838,8 @@ If the user explicitly named an option in their request (e.g. "use tmux", "run i
 After picking, announce the selected option in one short line before starting Phase 3 work, so the user can redirect. Use this shape with the actual option and runtime you selected:
 
 > Auto-picked **Option {letter}** ({runtime}) — {short detection reason}. Override by saying "use Option B", "use Option H (Workflow)", "use Option A (tmux)", "use Option D", "use Option G (Hermes)", or "use Option E" (sequential).
+
+**⚠️ Grok Option F — data-egress consent gate (overrides the "don't ask" default above).** Option F runs `grok` (F1 `spawn_subagent` / F2 `grok -p`) in the caller's working directory, handing the repo's contents to xAI as model context. Earlier Grok Build versions additionally bundled the **entire tracked repo + full git history** and uploaded it (confirmed incident; not stopped by `--sandbox`, `--yolo`, or a read-only profile); xAI turned that off server-side on 2026-07-13 and the path is gone from the 2026-07-15 open-sourced code, but the off-state is a reversible server flag and the shipped binary is unverifiable. So for Option F **only**, the "in most runs you should not ask the user" default does NOT apply: before launching F1 or F2 inside a git repo, warn the user once, get explicit consent, and offer to route the run to another runtime (or a **non-git copy** of just the needed files created **outside any git repo** — e.g. a fresh dir under `/tmp`, verified with `git rev-parse --is-inside-work-tree` returning non-zero; note that a `.git`-removed subdirectory of the project is still inside the parent work tree, and a clone/worktree is still a repo). Full detail and the required warning: the "Data egress" section of `references/runtime/grok-cli-runtime.md`.
 
 Why F is first for Grok: when an unambiguous Grok signature is detected (`spawn_subagent` + at least two of the supporting tools), Repromptverse must use Grok-native execution (Option F) to honour the "full Grok runtime support" claim. This check is intentionally strict to prevent false positives on other runtimes. Option B (Claude native teams with cross-agent `SendMessage`) is preferred on Claude Code surfaces because it offers richer inter-agent messaging than Grok subagents currently provide. The rest of the priority order is unchanged.
 
@@ -1494,6 +1496,14 @@ Hard rules:
 - The available-target list is headless-relay's answer, not this skill's:
   user-connected custom/local targets it reports are offered exactly like
   built-in lanes, and no availability check is ever reimplemented here.
+- **Grok delivery target requires headless-relay v2.0.0+.** headless-relay only isolates Grok
+  fail-closed (non-git working dir) from v2.0.0 onward (**v3.0.0 recommended: it also runs Grok
+  under a hermetic `env -i` with a clean `HOME`/temp `GROK_HOME` and its cross-tool config scan
+  off, so your global `~/.grok` rules do not leak into the model turn**); this repo's documented
+  relay minimum is v1.3.1+, which is fine for the other targets. So if you cannot confirm the
+  installed relay is v2.0.0+ (e.g. its SKILL.md `metadata.version`), do NOT offer Grok as a
+  delivery target — an older or unprotected relay would run Grok in the caller's repo. The other
+  targets are unaffected.
 - Deliver Gemini prompts sequentially, one at a time. This is the only relay
   mechanic repeated here; every other CLI detail defers to the headless-relay
   skill so the two never drift.
@@ -1975,6 +1985,8 @@ Hermes users can install this skill by copying the directory to `Hermes skills d
 ## Grok CLI Support (Additive Section — Zero Impact on Claude, Codex, OpenClaw, Hermes)
 
 When the current toolset includes `spawn_subagent` together with at least two of `run_command`, `todo_write`, `ask_user_question`, you are executing under Grok CLI (xAI Grok 4.3+). A normal Grok session will usually also expose `read_file`, `search_replace`, and `write`.
+
+**⚠️ Data egress — read before Repromptverse Option F on Grok.** Running Repromptverse on Grok CLI (Option F, below) executes `grok` in your project directory, handing its contents to xAI as model context (and, on an older or unverified binary, potentially bundling the **whole tracked repo + git history** — a confirmed earlier incident, turned off server-side 2026-07-13 and gone from the 2026-07-15 open-sourced code, but reversible and unverifiable; not stopped by `--sandbox`/`--yolo`). Before launching Option F while inside a git repo, warn the user once and get consent, or route the run to another runtime. Details and the required warning are in the "Data egress" section of `references/runtime/grok-cli-runtime.md`; full write-up at https://github.com/dorukardahan/headless-relay/blob/main/SECURITY.md. (The separate `Deliver via headless-relay` post-output step delegates to the headless-relay skill; the Grok isolation it relies on exists **only in headless-relay v2.0.0+** (v3.0.0 additionally runs Grok under a hermetic `env -i` with a clean `HOME`/temp `GROK_HOME` and cross-tool config scan off, so your global `~/.grok` rules do not leak into the delivery turn). This repo's documented relay minimum is v1.3.1+, fine for the other targets — but for the **Grok** delivery target specifically, an older relay would run Grok in your repo unprotected. If you cannot confirm headless-relay v2.0.0+, do not deliver to Grok. See the delivery hard-rules below.)
 
 In this environment:
 

@@ -6,6 +6,61 @@ Canonical reference for running Repromptverse on Grok CLI (xAI). Used by Phase 3
 
 ---
 
+## ⚠️ Data egress: running Grok CLI inside your repo
+
+**Read before running Repromptverse on Grok CLI.** Options F1 (`spawn_subagent`) and F2
+(shell-level `grok -p`) run the Grok Build CLI **in the caller's project directory**. There are two
+distinct exposures (below). The consent gate governs the decision to run Grok here, but it **cannot
+undo egress that already happened**: it fires at Phase 3 auto-pick. For **F2** (`grok -p`) that is
+before the process launches, so consent is effective. For **F1** (`spawn_subagent`) the Grok session
+is already live in the repo by the time Option F is picked, so any session-start upload precedes
+consent — the only reliable protection for F1 is not to run Grok in a repo with private or sensitive
+code in the first place (see the F1 note below).
+
+**1. Historical whole-repo bundle — now off, but the reason the gate still exists.** Earlier shipped
+Grok Build versions, run inside a git repository, packaged the **entire tracked repo — full commit
+history and all tracked files, including a tracked `.env` — into a git bundle and uploaded it** to
+xAI-controlled Google Cloud Storage (bucket `grok-code-session-traces`, `POST /v1/storage`),
+independent of which files the workers read. Confirmed by xAI's own Grok account on X and by
+independent mitmproxy wire capture; it was **not** stopped by `--sandbox`, `--yolo`, a read-only
+profile, or `--disable-web-search`. xAI turned it off server-side on 2026-07-13 and, on 2026-07-15,
+open-sourced Grok Build (Apache-2.0); a source audit of the released code found the whole-repo bundle
+path **gone from source**. Two caveats keep this from being "fully resolved": the off-state is a
+reversible server flag xAI can flip back without notice, and the shipped binary cannot be verified
+against the open-sourced code (no reproducible build). Treat the bundle as *currently off but not
+guaranteed*.
+
+**2. Normal agentic model I/O — always true, today included.** Independent of the bundle,
+Repromptverse workers are agentic: they read, write, and run commands in the repo to do the task, and
+everything they touch goes to xAI as model context. This is inherent to running a cloud model in your
+repo and cannot be sandboxed away (`--sandbox strict` / tool-deny would stop the workers from doing
+their job). It applies on every Grok run regardless of the bundle's state. Full write-up, primary
+sources, and hardening: https://github.com/dorukardahan/headless-relay/blob/main/SECURITY.md
+
+**Required: warn once before Option F on a repo.** Before launching F1 or F2 while the working
+directory is inside a git repository, tell the user — once per session — that running Repromptverse
+on Grok CLI hands this repository's contents to xAI (and, on an older or unverified binary, could
+still bundle the whole repo + full history), and ask whether to proceed on Grok or route the run to
+another runtime. Proceed only on explicit consent. For private or sensitive code, prefer a different
+Repromptverse runtime (Option B / C / D on Claude / OpenClaw / Codex) or run Grok against a **non-git
+copy** of just the needed files, created **outside any git repository**. Removing a local `.git` is
+not enough if the copy is a subdirectory of the project: Git discovers the parent repo by walking up,
+so the working directory is still "inside a git repository". A `git clone`, worktree, or shallow
+checkout is likewise still a repository. Put the copy somewhere with no git ancestor (e.g. a fresh dir
+under `/tmp`) and verify before running Grok that `git -C <dir> rev-parse --is-inside-work-tree`
+returns non-zero. Note for F1: by the time Option F is auto-selected the Grok session is already
+running in the repo, so any session-start upload may have already happened — the only real mitigation
+there is to not run Grok in the repo in the first place.
+
+> The `Deliver via headless-relay` post-output step is unaffected: it delegates to the
+> headless-relay skill, which (v2.0.0+) runs Grok in an isolated non-git directory (fail-closed);
+> v3.0.0 additionally runs Grok under a hermetic `env -i` with a clean `HOME` and temp `GROK_HOME`
+> and its cross-tool config scan disabled, so your global `~/.grok` rules and machine files do not
+> leak into that delivery turn either.
+> Only the Repromptverse **execution** path (Option F, this file) runs Grok inside the repo.
+
+---
+
 ## `/goal` preflight with RePrompter
 
 **Not supported on Grok CLI.**
@@ -118,6 +173,10 @@ Re-spawn only the failing agent with a delta prompt (Phase 4 of Repromptverse). 
 ## F2: Shell-level `grok -p` (external orchestration)
 
 ### Invocation (recommended pattern)
+
+> Reminder: this runs `grok` inside your repo, so its contents go to xAI as model context (and, on an
+> older or unverified binary, the whole repo + git history could still be bundled — see "Data egress"
+> above). Warn the user once and get consent before running it on a real repo.
 
 ```bash
 TASKNAME="audit-2026-05"
