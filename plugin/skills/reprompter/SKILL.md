@@ -2,7 +2,7 @@
 name: reprompter
 description: |
   Transform rough prompts into structured, high-scoring prompts for coding agents.
-  Use when: "reprompt", "clean up this prompt", "before /goal", "Codex /goal", "Claude Code /goal", "Hermes /goal", "repromptverse", "reprompter teams", "smart run", "engineering/ops/research/marketing swarm", "compile to workflow", "workflow preflight", "dynamic workflow", multi-agent tasks, audits, parallel work, "reverse reprompt", "prompt dna", "extract prompt from".
+  Use when: "reprompt", "clean up this prompt", "before /goal", "Codex /goal", "Claude Code /goal", "Hermes /goal", "repromptverse", "reprompter teams", "smart run", "engineering/ops/research/marketing swarm", "compile to workflow", "workflow preflight", "dynamic workflow", multi-agent tasks, audits, parallel work, "reverse reprompt", "prompt dna", "extract prompt from", "one-shot this", "tek prompt", "vibe a game".
   Don't use for simple Q&A, casual chat, or execution-only tasks.
   Outputs: structured XML/Markdown prompt + before/after score; /goal command card (Codex/Claude Code/Hermes); optional team brief + per-agent prompts + Agent Cards; Reverse Extraction Card; Workflow Command Card + runnable .workflow.js (Workflow preflight lane / Option H).
   Target score: Single and Goal preflight >= 7/10; Repromptverse per-agent >= 8/10; Reverse >= 7/10.
@@ -14,20 +14,21 @@ compatibility: |
   A post-output delivery step can — offered once as a structured choice (plain-text fallback) over the relay targets headless-relay's preflight marks available (built-in lanes plus user-connected custom/local targets), never auto-executed — hand a finished Single/Reverse prompt to the headless-relay skill; the orchestrator reviews the relayed answer against the prompt's success criteria by default. When the relay skill is not installed, no target is available, or availability cannot be verified, the step is invisible.
 metadata:
   author: AytuncYildizli
-  version: 12.17.0
+  version: 12.18.0
 ---
 
-# RePrompter v12.17.0
+# RePrompter v12.18.0
 
-> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, five output lanes. **v12.17.0 makes relay delivery availability-gated and structured (only live targets offered, custom/local targets included) with orchestrator review of the relayed answer by default.**
+> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, six output lanes. **v12.18.0 adds the One-Shot lane: one prompt that builds a whole app, game, or site autonomously - plain-language interview, finishes in one session, with maximal/loop mode strictly opt-in.**
 
 ---
 
-## Five output lanes
+## Six output lanes
 
 | Lane | Trigger | What happens |
 |------|---------|-------------|
 | **Single** | "reprompt this", "clean up this prompt" | Interview → structured prompt → score |
+| **One-Shot** | "one-shot this", "one shot", "tek prompt", "vibe a game", "build me a whole X" | Plain-language interview (max 4) → fill the one-shot blanks → emit a prose build prompt that finishes in one session. Maximal/loop mode is opt-in only |
 | **`/goal` preflight** | "before /goal", "for /goal", "Codex /goal", "Claude Code /goal", "Hermes /goal", "/goal preflight", "Codex goal prompt" | Codex CLI, Claude Code CLI v2.1.139+, or Hermes Agent: infer user intent → build expanded prompt → compress into exact `/goal <summary of expanded prompt>` command |
 | **Repromptverse** | "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "campaign swarm", "engineering swarm", "ops swarm", "research swarm" | Dimension Interview → Plan team → Agent Cards → reprompt each agent → execute → Result Cards → evaluate → retry |
 | **Reverse** | "reverse reprompt", "reprompt from example", "learn from this", "extract prompt from", "prompt dna", "prompt genome" | Analyze exemplar → classify → extract prompt DNA → generate XML prompt → score → inject into flywheel |
@@ -502,6 +503,7 @@ Detect task type from input. Each type has a dedicated template in `references/`
 | Research Swarm | `research-swarm-template.md` | Analysis/benchmark multi-agent orchestration |
 | Repromptverse | `repromptverse-template.md` | Multi-agent routing + termination + evaluator loop |
 | Multi-Agent | `swarm-template.md` | Basic multi-agent coordination |
+| One-Shot | `oneshot-template.md` | One prompt that builds a whole app/game/site autonomously |
 | Reverse | `reverse-template.md` | Reverse-engineered prompt from exemplar output |
 | Team Brief | `team-brief-template.md` | Team orchestration brief |
 
@@ -1259,6 +1261,29 @@ Do not auto-select Kanban for normal Repromptverse. Use it only when the user wa
 No parallel execution tools available? Run each agent's reprompted prompt one at a time in the same session. Works with any LLM (Claude, GPT, Gemini, Codex, etc.). Slower but fully platform-agnostic.
 
 The reprompted prompts from Phase 2 are pure text. They work regardless of execution method.
+
+---
+
+## Lane: One-Shot
+
+For "one-shot this", "one shot", "tek prompt", "vibe a game", "build me a whole X" — the user wants **one prompt that builds the whole thing**, not a prompt they will hand to themselves.
+
+Full template, interview, bracket-filling rules, and worked example: `references/oneshot-template.md`. Read it when this lane triggers.
+
+The shape in brief — three prose paragraphs, no XML:
+
+1. **What good looks like** — a real named reference (never "AAA"/"polished", which let the model pick its own generous bar), one phrase of what quality means here, two seed work areas, then "anything you could think of" so the model enumerates the rest itself.
+2. **Who does the work** — fan out sub-agents, one per area; a **separate** sub-agent checks each piece and is told to be a harsh critic, not an encouraging one. Anything that grades its own work passes it.
+3. **When it is done** — a 5-12 item done-list, each item checkable by looking at the built thing, each closable as "not possible in {stack}, because X". Plus the stack, which is the only technical instruction and shapes the result more than it looks like it will.
+
+Hard rules for this lane:
+
+- **Never add `ultracode` or "/loop until perfect" on your own initiative.** Those are burn switches: an unbounded run against an unreachable bar does not stop itself, it stops when the platform cuts it off, consuming the user's 5-hour window and eating into their weekly cap. Default mode finishes inside one normal session.
+- **Maximal mode is opt-in**, chosen by the user in the interview, and when chosen you state the limit cost in one plain sentence before the prompt.
+- **The done-list ends the run, not the reference.** "Don't stop until it's as good as {reference}" is unreachable by construction. The reference sets direction; the list sets done.
+- **Do not impose a no-libraries or no-downloaded-assets rule** unless the user asks for one. From-scratch is an option, never a default.
+- **Plain language in the interview.** Never say "exemplar", "orchestrator", or "termination condition" to the user.
+- **Runtime-agnostic.** The prompt body is portable prose. Append at most one runtime line, and only in maximal mode.
 
 ---
 

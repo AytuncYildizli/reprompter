@@ -177,6 +177,36 @@ test("routes workflow-preflight triggers to workflow mode", () => {
   }
 });
 
+test("routes one-shot triggers to oneshot mode", () => {
+  for (const phrase of [
+    "one-shot this: a roguelike in the browser",
+    "one shot this landing page",
+    "one-shot prompt for a note taking app",
+    "tek prompt ile bir oyun yap",
+    "vibe a game like Hades",
+    "build me a whole invoicing app",
+  ]) {
+    const result = routeIntent(phrase);
+    assert.equal(result.mode, "oneshot", `"${phrase}" should route to oneshot`);
+    assert.equal(result.profile, "oneshot");
+    assert.equal(result.reason, "oneshot-lane-trigger");
+  }
+});
+
+test("one-shot triggers are narrow: ordinary build requests stay in their own lanes", () => {
+  for (const phrase of [
+    "build me a login form",
+    "add a caching layer to the api",
+    "create a dashboard for the billing data",
+  ]) {
+    assert.notEqual(routeIntent(phrase).mode, "oneshot", `"${phrase}" must not route to oneshot`);
+  }
+
+  // Explicit lanes the user named still win over one-shot phrasing.
+  assert.equal(routeIntent("reverse reprompt this; then one-shot this").mode, "reverse");
+  assert.equal(routeIntent("one-shot this", { forceSingle: true }).mode, "single");
+});
+
 test("workflow lane wins over multi-agent but not reverse or forceSingle", () => {
   const wins = routeIntent("compile to workflow an engineering swarm audit");
   assert.equal(wins.mode, "workflow");

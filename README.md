@@ -8,12 +8,12 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-12.17.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-12.18.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-344%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
 
-> **What's new (v12.8–v12.17):** ambient prompt gate, one-command plugin install, availability-gated relay delivery with orchestrator review, fleet learning — [digest](https://github.com/AytuncYildizli/reprompter/issues/74)
+> **What's new (v12.8–v12.18):** ambient prompt gate, one-command plugin install, One-Shot build prompts, availability-gated relay delivery, fleet learning — [digest](https://github.com/AytuncYildizli/reprompter/issues/74)
 
 RePrompter is a prompt engineering skill for AI coding agents. It takes rough, low-quality prompts and transforms them into structured, high-scoring prompts that produce dramatically better results. Templates are aligned with 2026 vendor guidance: clear sectioning, calibrated emphasis, outcome-first instructions, load-bearing constraints, structured-output routing, context budgeting, and tool-description quality. Works with Claude Code, OpenClaw, Codex, Grok CLI, Hermes Agent, or any LLM that accepts structured prompts.
 
@@ -24,11 +24,12 @@ RePrompter is a prompt engineering skill for AI coding agents. It takes rough, l
 
 ---
 
-## Five Output Lanes
+## Six Output Lanes
 
 | Lane | What it does | Trigger |
 |------|-------------|---------|
 | **Single** | Interview, structure, score one prompt | `reprompt this`, `clean up this prompt` |
+| **One-Shot** | One prompt that builds a whole app/game/site autonomously - plain-language interview, finishes in one session (maximal/loop mode is opt-in) | `one-shot this`, `tek prompt`, `vibe a game` |
 | **`/goal` preflight** | Codex CLI, Claude Code CLI v2.1.139+, or Hermes Agent: infer intent, build the expanded prompt, then compress it into `/goal <summary of expanded prompt>` | `before /goal`, `for /goal`, `Codex /goal`, `Claude Code /goal`, `Hermes /goal`, `/goal preflight` |
 | **Repromptverse** | Plan a team of 2-5 agents, reprompt each one, execute in parallel, evaluate, retry | `reprompter teams`, `repromptverse`, `smart run` |
 | **Reverse** | Show a great output, extract the prompt DNA that produced it | `reverse reprompt`, `learn from this`, `prompt dna` |
