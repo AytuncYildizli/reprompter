@@ -12,7 +12,7 @@
     "root_skill": "SKILL.md",
     "root_skill_sha256": "1c268ea3588d0591042b46abfc3a508658cadf78c2a17e359e95000d0c75363c",
     "sanitizer": "scripts/hermes-sanitizer.json",
-    "sanitizer_sha256": "836f2e674e16b99416eddb7f8d7d081d3250ec5b2c7392c0a5ec6befa057f919"
+    "sanitizer_sha256": "c75e4c361b335dda09575cf83eebe993df6fcda6b2731db2776e9eec5f2cb197"
   },
   "files": [
     {
@@ -54,6 +54,11 @@
       "path": "references/marketing-swarm-template.md",
       "source_sha256": "f2633658a7ccb740944172b53b69c5791ef1b42aeee58b2ebdff484cb1d7ae55",
       "generated_sha256": "f2633658a7ccb740944172b53b69c5791ef1b42aeee58b2ebdff484cb1d7ae55"
+    },
+    {
+      "path": "references/oneshot-template.md",
+      "source_sha256": "b2fb5b3216b0b156851964029f4fa8bcfb2b9dfb9a7bde60fac26ccb57ce01df",
+      "generated_sha256": "b2fb5b3216b0b156851964029f4fa8bcfb2b9dfb9a7bde60fac26ccb57ce01df"
     },
     {
       "path": "references/ops-swarm-template.md",
@@ -101,6 +106,11 @@
       "generated_sha256": "6b3203e9f51eb9903942690c052644a9a521a13833904147d17e56b950247060"
     },
     {
+      "path": "references/runtime/claude-workflow-runtime.md",
+      "source_sha256": "700bc4ae7b40f52a32a02f4f0c82ae54b2b0b5b9ba729d651a803710a1d69ea5",
+      "generated_sha256": "700bc4ae7b40f52a32a02f4f0c82ae54b2b0b5b9ba729d651a803710a1d69ea5"
+    },
+    {
       "path": "references/runtime/codex-runtime.md",
       "source_sha256": "0dbbbbf9cc1b8272d344f8106881b468375865a9705cd12f4f3f65fb7c43d635",
       "generated_sha256": "8f95c99dbc8c77ad350200e287abf0212c4c849bac5250a57eae81f6e9796232"
@@ -119,11 +129,6 @@
       "path": "references/runtime/grok-cli-runtime.md",
       "source_sha256": "cb43e0ff84ea151d561c79de84dc50f529430f4106ab9caccc1a954ca4e782ad",
       "generated_sha256": "3de9e3c2246318b488bcdf9c1b314796a57ebb595cfd8d1a30eb8dff6d0a20a2"
-    },
-    {
-      "path": "references/runtime/claude-workflow-runtime.md",
-      "source_sha256": "700bc4ae7b40f52a32a02f4f0c82ae54b2b0b5b9ba729d651a803710a1d69ea5",
-      "generated_sha256": "700bc4ae7b40f52a32a02f4f0c82ae54b2b0b5b9ba729d651a803710a1d69ea5"
     },
     {
       "path": "references/runtime/hermes-agent-runtime.md",
