@@ -29,7 +29,7 @@ RePrompter is a prompt engineering skill for AI coding agents. It takes rough, l
 | Lane | What it does | Trigger |
 |------|-------------|---------|
 | **Single** | Interview, structure, score one prompt | `reprompt this`, `clean up this prompt` |
-| **One-Shot** | One prompt that builds a whole app/game/site autonomously - plain-language interview, finishes in one session (maximal/loop mode is opt-in) | `one-shot this`, `tek prompt`, `vibe a game` |
+| **One-Shot** | One prompt that builds a whole app/game/site - plain-language interview, finishes in one session (maximal/loop mode is opt-in) | `one-shot this`, `one-shot a X`, `tek promptla`, `tek seferde`, `vibe a game`, `build me a whole app/game/site` |
 | **`/goal` preflight** | Codex CLI, Claude Code CLI v2.1.139+, or Hermes Agent: infer intent, build the expanded prompt, then compress it into `/goal <summary of expanded prompt>` | `before /goal`, `for /goal`, `Codex /goal`, `Claude Code /goal`, `Hermes /goal`, `/goal preflight` |
 | **Repromptverse** | Plan a team of 2-5 agents, reprompt each one, execute in parallel, evaluate, retry | `reprompter teams`, `repromptverse`, `smart run` |
 | **Reverse** | Show a great output, extract the prompt DNA that produced it | `reverse reprompt`, `learn from this`, `prompt dna` |

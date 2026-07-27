@@ -11,9 +11,9 @@ The shape below is a proven one-shot prompt structure. RePrompter's job is not t
 Ask via `AskUserQuestion`. Never say "exemplar", "orchestrator", or "termination condition" to the user — those are mechanics, not their vocabulary.
 
 1. **"What are you making?"** — usually already in the raw prompt; skip if clear. → fills `[what you want]`
-2. **"Anything it should feel like?"** — name a real game/app/site, "describe it instead", or "no reference". If they name one, say plainly whether you know it well; a reference you know shallowly yields generic output and the user cannot tell that from outside — you can. → fills `[the best known example]`, `[what good looks like]`
+2. **"Anything it should feel like?"** — name a real game/app/site, "describe it instead", or "no reference". If they name one, say plainly whether you know it well. If you know it only shallowly, ask them for the two or three things it should copy from that reference and put those in the prompt instead of the name alone — a reference you know shallowly yields generic output, and the user cannot tell that from outside; you can. → fills `[the best known example]`, `[what good looks like]`
 3. **"What are you building it with?"** — Browser/web · Phone app · Desktop · Game engine · Not sure, pick for me. → fills `[your tool or stack]`
-4. **"How far should it go?"** — **Finish in one session (default)** · **Go maximal**. See "Two modes" below.
+4. **"How far should it go?"** — **Finish in one session (default)** · **Go maximal — runs until your 5-hour limit and can eat into your weekly cap**. See "Two modes" below. Ask which agent they will paste into *only* if they choose maximal, since that is the only case where a runtime line is appended.
 
 Derive the rest yourself and show it for confirmation rather than asking: the quality word (`[top tier]`), the two seed areas, and the done-list. Pull must-have features from the user's own words.
 
@@ -35,16 +35,16 @@ Fill every bracket. Three paragraphs, no headings, no XML:
 
 > I want you to build **[what you want]** at the level of **[the best known example]**. It should be **[what good looks like]**, with every single thing done at **[top tier]** quality, from **[example area]** to **[example area]** to anything you could think of.
 >
-> Fan out sub-agents and have sub-agents tackle each one individually. Have a separate sub-agent check each piece to ensure it is **[top tier]** — one that did not build it, and that is told to be a really harsh critic rather than an encouraging one. If a piece isn't **[top tier]**, it goes back.
+> Get one end-to-end slice working first — **[the thinnest thing that runs]** — then expand it to close the checklist below. Work the areas in parallel where they don't touch, one helper per area, and integrate as you go rather than at the end. Have a separate helper check each piece — one that did not build it, told to be a really harsh critic rather than an encouraging one. If a piece isn't **[top tier]**, it goes back **at most twice**; after that, keep the best attempt, note the gap on the checklist, and move on.
 >
-> It is done when: **[done-list, 5-12 checkable items]**. Each item is either working and verified, or explicitly marked not possible in **[your tool or stack]** with a reason. Build it in **[your tool or stack]**.
+> Work the checklist first; "anything you could think of" comes only after every item on it passes. It is done when: **[done-list, 5-12 checkable items]**. The checking helper, not the builder, confirms each item before it counts. An item may be marked not possible in **[your tool or stack]** only when the platform genuinely cannot do it — expect zero or near-zero of those. Build it in **[your tool or stack]**.
 
 ### Filling the blanks
 
 - **`[the best known example]`** — a real named thing, never an adjective. "AAA", "polished", "professional" let the model pick its own bar and it picks a generous one. Naming a real product hands over everything the model already knows about it: how it should feel, how it should read, what belongs on screen.
 - **`[what good looks like]`** — one phrase of what quality means here ("fast and readable", "calm and editorial"), not a paragraph.
 - **`[example area]` ×2** — two concrete areas of work, then "anything you could think of" hands the rest of the list back. The model enumerates the remaining areas itself, and working out what the work even *is* is the part people are worst at.
-- **`[done-list]`** — 5-12 items, each checkable by looking at the built thing. **This is what ends the run.** Allow "not possible here, because X" as valid closure so one impossible item cannot block everything.
+- **`[done-list]`** — 5-12 items, each checkable by looking at the built thing, and confirmed by the checking helper rather than the builder. **This is what ends the run.** "Not possible here, because X" exists so a genuinely impossible item cannot block everything — it is not an escape hatch for hard items, and on a normal stack you should expect zero or near-zero of them.
 - **`[your tool or stack]`** — the only technical instruction. It shapes the result more than it looks like it will.
 
 ### Why the done-list, and why the reference is not the finish line
@@ -53,27 +53,34 @@ Fill every bracket. Three paragraphs, no headings, no XML:
 
 ## The prompt (maximal mode — opt-in)
 
-Same three paragraphs, but the third ends with the reference as the bar and the loop keywords appended:
+Same three paragraphs, and **the checklist stays exactly as it is**. Replace only the final sentence of paragraph three ("Build it in [your tool or stack].") with the line below, and lift the two-strike rework cap. Never emit two termination clauses.
 
-> Don't stop until each sub-agent is utterly wowed with the quality compared with **[the best known example]**. Build it in **[your tool or stack]**. /loop until it's utterly perfect. Fan out sub-agents and ultracode.
+> Don't stop until the harsh checker is genuinely wowed comparing it with **[the best known example]**. Build it in **[your tool or stack]**.
 
-Precede it with: *"This will run until your 5-hour limit and can eat into your weekly cap."*
+The body stays portable prose — **no loop keywords in it**. They belong only on the runtime line below.
+
+Before emitting a maximal prompt, say this to the user in plain words, as its own sentence:
+
+> This will run until your 5-hour limit and can eat into your weekly cap.
+
+## Sub-agent wording (both modes)
+
+The default body says "one helper per area". If the target runtime has no sub-agent or helper mechanism — a plain chat model, or any agent the user cannot confirm has one — replace that with: *"do each area as a separate pass, then re-read your own output as a hostile reviewer before moving on."* This applies in **both** modes, not just maximal.
 
 ## Runtime line
 
-The prompt body is portable prose that works in any agent that can spawn helpers. Append **at most one** runtime line, only in maximal mode:
+Append **at most one** runtime line, and **only in maximal mode** — the default body needs none. Never append a line whose keywords the runtime does not have.
 
 | Runtime | Append |
 |---|---|
-| Claude Code, Cursor | `/loop until it's utterly perfect. Fan out sub-agents and ultracode.` |
-| Codex | Route through the `/goal` preflight lane — it compresses this into `/goal <objective>`. |
-| Gemini · Grok · Kimi · GLM · Hermes · OpenClaw · other | Nothing. The prose already asks for parallel helpers and a harsh checker in words every agent understands. |
+| Claude Code | `/loop until the checklist is done. Fan out sub-agents and ultracode.` |
+| Cursor · Gemini · Grok · Kimi · GLM · Hermes · OpenClaw · plain chat model · other | Nothing. The prose already asks for parallel helpers and a harsh checker in words every agent understands. |
 
-If the runtime has no sub-agent mechanism, replace "fan out sub-agents" with "do each area as a separate pass, then re-read your own output as a hostile reviewer before moving on."
+**Codex gets nothing appended, and must not be routed through the `/goal` preflight lane.** That lane compresses a prompt into a one-line objective, which would throw away the staffing paragraph and the checklist — the two things that make this artifact work. Paste the prose as-is.
 
 ## Honest close
 
-One sentence after the prompt, not a disclaimer block:
+Say this to the user **outside** the copyable prompt block, and never inside it — an agent that receives this line pasted along with the prompt reads it as permission to stop at prototype quality. One sentence, not a disclaimer block:
 
 > This lands at a strong working prototype — expect to keep iterating after it stops.
 
@@ -83,11 +90,11 @@ Do not promise it matches the reference. The public run behind this shape scored
 
 **Raw input:** "a roguelike like Hades but in the browser" · **Mode:** finish in one session
 
-> I want you to build a browser roguelike at the level of Hades. It should be fast and readable — you always know what hit you — with every single thing done at top-tier quality, from combat feel to room generation to anything you could think of.
+> I want you to build a browser roguelike at the level of Hades. It should be fast and readable — you always know what hit you — with every single thing done at shipped-game quality, from combat feel to room generation to anything you could think of.
 >
-> Fan out sub-agents and have sub-agents tackle each one individually. Have a separate sub-agent check each piece to ensure it is top-tier — one that did not build it, and that is told to be a really harsh critic rather than an encouraging one. If a piece isn't top-tier, it goes back.
+> Get one end-to-end slice working first — move into a room, kill one enemy, take damage, die, restart — then expand it to close the checklist below. Work the areas in parallel where they don't touch, one helper per area, and integrate as you go rather than at the end. Have a separate helper check each piece — one that did not build it, told to be a really harsh critic rather than an encouraging one. If a piece isn't shipped-game quality, it goes back at most twice; after that, keep the best attempt, note the gap on the checklist, and move on.
 >
-> It is done when: a run is playable start to death without a reload; three weapons that feel genuinely different; four room layouts that chain without loading breaks; enemies with two attack patterns and readable telegraphs; a boss with phases; upgrades that change how a run plays rather than just numbers; death returns to a hub and a new run starts clean; it holds 60fps on a laptop; audio for hits, deaths and pickups. Each item is either working and verified, or explicitly marked not possible in a browser with a reason. Build it in the browser with WebGL/Three.js.
+> It is done when: a run is playable from start to death without reloading the page; three weapons with different attack shapes, ranges and cooldowns; four room layouts that chain with no loading break; every enemy attack has a visible wind-up of at least 0.3s before it lands; a boss that changes attack set at least once below half health; the dash has invulnerability frames; at least six upgrades, of which three add or change a behaviour rather than only adjusting a number; death shows a run summary and starting a new run resets state with no page reload; beating the boss ends the run with a victory screen and returns to the hub; it holds 60fps in Chrome on an M-series MacBook with 40 enemies on screen; and there is audio for hits, deaths and pickups. Each item is either working and verified, or explicitly marked not possible in a browser with a reason. Build it in the browser with WebGL/Three.js.
 
 *This lands at a strong working prototype — expect to keep iterating after it stops.*
 
