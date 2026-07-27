@@ -8,10 +8,10 @@ The shape below is a proven one-shot prompt structure. RePrompter's job is not t
 
 ## Interview (plain language, max 4)
 
-Ask via `AskUserQuestion`. Never say "exemplar", "orchestrator", or "termination condition" to the user — those are mechanics, not their vocabulary.
+Ask using the runtime's normal question mechanism (`AskUserQuestion` on Claude Code; plain chat anywhere else). Never say "exemplar", "orchestrator", or "termination condition" to the user — those are mechanics, not their vocabulary.
 
 1. **"What are you making?"** — usually already in the raw prompt; skip if clear. → fills `[what you want]`
-2. **"Anything it should feel like?"** — name a real game/app/site, "describe it instead", or "no reference". If they name one, say plainly whether you know it well. If you know it only shallowly, ask them for the two or three things it should copy from that reference and put those in the prompt instead of the name alone — a reference you know shallowly yields generic output, and the user cannot tell that from outside; you can. → fills `[the best known example]`, `[what good looks like]`
+2. **"Anything it should feel like?"** — name a real game/app/site, "describe it instead", or "no reference". If they name one, say plainly whether you know it well. If you know it only shallowly, ask them for the two or three things it should copy from that reference and put those in the prompt instead of the name alone — a reference you know shallowly yields generic output, and the user cannot tell that from outside; you can. → fills `[the best known example]`, `[what good looks like]`. If they have no reference, do not invent one: ask instead for two or three concrete things that would make it good, and open the prompt with "It should be **[trait]**, **[trait]** and **[trait]**" in place of "at the level of ...". Everything else is unchanged.
 3. **"What are you building it with?"** — Browser/web · Phone app · Desktop · Game engine · Not sure, pick for me. → fills `[your tool or stack]`
 4. **"How far should it go?"** — **Finish in one session (default)** · **Go maximal — runs until your 5-hour limit and can eat into your weekly cap**. See "Two modes" below. Ask which agent they will paste into *only* if they choose maximal, since that is the only case where a runtime line is appended.
 
@@ -35,9 +35,9 @@ Fill every bracket. Three paragraphs, no headings, no XML:
 
 > I want you to build **[what you want]** at the level of **[the best known example]**. It should be **[what good looks like]**, with every single thing done at **[top tier]** quality, from **[example area]** to **[example area]** to anything you could think of.
 >
-> Get one end-to-end slice working first — **[the thinnest thing that runs]** — then expand it to close the checklist below. Work the areas in parallel where they don't touch, one helper per area, and integrate as you go rather than at the end. Have a separate helper check each piece — one that did not build it, told to be a really harsh critic rather than an encouraging one. If a piece isn't **[top tier]**, it goes back **at most twice**; after that, keep the best attempt, note the gap on the checklist, and move on.
+> Get one end-to-end slice working first — **[the thinnest thing that runs]** — then expand it to close the checklist below. Work the areas in parallel where they don't touch, one helper per area, and integrate as you go rather than at the end. Have a separate helper check each piece — one that did not build it, told to be a really harsh critic rather than an encouraging one. Separate two things: a checklist item either passes or it doesn't — no cap, keep working until it passes — while *polish* beyond the checklist goes back **at most twice**, after which you keep the best attempt, note it, and move on. The checker judges checklist items against the checklist, never against the reference.
 >
-> Work the checklist first; "anything you could think of" comes only after every item on it passes. It is done when: **[done-list, 5-12 checkable items]**. The checking helper, not the builder, confirms each item before it counts. An item may be marked not possible in **[your tool or stack]** only when the platform genuinely cannot do it — expect zero or near-zero of those. Build it in **[your tool or stack]**.
+> Before building, list the areas of work this needs — the two above plus whatever else you can think of — and fold anything essential into the checklist below. Then build only against that checklist. It is done when: **[done-list, 5-12 checkable items]**. The checking helper, not the builder, confirms each item, by running or inspecting the built thing rather than by reading the code that claims it. An item may be marked not possible in **[your tool or stack]** only when the platform genuinely cannot do it — expect zero or near-zero of those. When every item is confirmed, stop. Resolve any ambiguity yourself with a sensible choice, note it, and keep going — do not wait for anyone. Build it in **[your tool or stack]**.
 
 ### Filling the blanks
 
@@ -53,13 +53,15 @@ Fill every bracket. Three paragraphs, no headings, no XML:
 
 ## The prompt (maximal mode — opt-in)
 
-Same three paragraphs, and **the checklist stays exactly as it is**. Replace only the final sentence of paragraph three ("Build it in [your tool or stack].") with the line below, and lift the two-strike rework cap. Never emit two termination clauses.
+Emit this complete prompt instead of the default one. It has exactly **one** termination clause: the reference. Do not also emit "It is done when" — two termination clauses in one prompt is the most common way this shape fails.
 
-> Don't stop until the harsh checker is genuinely wowed comparing it with **[the best known example]**. Build it in **[your tool or stack]**.
+> I want you to build **[what you want]** at the level of **[the best known example]**. It should be **[what good looks like]**, with every single thing done at **[top tier]** quality, from **[example area]** to **[example area]** to anything you could think of.
+>
+> Get one end-to-end slice working first — **[the thinnest thing that runs]** — then keep expanding. Work the areas in parallel where they don't touch, one helper per area, and integrate as you go rather than at the end. Have a separate helper check each piece — one that did not build it, told to be a really harsh critic rather than an encouraging one. If a piece isn't **[top tier]**, it goes back, however many rounds it takes.
+>
+> Don't stop until that harsh checker is genuinely wowed comparing it with **[the best known example]**. Resolve any ambiguity yourself with a sensible choice, note it, and keep going — do not wait for anyone. Build it in **[your tool or stack]**.
 
-The body stays portable prose — **no loop keywords in it**. They belong only on the runtime line below.
-
-Before emitting a maximal prompt, say this to the user in plain words, as its own sentence:
+Say this to the user in plain words before emitting it, as its own sentence:
 
 > This will run until your 5-hour limit and can eat into your weekly cap.
 
@@ -69,11 +71,11 @@ The default body says "one helper per area". If the target runtime has no sub-ag
 
 ## Runtime line
 
-Append **at most one** runtime line, and **only in maximal mode** — the default body needs none. Never append a line whose keywords the runtime does not have.
+Append **at most one** runtime line, and **only in maximal mode** — the default body needs none. Never append a line whose keywords the runtime does not have; if you are not certain the user's runtime supports `/loop` and `ultracode` in this exact form, append nothing. Vendor name alone is not proof.
 
 | Runtime | Append |
 |---|---|
-| Claude Code | `/loop until the checklist is done. Fan out sub-agents and ultracode.` |
+| Claude Code | `/loop until it's utterly perfect. Fan out sub-agents and ultracode.` — matches maximal's single termination clause (the reference). Never append a line that names a checklist: maximal mode has none. |
 | Cursor · Gemini · Grok · Kimi · GLM · Hermes · OpenClaw · plain chat model · other | Nothing. The prose already asks for parallel helpers and a harsh checker in words every agent understands. |
 
 **Codex gets nothing appended, and must not be routed through the `/goal` preflight lane.** That lane compresses a prompt into a one-line objective, which would throw away the staffing paragraph and the checklist — the two things that make this artifact work. Paste the prose as-is.
