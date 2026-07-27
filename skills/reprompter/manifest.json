@@ -12,7 +12,7 @@
     "root_skill": "SKILL.md",
     "root_skill_sha256": "1c268ea3588d0591042b46abfc3a508658cadf78c2a17e359e95000d0c75363c",
     "sanitizer": "scripts/hermes-sanitizer.json",
-    "sanitizer_sha256": "c75e4c361b335dda09575cf83eebe993df6fcda6b2731db2776e9eec5f2cb197"
+    "sanitizer_sha256": "de7e8b3027a41890fcb523651b3c9c4ebe70c81445f9173c75d1456aae3faa99"
   },
   "files": [
     {
