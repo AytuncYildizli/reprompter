@@ -100,6 +100,17 @@ Do not promise it matches the reference. The public run behind this shape scored
 
 *This lands at a strong working prototype — expect to keep iterating after it stops.*
 
+## Split across a team
+
+If the user asks for a team — or says yes when the ask clearly spans 2+ independent domains — do not emit the one-prompt form. Hand the finished brief to Repromptverse (SKILL.md "Team execution") with this mapping:
+
+- each **work area** from the enumeration → one agent scope (one writer per area, no overlap);
+- the **done-list** → the team's success criteria, split per agent by area;
+- the **harsh checker** → the Phase-4 evaluator (separate from every builder, judges real artifacts, "neither passes" allowed);
+- the **smoothing pass** → the synthesis step after all agents complete.
+
+The interview does not change. The user hears one extra sentence: "This splits well across a team — run it as N agents instead of one prompt?" Default remains one prompt; the team path is for when the user wants it or the domains genuinely don't touch.
+
 ## When to use
 
 - "one-shot this", "one-shot a X", "tek promptla", "tek seferde", "vibe a game", "build me a whole app/game/site"

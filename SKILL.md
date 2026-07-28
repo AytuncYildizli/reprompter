@@ -1,11 +1,11 @@
 ---
 name: reprompter
 description: |
-  Transform rough prompts into structured, high-scoring prompts for coding agents.
-  Use when: "reprompt", "clean up this prompt", "before /goal", "Codex /goal", "Claude Code /goal", "Hermes /goal", "repromptverse", "reprompter teams", "smart run", "engineering/ops/research/marketing swarm", "compile to workflow", "workflow preflight", "dynamic workflow", multi-agent tasks, audits, parallel work, "reverse reprompt", "prompt dna", "extract prompt from", "one-shot this", "one-shot a X", "tek promptla", "tek seferde", "vibe a game", "build me a whole app/game/site".
+  Two intents: Improve ("reprompt this") emits a structured, scored spec prompt; Build ("one-shot this") emits an autonomous build prompt for a whole app/game/site.
+  Use when: "reprompt", "clean up this prompt", "before /goal", "Codex /goal", "Claude Code /goal", "Hermes /goal", "repromptverse", "reprompter teams", "smart run", swarm triggers, "compile to workflow", "workflow preflight", multi-agent tasks, audits, parallel work, "reverse reprompt", "prompt dna", "extract prompt from", "one-shot this", "one-shot a X", "tek promptla", "tek seferde", "vibe a game", "build me a whole app/game/site".
   Don't use for simple Q&A, casual chat, or execution-only tasks.
   Outputs: structured XML/Markdown prompt + before/after score; /goal command card (Codex/Claude Code/Hermes); optional team brief + per-agent prompts + Agent Cards; Reverse Extraction Card; Workflow Command Card + runnable .workflow.js (Workflow preflight lane / Option H).
-  Target score: Single and Goal preflight >= 7/10; Repromptverse per-agent >= 8/10; Reverse >= 7/10.
+  Target score: spec >= 7/10; per-agent >= 8/10.
 compatibility: |
   Single mode works on Claude surfaces, OpenClaw, Codex, Grok CLI, and Hermes Agent.
   `/goal` preflight mode works on Codex CLI (any version exposing the `goals` feature), Claude Code CLI v2.1.139+, and Hermes Agent; all three runtimes accept the same `/goal <objective>` shape. Disabled on Claude surfaces without `/goal` support, OpenClaw, and Grok CLI.
@@ -14,25 +14,31 @@ compatibility: |
   A post-output delivery step can — offered once as a structured choice (plain-text fallback) over the relay targets headless-relay's preflight marks available (built-in lanes plus user-connected custom/local targets), never auto-executed — hand a finished Single/Reverse prompt to the headless-relay skill; the orchestrator reviews the relayed answer against the prompt's success criteria by default. When the relay skill is not installed, no target is available, or availability cannot be verified, the step is invisible.
 metadata:
   author: AytuncYildizli
-  version: 12.18.0
+  version: 13.0.0
 ---
 
-# RePrompter v12.18.0
+# RePrompter v13.0.0
 
-> **Your prompt sucks. Let's fix that.** Single prompts, `/goal` preflight, full agent teams, reverse-engineer from great outputs, or compile to a Claude dynamic Workflow — one skill, six output lanes. **v12.18.0 adds the One-Shot lane: one prompt that builds a whole app, game, or site autonomously - plain-language interview, finishes in one session, with maximal/loop mode strictly opt-in.**
+> **Your prompt sucks. Let's fix that.** Two intents — improve my prompt, or build this whole thing — with `/goal`, Workflow, team execution and cross-model delivery as places the result can go. **v13.0.0 (RePrompter v2) restructures six lanes into two intents: a specifiability router picks spec-XML or an autonomous build prompt inside Improve, and Build can run as one prompt or split across a team. Every v12 trigger keeps working.**
 
 ---
 
-## Six output lanes
+## Two intents
 
-| Lane | Trigger | What happens |
-|------|---------|-------------|
-| **Single** | "reprompt this", "clean up this prompt" | Interview → structured prompt → score |
-| **One-Shot** | "one-shot this", "one-shot a X", "tek promptla", "tek seferde", "vibe a game", "build me a whole app/game/site" | Plain-language interview (max 4) → fill the one-shot blanks → emit a prose build prompt that finishes in one session. Maximal/loop mode is opt-in only |
-| **`/goal` preflight** | "before /goal", "for /goal", "Codex /goal", "Claude Code /goal", "Hermes /goal", "/goal preflight", "Codex goal prompt" | Codex CLI, Claude Code CLI v2.1.139+, or Hermes Agent: infer user intent → build expanded prompt → compress into exact `/goal <summary of expanded prompt>` command |
-| **Repromptverse** | "reprompter teams", "repromptverse", "run with quality", "smart run", "smart agents", "campaign swarm", "engineering swarm", "ops swarm", "research swarm" | Dimension Interview → Plan team → Agent Cards → reprompt each agent → execute → Result Cards → evaluate → retry |
-| **Reverse** | "reverse reprompt", "reprompt from example", "learn from this", "extract prompt from", "prompt dna", "prompt genome" | Analyze exemplar → classify → extract prompt DNA → generate XML prompt → score → inject into flywheel |
-| **Workflow preflight** | "workflow preflight", "compile to workflow", "build a workflow script", "dynamic workflow", "run via workflow tool", "make a workflow" | Reprompt task → build expanded prompt → compile to a runnable `.workflow.js` (pure-literal `meta`, schema returns, bounded retry; ultracode adds adversarial verify + completeness critic) → emit Workflow Command Card. Also Repromptverse Phase-3 **Option H**. |
+Users learn two sentences. Everything else is machinery underneath them.
+
+| Intent | Trigger | What happens |
+|--------|---------|-------------|
+| **Improve** — "make my prompt better" | "reprompt this", "clean up this prompt" | Interview → the specifiability router picks the shape: **spec-XML** when the done-state is enumerable up front (bugfix with a repro, endpoint with a contract, bounded feature), **outcome-prose** in the One-Shot shape when done can only be judged against a quality bar (whole product, "like X", aesthetic outcome) → score (spec-XML only) → output-format step |
+| **Build** — "build this whole thing" | "one-shot this", "one-shot a X", "tek promptla", "tek seferde", "vibe a game", "build me a whole app/game/site" | Plain-language interview (max 4) → done-list brief → execution choice: **one prompt** (default; finishes in one session, maximal/loop opt-in) or **split across a team** (the brief seeds Repromptverse: done-list becomes the team's success criteria, the harsh checker becomes the evaluator) |
+
+**Output formats (Improve):** paste (default) · compress to a `/goal <objective>` command (Codex CLI, Claude Code v2.1.139+, Hermes) · compile to a runnable `.workflow.js` (Claude Workflow tool) · deliver to another model via headless-relay (post-output step). The `/goal` and Workflow sections below define these formats; their triggers ("before /goal", "workflow preflight", "compile to workflow", ...) jump straight to Improve with that format.
+
+**Team execution (Build and beyond):** "repromptverse", "reprompter teams", "smart run" and the swarm triggers route to the Repromptverse machinery below — either standalone as today, or seeded by a Build brief.
+
+**Advanced:** Reverse mode (extract the prompt DNA from a great output — "reverse reprompt", "prompt dna") keeps working exactly as before and feeds the flywheel; it lives in its own section below.
+
+**Specifiability rule (Improve):** when the router picks outcome-prose, announce it in one line — "This looks like a whole-product ask — generating an autonomous build prompt; say 'spec' for the structured version." — and switch shapes if the user objects. Outcome-prose always keeps a constraints sentence (the home for "never touch auth"); it is not scored on the six dimensions.
 
 Auto-detection: if task mentions 2+ systems, "audit", or "parallel" → ask: "This looks like a multi-agent task. Want to use Repromptverse mode?"
 
@@ -49,7 +55,7 @@ Definition — **2+ systems** means at least two distinct technical domains that
 
 ---
 
-## Lane: `/goal` preflight
+## Format: `/goal` command (Improve output)
 
 When the user mentions `/goal`, `before /goal`, `for /goal`, "Codex /goal", "Claude Code /goal", "Hermes /goal", or asks to improve a goal prompt, run RePrompter before the goal is submitted.
 
@@ -203,7 +209,7 @@ max_turns = 20
 
 ---
 
-## Lane: Workflow preflight
+## Format: Workflow script (Improve output)
 
 When the user says "compile to workflow", "build a workflow script", "workflow preflight", "make a workflow", "run via workflow tool", or "dynamic workflow", reprompt the task and compile it into a runnable Claude dynamic Workflow script. This is the execution-compilation sibling of the `/goal` preflight lane: RePrompter builds the expanded prompt first, then emits a `.workflow.js` the user runs via the `Workflow` tool — RePrompter does not run it.
 
@@ -349,7 +355,14 @@ See `references/workflow-template.md` and `references/runtime/claude-workflow-ru
 
 ---
 
-## Lane: Single prompt
+## Intent: Improve (Single prompt)
+
+### Shape decision (specifiability router)
+
+Before the template pick, decide the OUTPUT SHAPE from the interview:
+
+- **Done-state enumerable up front** (bugfix with a repro, endpoint with a contract, bounded feature with named files) → **spec-XML** below, scored on the six dimensions, exactly as always.
+- **Done only judgeable against a quality bar** (whole product, "like X", aesthetic/open-ended outcome) → **outcome-prose** in the One-Shot three-paragraph shape (`references/oneshot-template.md`), with a constraints sentence for the load-bearing negatives ("never touch auth"). Announce in one line: "This looks like a whole-product ask — generating an autonomous build prompt; say 'spec' for the structured version." The user's override always wins. Outcome-prose is not scored on the six dimensions.
 
 ### Process
 
@@ -575,7 +588,7 @@ only when that skill is installed; otherwise stay completely silent about it.
 
 ---
 
-## Lane: Repromptverse (Agent Teams)
+## Team execution: Repromptverse (Agent Teams)
 
 ### TL;DR
 
@@ -1266,9 +1279,9 @@ The reprompted prompts from Phase 2 are pure text. They work regardless of execu
 
 ---
 
-## Lane: One-Shot
+## Intent: Build (One-Shot)
 
-For "one-shot this", "one-shot a X", "tek promptla", "tek seferde", "vibe a game", "build me a whole app/game/site" — the user wants **one prompt that builds the whole thing**, not a prompt they will hand to themselves.
+For "one-shot this", "one-shot a X", "tek promptla", "tek seferde", "vibe a game", "build me a whole app/game/site" — the user wants **the whole thing built**, not a prompt they will hand to themselves. Two execution shapes: **one prompt** (default, below) or **split across a team** — if the user asks for a team (or says yes when the ask clearly spans 2+ independent domains), hand the finished brief to Repromptverse: the done-list becomes the team's success criteria, the harsh checker becomes the Phase-4 evaluator, and each work area becomes an agent scope. See `references/oneshot-template.md` "Split across a team".
 
 Full template, interview, bracket-filling rules, and worked example: `references/oneshot-template.md`. Read it when this lane triggers.
 
@@ -1292,7 +1305,7 @@ Hard rules for this lane:
 
 ---
 
-## Lane: Reverse Reprompter
+## Advanced: Reverse Reprompter
 
 ### TL;DR
 
