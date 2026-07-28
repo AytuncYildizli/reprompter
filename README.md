@@ -134,6 +134,8 @@ Two dogfood runs, same lane:
 
 > Lands at a strong working prototype — expect to keep iterating after it stops. It does **not** produce a shipped AAA title; the FPS above still has rough edges (muzzle-flash bloom, one stray additive box), and the honest close says so up front.
 
+**Credit where the shape came from:** the one-prompt build pattern is [@mattshumer_](https://x.com/mattshumer_)'s — a CoD-like browser FPS from 152 dictated words — reproduced and dissected by [@ziwenxu_](https://x.com/ziwenxu_) as the "Gauntlet Loop" (name a real bar, separate builder from critic, loop on real output). RePrompter's One-Shot template is that shape made fillable, plus the checklist stop so a run ends on its own instead of at your rate limit.
+
 ---
 
 ## Install
