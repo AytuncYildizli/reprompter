@@ -15,7 +15,7 @@ Ask using the runtime's normal question mechanism (`AskUserQuestion` on Claude C
 3. **"What are you building it with?"** — Browser/web · Phone app · Desktop · Game engine · Not sure, pick for me. → fills `[your tool or stack]`
 4. **"How far should it go?"** — **Finish in one session (default)** · **Go maximal — runs until your 5-hour limit and can eat into your weekly cap**. See "Two modes" below. Ask which agent they will paste into *only* if they choose maximal, since that is the only case where a runtime line is appended.
 
-Derive the rest yourself and show it for confirmation rather than asking: the quality word (`[top tier]`), the two seed areas, and the done-list. Pull must-have features from the user's own words.
+Derive the rest yourself and show it for confirmation rather than asking: the quality word (`[top tier]`), the two seed areas, and the done-list. Pull must-have features from the user's own words. If the ask carries a load-bearing negative — something that must NOT happen ("never touch auth", "do not add dependencies", "keep the existing API") — capture it verbatim and fill `[hard negative]`; if there is none, drop that sentence. This is the home for constraints in the prose shape.
 
 **Do not** add a no-libraries or no-downloaded-assets rule unless the user asks. Libraries and assets usually produce a better result faster. "Build everything from scratch" is an option, never a default.
 
@@ -37,7 +37,7 @@ Fill every bracket. Three paragraphs, no headings, no XML:
 >
 > Get one end-to-end slice working first — **[the thinnest thing that runs]** — then expand it to close the checklist below. Work the areas in parallel where they don't touch, one helper per area, and integrate as you go rather than at the end. Have a separate helper check each piece — one that did not build it, told to be a really harsh critic rather than an encouraging one. Separate two things: a checklist item either passes or it doesn't — no cap, keep working until it passes — while *polish* beyond the checklist goes back **at most twice**, after which you keep the best attempt, note it, and move on. The checker judges checklist items against the checklist, never against the reference.
 >
-> Before building, list the areas of work this needs — the two above plus whatever else you can think of — and fold anything essential into the checklist below. Then build only against that checklist. It is done when: **[done-list, 5-12 checkable items]**. The checking helper, not the builder, confirms each item, by running or looking at the built thing itself — the real pixels, the running product — never by reading the code or a summary the builder wrote. An item may be marked not possible in **[your tool or stack]** only when the platform genuinely cannot do it — expect zero or near-zero of those. When every item is confirmed, do one last pass over the whole thing to smooth out inconsistencies between the separately built pieces — then stop. Resolve any ambiguity yourself with a sensible choice, note it, and keep going — do not wait for anyone. Build it in **[your tool or stack]**.
+> Before building, list the areas of work this needs — the two above plus whatever else you can think of — and fold anything essential into the checklist below. Then build only against that checklist. It is done when: **[done-list, 5-12 checkable items]**. The checking helper, not the builder, confirms each item, by running or looking at the built thing itself — the real pixels, the running product — never by reading the code or a summary the builder wrote. An item may be marked not possible in **[your tool or stack]** only when the platform genuinely cannot do it — expect zero or near-zero of those. Never **[hard negative]**. When every item is confirmed, do one last pass over the whole thing to smooth out inconsistencies between the separately built pieces — then stop. Resolve any ambiguity yourself with a sensible choice, note it, and keep going — do not wait for anyone. Build it in **[your tool or stack]**.
 
 ### Filling the blanks
 
@@ -45,7 +45,8 @@ Fill every bracket. Three paragraphs, no headings, no XML:
 - **`[what good looks like]`** — one phrase of what quality means here ("fast and readable", "calm and editorial"), not a paragraph.
 - **`[example area]` ×2** — two concrete areas of work, then "anything you could think of" hands the rest of the list back. The model enumerates the remaining areas itself, and working out what the work even *is* is the part people are worst at.
 - **`[done-list]`** — 5-12 items, each checkable by looking at the built thing, and confirmed by the checking helper rather than the builder. **This is what ends the run.** "Not possible here, because X" exists so a genuinely impossible item cannot block everything — it is not an escape hatch for hard items, and on a normal stack you should expect zero or near-zero of them.
-- **`[your tool or stack]`** — the only technical instruction. It shapes the result more than it looks like it will.
+- **`[your tool or stack]`** — the primary technical instruction; it shapes the result more than it looks like it will.
+- **`[hard negative]`** — optional. A load-bearing thing that must NOT happen, captured verbatim from the user ("never touch auth"). Drop the sentence entirely if the ask has none — do not invent one.
 
 ### Why the done-list, and why the reference is not the finish line
 
@@ -102,9 +103,11 @@ Do not promise it matches the reference. The public run behind this shape scored
 
 ## Split across a team
 
+**Team execution is default-mode only.** It needs a done-list to become the team's success criteria, and maximal mode deliberately has none — so if the user wants a team, use the default (done-list) prompt, never the maximal one. Decide one-prompt-vs-team before offering maximal.
+
 If the user asks for a team — or says yes when the ask clearly spans 2+ independent domains — do not emit the one-prompt form. Hand the finished brief to Repromptverse (SKILL.md "Team execution") with this mapping:
 
-- each **work area** from the enumeration → one agent scope (one writer per area, no overlap);
+- the enumerated **work areas** → **2-5 agent scopes** (Repromptverse's cap): group related areas so each agent owns a coherent, non-overlapping slice, and name one agent as integrator for cross-cutting concerns;
 - the **done-list** → the team's success criteria, split per agent by area;
 - the **harsh checker** → the Phase-4 evaluator (separate from every builder, judges real artifacts, "neither passes" allowed);
 - the **smoothing pass** → the synthesis step after all agents complete.

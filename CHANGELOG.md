@@ -9,7 +9,7 @@
 
 ### Compatibility contract
 
-- Zero trigger removals: every v12 trigger routes to the same behavior under the new naming.
+- Zero trigger removals: every v12 trigger still recognizes and routes to its intent. One honest behavior change: an Improve ask that is clearly a whole-product build now defaults to an announced, overridable outcome-prose prompt instead of spec-XML — every bounded/ambiguous ask stays spec-XML and scored, as before.
 - Zero template-id renames; flywheel recipes, telemetry schema, outcome records untouched.
 - Router untouched: `scripts/intent-router.js` is not modified in v13 — routing behavior and precedence are exactly as shipped in v12.18.
 - Ambient gate unchanged.

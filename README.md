@@ -33,7 +33,7 @@ RePrompter is a prompt engineering skill for AI coding agents. It takes rough, l
 
 **Where the result goes.** Improve outputs can be pasted (default), compressed to a `/goal` command (Codex, Claude Code, Hermes), compiled to a runnable Claude `.workflow.js`, or delivered to another model via [headless-relay](https://github.com/dorukardahan/headless-relay). Build runs as one prompt or splits across a team. Everything that used to be a separate "lane" is now one of these — a format the result takes or the way it executes.
 
-**Nothing was removed.** Team execution (`repromptverse`, `smart run`, swarm triggers), the `/goal` and Workflow formats, cross-model relay delivery, and Reverse mode (extract the prompt DNA from a great output) all work exactly as before — see [SKILL.md](SKILL.md). v13 changed the map, not the machinery: every v12 trigger still routes to the same behavior.
+**Nothing was removed.** Team execution (`repromptverse`, `smart run`, swarm triggers), the `/goal` and Workflow formats, cross-model relay delivery, and Reverse mode (extract the prompt DNA from a great output) all work exactly as before — see [SKILL.md](SKILL.md). v13 changed the map, not the machinery: every v12 trigger still routes to its intent. The one behavior change is honest and opt-out — a clearly whole-product "reprompt this" now offers an autonomous build prompt (say "spec" for the old structured, scored output); bounded and ambiguous asks stay spec-XML exactly as before.
 
 ---
 
@@ -119,7 +119,7 @@ with unit tests for both API and UI, without breaking existing API contracts.
 You say:  one-shot this: a first-person shooter like the recent Call of Duty games, in the browser
 ```
 
-RePrompter asks a few plain questions, then emits one prose build prompt you paste into any coding agent. It names a real reference the agent can inspect, staffs the work with a **separate harsh critic** that judges the running artifact against real screenshots (never the builder's summary), and ends on a checkable bar. Below is a single self-contained HTML file built from that prompt — a browser FPS with every texture, model, and sound generated in code, no downloaded assets, running at 240+ fps:
+RePrompter asks a few plain questions, then emits one prose build prompt you paste into any coding agent. It names a real reference, staffs the work with a **separate harsh critic** that judges the running artifact (never the builder's summary), and ends on a checkable bar. The image below is one real frame from a single maximal-mode dogfood run — a browser FPS in a self-contained HTML file, textures/models/audio generated in code — captured at the `269 FPS` shown top-left. It is one run's result, not a guarantee for every run:
 
 <p align="center">
   <img src="assets/oneshot-demo.png" alt="One-Shot build result — a browser first-person shooter: industrial warehouse, red-dot rifle viewmodel, enemies, full HUD" width="820">
@@ -130,7 +130,7 @@ Two dogfood runs, same lane:
 | Mode | Prompt | Result |
 |------|--------|--------|
 | Default (one session) | Vampire-Survivors-style browser roguelite | a naive "build me X" prompt produced only scaffolding — a module contract, a build system, a test harness, **no game**; the One-Shot prompt produced a complete playable game (146 kills, level 7, ~70fps with 200+ enemies in an automated soak test) |
-| Maximal (opt-in) | the CoD-style FPS above | 7 specialists in isolated repo copies, judged each round against 10 real Call-of-Duty stills, ~11.8k lines across 34 modules |
+| Maximal (opt-in) | the CoD-style FPS above | one run: 7 sub-agents in isolated repo copies judged each round against 10 real Call-of-Duty stills; ~11.8k lines / 34 modules. Rough edges remain (see below) |
 
 > Lands at a strong working prototype — expect to keep iterating after it stops. It does **not** produce a shipped AAA title; the FPS above still has rough edges (muzzle-flash bloom, one stray additive box), and the honest close says so up front.
 
@@ -161,7 +161,7 @@ curl -sL https://github.com/aytuncyildizli/reprompter/archive/main.tar.gz | \
 
 Source archives are runtime-only (`.gitattributes` `export-ignore`): they contain `SKILL.md`, `references/`, and `scripts/` but not dev/dist trees like `skills/` (the Hermes-only install package — see [Install paths](#openclaw--codex--grok-cli--hermes-agent)), `plugin/`, `.claude-plugin/`, `benchmarks/`, `assets/`, or `docs/`. Plugin installs use git clone through Claude Code's marketplace flow, so export-ignoring the plugin tree does not affect plugin installs. Installed an older full copy? It's safe to delete those directories from it — upgrades won't bring them back.
 
-For the `/goal` preflight lane on Claude Code, pin the CLI to **v2.1.139 or later**. `/goal` depends on the hooks layer — if `disableAllHooks` or `allowManagedHooksOnly` is set in `settings.json` the command is unavailable on any version (v2.1.140 only made the failure visible). Managed environments that block hooks should stick to Single mode for goal-shaped work.
+For the `/goal` output format on Claude Code, pin the CLI to **v2.1.139 or later**. `/goal` depends on the hooks layer — if `disableAllHooks` or `allowManagedHooksOnly` is set in `settings.json` the command is unavailable on any version (v2.1.140 only made the failure visible). Managed environments that block hooks should stick to Single mode for goal-shaped work.
 
 ```bash
 claude --version

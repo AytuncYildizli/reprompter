@@ -361,8 +361,11 @@ See `references/workflow-template.md` and `references/runtime/claude-workflow-ru
 
 Before the template pick, decide the OUTPUT SHAPE from the interview:
 
-- **Done-state enumerable up front** (bugfix with a repro, endpoint with a contract, bounded feature with named files) → **spec-XML** below, scored on the six dimensions, exactly as always.
-- **Done only judgeable against a quality bar** (whole product, "like X", aesthetic/open-ended outcome) → **outcome-prose** in the One-Shot three-paragraph shape (`references/oneshot-template.md`), with a constraints sentence for the load-bearing negatives ("never touch auth"). Announce in one line: "This looks like a whole-product ask — generating an autonomous build prompt; say 'spec' for the structured version." The user's override always wins. Outcome-prose is not scored on the six dimensions.
+**Default is spec-XML.** Only switch to outcome-prose on a STRONG whole-product signal, and when in doubt, stay spec-XML — a scored structured prompt is never the wrong answer for a coding task, and it is what "reprompt this" has always produced.
+
+- **Spec-XML (default)** — any bounded change (bugfix, endpoint, refactor, a feature in named files), anything with an enumerable done-state, and anything ambiguous. Scored on the six dimensions, exactly as always.
+- **Outcome-prose (only on a strong signal)** — the ask is to build a WHOLE product or artifact from near-zero (a whole app/game/site/deck), OR it names a real product as the quality bar for a from-scratch build ("build me X like Linear"). Then emit the One-Shot three-paragraph shape (`references/oneshot-template.md`), including its constraints sentence for load-bearing negatives ("never touch auth"). **Announce and offer the exit:** "This looks like a whole-product build — I'll write an autonomous build prompt; say 'spec' for the structured, scored version instead." The user's override always wins. Outcome-prose is not scored on the six dimensions.
+- **Mixed asks** (a *bounded* change described with a reference, e.g. "add a settings page like Linear's to our app") are spec-XML: the reference informs the requirements, it does not trigger a from-scratch build. When genuinely unsure which one an ask is, ask one discriminator question — "a fresh build, or a change to something that exists?" — and default to spec-XML on a fresh session with no answer.
 
 ### Process
 
