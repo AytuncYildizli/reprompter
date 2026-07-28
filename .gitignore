@@ -8,3 +8,7 @@ node_modules/
 reprompter-skill.zip
 .reprompter/
 .omx/
+
+# Local agent scratch (never publish - contains machine-specific paths and infra names)
+.superpowers/
+.superset/

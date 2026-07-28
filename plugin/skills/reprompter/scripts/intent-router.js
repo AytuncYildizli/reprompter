@@ -39,6 +39,31 @@ const WORKFLOW_LANE_TRIGGERS = [
   "dynamic workflow",
 ];
 
+// One-Shot lane — explicit phrases only. Deliberately narrow: broad phrasing
+// like "build me X" is ordinary Single traffic and must not route here, because
+// this lane emits a long autonomous build prompt.
+//
+// Each entry is matched as a whole phrase followed by a word boundary, so
+// "build me a wholesale tool" and "build me a wholehearted refactor" do NOT
+// route here. Turkish "tek prompt" alone is ordinary Single traffic
+// ("tek prompt ver" = "give me a single prompt"), so only the build-intent
+// forms are triggers.
+const ONESHOT_LANE_TRIGGERS = [
+  "one-shot this",
+  "one shot this",
+  "one-shot a",
+  "one shot a",
+  "one-shot prompt",
+  "tek promptla",
+  "tek prompt ile",
+  "tek seferde",
+  "vibe a game",
+  "vibe code a",
+  "build me a whole app",
+  "build me a whole game",
+  "build me a whole site",
+];
+
 const MULTI_AGENT_TRIGGERS = [
   "repromptverse",
   "reprompter teams",
@@ -326,6 +351,21 @@ function routeIntent(input, options = {}) {
       score: 100,
       hits: [workflowHit],
       reason: "workflow-lane-trigger",
+    };
+  }
+
+  // One-Shot lane — explicit, like reverse and workflow. Checked AFTER workflow
+  // so a lane the user named by name ("compile to workflow ...") still wins;
+  // outranks the swarm/multi-agent keywords below it.
+  // Precedence overall: forceSingle > reverse > workflow > oneshot > multi-agent.
+  const oneshotHit = ONESHOT_LANE_TRIGGERS.find((trigger) => hasPhrase(text, trigger));
+  if (oneshotHit) {
+    return {
+      mode: "oneshot",
+      profile: "oneshot",
+      score: 100,
+      hits: [oneshotHit],
+      reason: "oneshot-lane-trigger",
     };
   }
 

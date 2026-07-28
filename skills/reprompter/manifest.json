@@ -10,15 +10,15 @@
   },
   "source": {
     "root_skill": "SKILL.md",
-    "root_skill_sha256": "0a947d333cdd7b0bd5aa12bb5ea65c2ce9783e0a7cf738f8a250425af35af147",
+    "root_skill_sha256": "513be1eb502d0671ece46b645573790320cf04b3f8b2429e98718d9d238b5cf7",
     "sanitizer": "scripts/hermes-sanitizer.json",
-    "sanitizer_sha256": "836f2e674e16b99416eddb7f8d7d081d3250ec5b2c7392c0a5ec6befa057f919"
+    "sanitizer_sha256": "de7e8b3027a41890fcb523651b3c9c4ebe70c81445f9173c75d1456aae3faa99"
   },
   "files": [
     {
       "path": "SKILL.md",
-      "source_sha256": "0a947d333cdd7b0bd5aa12bb5ea65c2ce9783e0a7cf738f8a250425af35af147",
-      "generated_sha256": "8f29966b53a97d4673f267e9918f714e586cc8fd3321121e4f726f9a37acaaab"
+      "source_sha256": "513be1eb502d0671ece46b645573790320cf04b3f8b2429e98718d9d238b5cf7",
+      "generated_sha256": "558bb11592d378708eaf1c623c53c30cc7f3f45c5a92b2d99f6bcfe1142ac9c8"
     },
     {
       "path": "references/api-template.md",
@@ -54,6 +54,11 @@
       "path": "references/marketing-swarm-template.md",
       "source_sha256": "f2633658a7ccb740944172b53b69c5791ef1b42aeee58b2ebdff484cb1d7ae55",
       "generated_sha256": "f2633658a7ccb740944172b53b69c5791ef1b42aeee58b2ebdff484cb1d7ae55"
+    },
+    {
+      "path": "references/oneshot-template.md",
+      "source_sha256": "5de9e753b266e0a1b46d22732f3708dd5912737fd9b716f3b8a567d1f96b5d07",
+      "generated_sha256": "5de9e753b266e0a1b46d22732f3708dd5912737fd9b716f3b8a567d1f96b5d07"
     },
     {
       "path": "references/ops-swarm-template.md",
@@ -101,6 +106,11 @@
       "generated_sha256": "6b3203e9f51eb9903942690c052644a9a521a13833904147d17e56b950247060"
     },
     {
+      "path": "references/runtime/claude-workflow-runtime.md",
+      "source_sha256": "700bc4ae7b40f52a32a02f4f0c82ae54b2b0b5b9ba729d651a803710a1d69ea5",
+      "generated_sha256": "700bc4ae7b40f52a32a02f4f0c82ae54b2b0b5b9ba729d651a803710a1d69ea5"
+    },
+    {
       "path": "references/runtime/codex-runtime.md",
       "source_sha256": "0dbbbbf9cc1b8272d344f8106881b468375865a9705cd12f4f3f65fb7c43d635",
       "generated_sha256": "8f95c99dbc8c77ad350200e287abf0212c4c849bac5250a57eae81f6e9796232"
@@ -119,11 +129,6 @@
       "path": "references/runtime/grok-cli-runtime.md",
       "source_sha256": "16f316f2e8116f5d160e2bbf9c0c18dc5a7d44097c29d037dc3e497db39df69c",
       "generated_sha256": "3fdefef9089e34e9e8ef54126631997b219eae75b6716b130629c1a3a40c3577"
-    },
-    {
-      "path": "references/runtime/claude-workflow-runtime.md",
-      "source_sha256": "700bc4ae7b40f52a32a02f4f0c82ae54b2b0b5b9ba729d651a803710a1d69ea5",
-      "generated_sha256": "700bc4ae7b40f52a32a02f4f0c82ae54b2b0b5b9ba729d651a803710a1d69ea5"
     },
     {
       "path": "references/runtime/hermes-agent-runtime.md",

@@ -1,3 +1,27 @@
+## v12.18.0 (2026-07-27) — One-Shot lane
+
+### Added
+
+- New **One-Shot** lane: one prompt that builds a whole app, game, or site autonomously. Triggers: "one-shot this", "one-shot a X", "one-shot prompt", "tek promptla", "tek seferde", "vibe a game", "vibe code a X", "build me a whole app/game/site".
+- `references/oneshot-template.md` — plain-language interview (max 4 questions, no jargon), bracket-filling rules for the proven one-shot prompt shape, worked example, and a two-mode design.
+- Router: `oneshot` mode with a deliberately narrow trigger list so ordinary build requests ("build me a login form") stay in their own lanes; bare Turkish "tek prompt" was dropped after it hijacked ordinary Single traffic. Precedence: forceSingle > reverse > workflow > oneshot > multi-agent, with regression tests.
+- Gauntlet-loop alignment from the source author's published method: the interview asks for reference material the agent can inspect (screenshots, a link, a file); the checker judges the real running artifact, never the builder's summary; a smoothing pass reconciles separately built pieces. Checklist acceptance is uncapped while polish is capped at two rounds, and the maximal-mode prompt is fully self-contained with a single termination clause.
+
+### Changed
+
+- Default One-Shot output **finishes in one session** via a 5-12 item done-list. `ultracode` and "/loop until perfect" are never added on RePrompter's initiative - they are burn switches that run until the platform cuts the session off, consuming the 5-hour window and eating into the weekly cap. Maximal mode is opt-in and states that cost in plain language first.
+- The done-list ends the run, not the reference: "as good as {reference}" is unreachable by construction, so the reference sets direction and the list sets done.
+- No no-libraries / no-downloaded-assets rule is imposed unless the user asks; from-scratch is opt-in.
+- Runtime-agnostic: the prompt body is portable prose; at most one runtime line is appended, and only in maximal mode.
+- `package.json`, `package-lock.json`, generated plugin, and generated Hermes package - version `12.18.0`.
+
+### Verification
+
+- `npm run test:intent-router` (27 tests, includes narrow-trigger regression)
+- `npm run validate:templates && npm run validate:tool-refs`
+- `npm run test:plugin-package && npm run check:plugin-package`
+- `npm run test:hermes-package && npm run check:hermes-package && npm run check:hermes-guard`
+
 ## v12.17.0 (2026-07-10) — Availability-gated relay delivery with orchestrator review
 
 ### Added
