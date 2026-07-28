@@ -31,15 +31,13 @@ RePrompter is a prompt engineering skill for AI coding agents. It takes rough, l
 | **"reprompt this: ..."** — make my prompt better | Interview → the right shape for the job: a structured, scored spec prompt for bounded work, or an autonomous build prompt for whole-product asks (announced, overridable) |
 | **"one-shot this: ..."** — build this whole thing | Plain-language interview (max 4 questions) → a prose build prompt that finishes in one session — or, on request, the same brief split across an agent team |
 
-**Where the result goes:** paste it (default) · compress to a `/goal` command (Codex, Claude Code, Hermes) · compile to a runnable Claude `.workflow.js` · deliver to another model via [headless-relay](https://github.com/dorukardahan/headless-relay). Team execution (`repromptverse`, swarm triggers) and Reverse mode (extract the prompt DNA from a great output) keep working exactly as before — see SKILL.md.
+**Where the result goes.** Improve outputs can be pasted (default), compressed to a `/goal` command (Codex, Claude Code, Hermes), compiled to a runnable Claude `.workflow.js`, or delivered to another model via [headless-relay](https://github.com/dorukardahan/headless-relay). Build runs as one prompt or splits across a team. Everything that used to be a separate "lane" is now one of these — a format the result takes or the way it executes.
 
-## Relay delivery (post-output step)
-
-Not a sixth lane. When the [headless-relay](https://github.com/dorukardahan/headless-relay) skill is installed alongside RePrompter, the **Single** and **Reverse** lanes end with a one-time structured offer to deliver the finished prompt to another model headlessly. The offer lists only targets that are actually available — headless-relay's built-in lanes plus any user-connected custom targets, local models included — and never the orchestrator's own provider (same-provider work uses the harness's native subagent). The orchestrating agent stays in the loop: by default it reviews the relayed answer against the prompt's own `<success_criteria>` and reports output plus verdict (say "verbatim" or "no review" to skip). RePrompter owns prompt quality; headless-relay owns CLI preflight, provider-terms compliance, and all CLI mechanics. Delivery never auto-executes, and Gemini prompts deliver sequentially. Without headless-relay installed — or with no target available — the step is invisible: no offer, no install nag. See `SKILL.md` section "Deliver via headless-relay (post-output step)".
+**Nothing was removed.** Team execution (`repromptverse`, `smart run`, swarm triggers), the `/goal` and Workflow formats, cross-model relay delivery, and Reverse mode (extract the prompt DNA from a great output) all work exactly as before — see [SKILL.md](SKILL.md). v13 changed the map, not the machinery: every v12 trigger still routes to the same behavior.
 
 ---
 
-## Before / After
+## Improve: a rough prompt becomes a good one
 
 ```
 Input:  "uhh build a crypto dashboard, maybe coingecko data, add caching, test it too"
@@ -112,6 +110,29 @@ with unit tests for both API and UI, without breaking existing API contracts.
 | **Overall** | **1.6** | **9.0** | **+462%** |
 
 > Scores are self-assessed. Treat as directional indicators, not absolutes.
+
+---
+
+## Build: a rough idea becomes a working thing
+
+```
+You say:  one-shot this: a first-person shooter like the recent Call of Duty games, in the browser
+```
+
+RePrompter asks a few plain questions, then emits one prose build prompt you paste into any coding agent. It names a real reference the agent can inspect, staffs the work with a **separate harsh critic** that judges the running artifact against real screenshots (never the builder's summary), and ends on a checkable bar. Below is a single self-contained HTML file built from that prompt — a browser FPS with every texture, model, and sound generated in code, no downloaded assets, running at 240+ fps:
+
+<p align="center">
+  <img src="assets/oneshot-demo.png" alt="One-Shot build result — a browser first-person shooter: industrial warehouse, red-dot rifle viewmodel, enemies, full HUD" width="820">
+</p>
+
+Two dogfood runs, same lane:
+
+| Mode | Prompt | Result |
+|------|--------|--------|
+| Default (one session) | Vampire-Survivors-style browser roguelite | a naive "build me X" prompt produced only scaffolding — a module contract, a build system, a test harness, **no game**; the One-Shot prompt produced a complete playable game (146 kills, level 7, ~70fps with 200+ enemies in an automated soak test) |
+| Maximal (opt-in) | the CoD-style FPS above | 7 specialists in isolated repo copies, judged each round against 10 real Call-of-Duty stills, ~11.8k lines across 34 modules |
+
+> Lands at a strong working prototype — expect to keep iterating after it stops. It does **not** produce a shipped AAA title; the FPS above still has rough edges (muzzle-flash bloom, one stray additive box), and the honest close says so up front.
 
 ---
 
@@ -224,11 +245,30 @@ Use `SKILL.md` as the behavior spec. Templates are in `references/`.
 
 ## Quick Start
 
+**Improve a prompt** — the everyday case. RePrompter picks the shape for the job: a structured, scored spec prompt for bounded work, or an autonomous build prompt for whole-product asks (announced, and you can say "spec" to override).
+
 ```
 reprompt this: build a REST API with auth and rate limiting
 ```
 
-### `/goal` Preflight
+**Build a whole thing** — one prompt that makes the app, game, or site. Finishes in one session; ask for a team and the same brief splits across agents.
+
+```
+one-shot this: a focus timer app like a clean pomodoro tool
+```
+
+**Advanced:** extract the prompt DNA from a great output you want to reproduce.
+
+```
+reverse reprompt this: [paste a great output you want to reproduce]
+```
+
+RePrompter interviews you when interactive clarification is useful, generates the prompt, and (for spec prompts) shows a before/after quality score.
+
+<details>
+<summary><strong>Formats an Improve result can take</strong> — /goal command, Workflow script, cross-model relay</summary>
+
+### `/goal` command format
 
 Use RePrompter before `/goal` whenever the goal is bigger than a single direct instruction. The lane works on **Codex CLI** (any version exposing the `goals` feature), **Claude Code CLI v2.1.139+** (native `/goal` slash command shipped on 2026-05-11), and **Hermes Agent** (persistent goals in the v0.13.0 / 2026.5.7 release). These runtimes shape the command as `/goal <objective>`, so RePrompter first builds the full expanded prompt, then compresses it into a dense copy-pasteable `/goal <summary of expanded prompt>` command. The command should read like a summary of the old long XML prompt, not a tiny rewrite of the rough input.
 
@@ -276,48 +316,46 @@ It writes `goal-command.json`, `goal-command.txt`,
 `compressed-goal-summary.txt`. The command is artifact generation only; it does
 not execute `/goal`, dispatch agents, read secrets, or touch production. The same `/goal <objective>` output also pastes directly into Claude Code v2.1.139+ and Hermes Agent — dedicated `--target claude-code` / `--target hermes` switches are planned for a follow-up release; until then the existing `--target codex` artifact text is shape-compatible with both `/goal` surfaces.
 
-```
-reprompter teams - audit the auth module for security and test coverage
-```
+### Team execution and Reverse
 
 ```
-reverse reprompt this: [paste a great output you want to reproduce]
+reprompter teams - audit the auth module for security and test coverage   # run a Build/audit across agents
+reverse reprompt this: [paste a great output]                             # extract the prompt DNA
 ```
 
-RePrompter interviews you when interactive clarification is useful, generates a structured prompt (XML default; Markdown equally valid when requested), and shows a before/after quality score.
+</details>
 
 ---
 
 ## How It Works
 
-### Single Mode
+### Improve
 
 ```
-Rough prompt → Input guard → Quick mode gate → Interview (2-5 questions)
-→ Template selection → structured prompt generation → Quality scoring → Delta rewrite if < 7/10
+Rough prompt → Input guard → Interview (2-5 questions) → Specifiability router
+→ spec-XML (enumerable done-state)  OR  outcome-prose (quality-bar ask, announced)
+→ Quality scoring (spec only) → Delta rewrite if < 7/10 → optional output format
 ```
 
-18 validated templates cover feature, bugfix, refactor, testing, API, UI, security, docs, content, research, workflow, and multi-agent swarm patterns.
+18 validated templates cover feature, bugfix, refactor, testing, API, UI, security, docs, content, research, workflow, and multi-agent swarm patterns. The router picks spec-XML for bounded work and the One-Shot prose shape for whole-product asks; you can always override.
 
-### Repromptverse Mode
-
-```
-Phase 1: Score prompt, interview if needed, plan team, show Plan Cards → user approves
-Phase 2: Write structured prompt per agent (target 8+/10), show quality scorecard
-Phase 3: Execute (tmux / TeamCreate / Workflow tool / OpenClaw / Codex / Grok CLI / Hermes Agent / sequential fallback)
-Phase 4: Show Result Cards, evaluate, retry with delta prompts if needed (max 2)
-```
-
-Agents get non-overlapping scopes, explicit success criteria, and file:line reference requirements. The evaluator loop ensures quality before synthesis.
-
-### Reverse Mode
+### Build
 
 ```
-Exemplar output → EXTRACT structure → ANALYZE task type + domain + tone
-→ SYNTHESIZE structured prompt → Score → Optional: INJECT into flywheel
+Idea → plain-language interview (max 4) → done-list brief
+→ one prompt (default, finishes in one session)  OR  split across a team
 ```
 
-11 task type classifiers (code review, security audit, architecture doc, API spec, test plan, bug report, PR description, documentation, content, research, ops report) with 8 domain detectors and tone analysis. Solves the flywheel cold-start problem by seeding it with known-good prompt/output pairs.
+The prose brief names a real reference, staffs parallel work with a separate harsh critic that judges the running artifact, and ends on a checkable done-list. Picking a team seeds the Repromptverse engine: each work area becomes an agent scope, the done-list becomes the team's success criteria, the critic becomes the Phase-4 evaluator, and the smoothing pass becomes synthesis.
+
+### Advanced: Repromptverse & Reverse
+
+```
+Repromptverse  → Plan Cards → per-agent prompt → execute → Result Cards → evaluate → retry (max 2)
+Reverse        → exemplar → EXTRACT structure → ANALYZE type/domain/tone → SYNTHESIZE prompt → flywheel
+```
+
+Repromptverse is the team-execution engine (standalone or seeded by a Build brief). Reverse extracts a reusable prompt from a great output and seeds the flywheel — solving its cold-start problem with known-good prompt/output pairs.
 
 ---
 
