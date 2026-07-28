@@ -11,7 +11,7 @@
 
 - Zero trigger removals: every v12 trigger routes to the same behavior under the new naming.
 - Zero template-id renames; flywheel recipes, telemetry schema, outcome records untouched.
-- Router precedence unchanged (forceSingle > reverse > workflow > oneshot > multi-agent); `scripts/intent-router.js` behavior identical, comments only.
+- Router untouched: `scripts/intent-router.js` is not modified in v13 — routing behavior and precedence are exactly as shipped in v12.18.
 - Ambient gate unchanged.
 
 ### Verification
