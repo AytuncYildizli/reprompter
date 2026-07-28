@@ -109,8 +109,10 @@ If the user asks for a team — or says yes when the ask clearly spans 2+ indepe
 
 - the enumerated **work areas** → **2-5 agent scopes** (Repromptverse's cap): group related areas so each agent owns a coherent, non-overlapping slice, and name one agent as integrator for cross-cutting concerns;
 - the **done-list** → the team's success criteria, split per agent by area;
-- the **harsh checker** → the Phase-4 evaluator (separate from every builder, judges real artifacts, "neither passes" allowed);
-- the **smoothing pass** → the synthesis step after all agents complete.
+- the **harsh checker** → the Phase-4 evaluator (separate from every builder, "neither passes" allowed). Be honest about the gap: standard Repromptverse Phase 4 reads each agent's report/artifact *file* and scores against criteria — it does not by default run the built product and judge live pixels the way the one-prompt path's checker does. If the artifacts are runnable and live inspection matters, say so in the per-agent success criteria ("the evaluator must run the built file, not read a summary") so the evaluator actually exercises them.
+- the **smoothing pass** → the synthesis step after all agents complete. Again mind the gap: default synthesis composes the agents' reported outputs; a code-level integration pass that reconciles the separate pieces into one coherent artifact is extra work you must ask for explicitly in the synthesis instruction, not something the report-merge gives you for free.
+
+Net: the one-prompt path gets live-artifact checking and code smoothing for free; the team path gets parallelism and per-area ownership but you must spell out live inspection and integration, or you get report-level evaluation and text synthesis.
 
 The interview does not change. The user hears one extra sentence: "This splits well across a team — run it as N agents instead of one prompt?" Default remains one prompt; the team path is for when the user wants it or the domains genuinely don't touch.
 
