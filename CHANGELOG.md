@@ -1,3 +1,24 @@
+## v13.0.0 (2026-07-28) — RePrompter v2: two intents
+
+### Changed
+
+- **Six lanes become two intents.** Improve ("reprompt this") and Build ("one-shot this"). `/goal` preflight and Workflow preflight are now output FORMATS of Improve; Repromptverse is the team-execution engine (standalone, or seeded by a Build brief); Reverse moves to an Advanced section. Presentation only — the machinery underneath is unchanged.
+- **Specifiability router inside Improve:** enumerable done-state → spec-XML with the six-dimension score, exactly as before; whole-product/quality-bar asks → outcome-prose in the One-Shot shape with a constraints sentence, announced in one line and overridable with "spec". Outcome-prose is not scored on the six dimensions.
+- **Build can split across a team:** the One-Shot brief seeds Repromptverse — work areas become agent scopes, the done-list becomes the team's success criteria, the harsh checker becomes the Phase-4 evaluator, the smoothing pass becomes synthesis.
+- Version 13.0.0 across package.json, lockfile, generated plugin, generated Hermes package.
+
+### Compatibility contract
+
+- Zero trigger removals: every v12 trigger still recognizes and routes to its intent. One honest behavior change: an Improve ask that is clearly a whole-product build now defaults to an announced, overridable outcome-prose prompt instead of spec-XML — every bounded/ambiguous ask stays spec-XML and scored, as before.
+- Zero template-id renames; flywheel recipes, telemetry schema, outcome records untouched.
+- Router untouched: `scripts/intent-router.js` is not modified in v13 — routing behavior and precedence are exactly as shipped in v12.18.
+- Ambient gate unchanged.
+
+### Verification
+
+- Full existing test suite green, unchanged.
+- Fresh-session smokes: bounded ask → spec-XML; whole-product ask → announced outcome-prose; "one-shot this" → Build interview with team option; legacy triggers ("workflow preflight", "repromptverse") land in their machinery.
+
 ## v12.18.0 (2026-07-27) — One-Shot lane
 
 ### Added
