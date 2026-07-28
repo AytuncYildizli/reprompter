@@ -1,3 +1,13 @@
+## v13.0.1 (2026-07-28) — Credits
+
+### Added
+
+- README Build section credits the one-prompt build pattern to its sources: @mattshumer_ (the 152-word CoD-like FPS run) and @ziwenxu_ (the Gauntlet Loop write-up). RePrompter's One-Shot template is that shape made fillable, plus the checklist stop.
+
+### Changed
+
+- `package.json`, `package-lock.json`, generated plugin, and generated Hermes package — version `13.0.1`. No behavior change.
+
 ## v13.0.0 (2026-07-28) — RePrompter v2: two intents
 
 ### Changed
