@@ -1,8 +1,8 @@
 ---
 name: reprompter
 description: |
-  Two intents: Improve ("reprompt this") emits a structured, scored spec prompt; Build ("one-shot this") emits an autonomous build prompt for a whole app/game/site.
-  Use when: "reprompt", "clean up this prompt", "before /goal", "Codex /goal", "Claude Code /goal", "Hermes /goal", "repromptverse", "reprompter teams", "smart run", swarm triggers, "compile to workflow", "workflow preflight", multi-agent tasks, audits, parallel work, "reverse reprompt", "prompt dna", "extract prompt from", "one-shot this", "one-shot a X", "tek promptla", "tek seferde", "vibe a game", "build me a whole app/game/site".
+  Two intents: Improve ("reprompt this") emits a scored spec prompt; Build ("one-shot this") emits a build prompt for a whole app/game/site.
+  Use when: "reprompt", "clean up this prompt", "before /goal", "Codex /goal", "Claude Code /goal", "Hermes /goal", "repromptverse", "reprompter teams", "smart run", "run with quality", "engineering/ops/research/marketing swarm", "compile to workflow", "workflow preflight", "dynamic workflow", multi-agent tasks, audits, "reverse reprompt", "prompt dna", "extract prompt from", "one-shot this", "one-shot a X", "tek promptla", "tek seferde", "vibe a game", "build me a whole app/game/site".
   Don't use for simple Q&A, casual chat, or execution-only tasks.
   Outputs: structured XML/Markdown prompt + before/after score; /goal command card (Codex/Claude Code/Hermes); optional team brief + per-agent prompts + Agent Cards; Reverse Extraction Card; Workflow Command Card + runnable .workflow.js (Workflow preflight lane / Option H).
   Target score: spec >= 7/10; per-agent >= 8/10.
@@ -32,7 +32,7 @@ Users learn two sentences. Everything else is machinery underneath them.
 | **Improve** — "make my prompt better" | "reprompt this", "clean up this prompt" | Interview → the specifiability router picks the shape: **spec-XML** when the done-state is enumerable up front (bugfix with a repro, endpoint with a contract, bounded feature), **outcome-prose** in the One-Shot shape when done can only be judged against a quality bar (whole product, "like X", aesthetic outcome) → score (spec-XML only) → output-format step |
 | **Build** — "build this whole thing" | "one-shot this", "one-shot a X", "tek promptla", "tek seferde", "vibe a game", "build me a whole app/game/site" | Plain-language interview (max 4) → done-list brief → execution choice: **one prompt** (default; finishes in one session, maximal/loop opt-in) or **split across a team** (the brief seeds Repromptverse: done-list becomes the team's success criteria, the harsh checker becomes the evaluator) |
 
-**Output formats (Improve):** paste (default) · compress to a `/goal <objective>` command (Codex CLI, Claude Code v2.1.139+, Hermes) · compile to a runnable `.workflow.js` (Claude Workflow tool) · deliver to another model via headless-relay (post-output step). The `/goal` and Workflow sections below define these formats; their triggers ("before /goal", "workflow preflight", "compile to workflow", "dynamic workflow", ...) jump straight to Improve with that format.
+**Output formats (Improve):** these apply to **spec-XML results only** — an outcome-prose build brief is delivered as-is (it must not be compressed to `/goal` or compiled to a workflow, which would discard its staffing plan and checklist). paste (default) · compress to a `/goal <objective>` command (Codex CLI, Claude Code v2.1.139+, Hermes) · compile to a runnable `.workflow.js` (Claude Workflow tool) · deliver to another model via headless-relay (post-output step). The `/goal` and Workflow sections below define these formats; their triggers ("before /goal", "workflow preflight", "compile to workflow", "dynamic workflow", ...) jump straight to Improve with that format.
 
 **Team execution (Build and beyond):** "repromptverse", "reprompter teams", "smart run", "smart agents", "run with quality" and the swarm triggers route to the Repromptverse machinery below — either standalone as today, or seeded by a Build brief.
 
@@ -59,7 +59,7 @@ Definition — **2+ systems** means at least two distinct technical domains that
 
 When the user mentions `/goal`, `before /goal`, `for /goal`, "Codex /goal", "Claude Code /goal", "Hermes /goal", or asks to improve a goal prompt, run RePrompter before the goal is submitted.
 
-This lane works on **Codex CLI** (any version exposing the `goals` feature), **Claude Code CLI v2.1.139+** (the release that shipped a native `/goal` slash command on 2026-05-11), and **Hermes Agent** (persistent goals documented in the v0.13.0 / 2026.5.7 release). These runtimes accept the same `/goal <objective>` shape, so the compression flow is identical; only the setup check and a few runtime-specific operational notes differ. If the target runtime is Claude surfaces without `/goal` support, OpenClaw, Grok CLI, Gemini, or another LLM, use Single mode or Repromptverse instead; do not emit a `/goal` command for runtimes that have no `/goal` surface.
+This lane works on **Codex CLI** (any version exposing the `goals` feature), **Claude Code CLI v2.1.139+** (the release that shipped a native `/goal` slash command on 2026-05-11), and **Hermes Agent** (persistent goals documented in the v0.13.0 / 2026.5.7 release). These runtimes accept the same `/goal <objective>` shape, so the compression flow is identical; only the setup check and a few runtime-specific operational notes differ. If the target runtime is Claude surfaces without `/goal` support, OpenClaw, Grok CLI, Gemini, or another LLM, use Improve (spec-XML) or Repromptverse instead; do not emit a `/goal` command for runtimes that have no `/goal` surface.
 
 ### Detecting the target runtime
 
@@ -364,7 +364,7 @@ Before the template pick, decide the OUTPUT SHAPE from the interview:
 **Default is spec-XML.** Only switch to outcome-prose on a STRONG whole-product signal, and when in doubt, stay spec-XML — a scored structured prompt is never the wrong answer for a coding task, and it is what "reprompt this" has always produced.
 
 - **Spec-XML (default)** — any bounded change (bugfix, endpoint, refactor, a feature in named files), anything with an enumerable done-state, and anything ambiguous. Scored on the six dimensions, exactly as always.
-- **Outcome-prose (only on a strong signal)** — the ask is to build a WHOLE product or artifact from near-zero (a whole app/game/site/deck), OR it names a real product as the quality bar for a from-scratch build ("build me X like Linear"). Then emit the One-Shot three-paragraph shape (`references/oneshot-template.md`), including its constraints sentence for load-bearing negatives ("never touch auth"). **Announce and offer the exit:** "This looks like a whole-product build — I'll write an autonomous build prompt; say 'spec' for the structured, scored version instead." The user's override always wins. Outcome-prose is not scored on the six dimensions.
+- **Outcome-prose (only on a strong signal)** — the ask is to build a WHOLE product or artifact from near-zero (a whole app/game/site/deck), OR it names a real product as the quality bar for a from-scratch build ("build me X like Linear"). Then emit the One-Shot three-paragraph shape (`references/oneshot-template.md`), including its constraints sentence for load-bearing negatives ("never touch auth"). **Announce and offer the exit:** "This looks like a whole-product build — I'll write an autonomous build prompt; say 'spec' for the structured, scored version instead." The user's override always wins. Outcome-prose is not scored on the six dimensions. **This is the same artifact the Build intent produces** — an Improve ask that is really a whole-product build and the Build intent converge on one prose brief, deliberately; there is no separate Improve-only build shape to disambiguate.
 - **Mixed asks** (a *bounded* change described with a reference, e.g. "add a settings page like Linear's to our app") are spec-XML: the reference informs the requirements, it does not trigger a from-scratch build. When genuinely unsure which one an ask is, ask one discriminator question — "a fresh build, or a change to something that exists?" — and default to spec-XML on a fresh session with no answer.
 
 ### Process
@@ -373,7 +373,7 @@ Before the template pick, decide the OUTPUT SHAPE from the interview:
 2. **Input guard** — if input is empty, a single word with no verb, or clearly not a task → ask the user to describe what they want to accomplish
    - Reject examples: "hi", "thanks", "lol", "what's up", "good morning", random emoji-only input
    - Accept examples: "fix login bug", "write API tests", "improve this prompt"
-3. **Quick Mode gate** — under 20 words, single action, no complexity indicators → generate immediately
+3. **Quick Mode gate** — under 20 words, single action, no complexity indicators → generate immediately. A quick-mode task is bounded by definition, so it is always spec-XML; the shape decision does not run on this path (there is nothing whole-product about a sub-20-word atomic task).
 4. **Smart Interview** — use `AskUserQuestion` with clickable options (2-5 questions max) for interactive Single mode. For prompts destined for autonomous execution (goal/workflow/team lanes), skip questions with reasonable defaults and emit an `<assumptions>` block the user can veto before running.
 5. **Flywheel bias check (optional, read-only)** — if `REPROMPTER_FLYWHEEL_BIAS=1` is set in the environment, consult past outcomes before choosing a template. See "Flywheel bias injection" below.
 6. **Generate + Score** — **if the shape decision above chose outcome-prose, skip this step's scoring**: emit the One-Shot prose brief (`references/oneshot-template.md`) and stop — outcome-prose is not scored on the six dimensions. Otherwise (spec-XML) apply the template and show before/after quality metrics. Generated prompts include a `<success_criteria schema_version="1">` block with 3-6 `<criterion>` entries. Each criterion has `id` (kebab-case slug, unique in block), `verification_method` (`rule` | `llm_judge` | `manual`), a one-sentence `<description>`, and — depending on method — an inline `<rule type="regex|predicate">` or `<judge_prompt>` (neither for `manual`). Schema of record: `references/outcome-schema.md`.
@@ -1286,7 +1286,7 @@ The reprompted prompts from Phase 2 are pure text. They work regardless of execu
 
 For "one-shot this", "one-shot a X", "tek promptla", "tek seferde", "vibe a game", "build me a whole app/game/site" — the user wants **the whole thing built**, not a prompt they will hand to themselves. Two execution shapes: **one prompt** (default, below) or **split across a team** — if the user asks for a team (or says yes when the ask clearly spans 2+ independent domains), hand the finished brief to Repromptverse: the done-list becomes the team's success criteria, the harsh checker becomes the Phase-4 evaluator, and each work area becomes an agent scope. See `references/oneshot-template.md` "Split across a team".
 
-Full template, interview, bracket-filling rules, and worked example: `references/oneshot-template.md`. Read it when this lane triggers.
+Full template, interview, bracket-filling rules, and worked example: `references/oneshot-template.md`. Read it when this intent triggers.
 
 The shape in brief — three prose paragraphs, no XML:
 
@@ -1477,7 +1477,7 @@ otherwise stay completely silent about it.
 
 ## Deliver via headless-relay (post-output step)
 
-Applies after the **Single** and **Reverse** lanes only. The other lanes own their
+Applies after the **Improve (spec-XML)** and **Reverse** intents only. The other intents own their
 execution path: `/goal` cards paste into a runtime, Workflow preflight runs via the
 Workflow tool, and Repromptverse Phase 3 owns runtime execution (Options A-H).
 

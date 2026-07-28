@@ -122,6 +122,6 @@ The interview does not change. The user hears one extra sentence: "This splits w
 
 ## When not to use
 
-- A bounded task → Single mode.
-- They want to run a team and review results themselves → Repromptverse.
+- A bounded task → Improve (spec-XML).
+- They want a standalone team for an audit or operator-owned work (not a from-scratch build) → Repromptverse directly. A team that builds a whole thing is this intent with "split across a team".
 - No checkable finished state (open-ended research, audits) — the done-list cannot be written, so the run cannot end.
