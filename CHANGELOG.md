@@ -2,9 +2,10 @@
 
 ### Added
 
-- New **One-Shot** lane: one prompt that builds a whole app, game, or site autonomously. Triggers: "one-shot this", "one shot this", "one-shot prompt", "tek prompt", "vibe a game", "build me a whole X".
+- New **One-Shot** lane: one prompt that builds a whole app, game, or site autonomously. Triggers: "one-shot this", "one-shot a X", "one-shot prompt", "tek promptla", "tek seferde", "vibe a game", "vibe code a X", "build me a whole app/game/site".
 - `references/oneshot-template.md` — plain-language interview (max 4 questions, no jargon), bracket-filling rules for the proven one-shot prompt shape, worked example, and a two-mode design.
-- Router: `oneshot` mode with a deliberately narrow trigger list so ordinary build requests ("build me a login form") stay in their own lanes. Explicit lanes the user named (reverse, forceSingle) still win.
+- Router: `oneshot` mode with a deliberately narrow trigger list so ordinary build requests ("build me a login form") stay in their own lanes; bare Turkish "tek prompt" was dropped after it hijacked ordinary Single traffic. Precedence: forceSingle > reverse > workflow > oneshot > multi-agent, with regression tests.
+- Gauntlet-loop alignment from the source author's published method: the interview asks for reference material the agent can inspect (screenshots, a link, a file); the checker judges the real running artifact, never the builder's summary; a smoothing pass reconciles separately built pieces. Checklist acceptance is uncapped while polish is capped at two rounds, and the maximal-mode prompt is fully self-contained with a single termination clause.
 
 ### Changed
 

@@ -1276,7 +1276,7 @@ The shape in brief — three prose paragraphs, no XML:
 
 1. **What good looks like** — a real named reference (never "AAA"/"polished", which let the model pick its own generous bar), one phrase of what quality means here, two seed work areas, then "anything you could think of" so the model enumerates the rest itself.
 2. **Who does the work** — get one end-to-end slice running first, then expand; work areas in parallel where they don't touch, one helper per area, integrating as you go. A **separate** helper checks each piece and is told to be a harsh critic, not an encouraging one. Never let a builder grade its own work - self-graded work always passes.
-3. **When it is done** — a 5-12 item done-list, each item checkable by looking at the built thing, each closable as "not possible in {stack}, because X". Plus the stack, which is the only technical instruction and shapes the result more than it looks like it will.
+3. **When it is done** — a 5-12 item done-list, each item checkable by looking at the built thing, each closable as "not possible in {stack}, because X" only when genuinely impossible. The checker confirms items on the real running artifact, never on the builder's summary, and a final smoothing pass reconciles the separately built pieces before stopping. Plus the stack, which is the only technical instruction and shapes the result more than it looks like it will.
 
 One-Shot output is **not scored** on the six dimensions - it is a prose build brief, not a structured prompt. Its bar is the checklist: 5-12 items, every one checkable by looking at the built thing.
 
@@ -1284,7 +1284,7 @@ Hard rules for this lane:
 
 - **Never add `ultracode` or "/loop until perfect" on your own initiative.** Those are burn switches: an unbounded run against an unreachable bar does not stop itself, it stops when the platform cuts it off, consuming the user's 5-hour window and eating into their weekly cap. Default mode finishes inside one normal session.
 - **Maximal mode is opt-in**, chosen by the user in the interview, and when chosen you state the limit cost in one plain sentence before the prompt.
-- **Rework is capped at two send-backs per piece**, then keep the best attempt and note the gap on the checklist. An uncapped "send it back until it's good" is an unbounded loop even without loop keywords.
+- **Checklist items are uncapped; polish is not.** A checklist item is worked until it passes. Anything beyond the checklist goes back at most twice, then keep the best attempt and note it. An uncapped "send everything back until it's good" is an unbounded loop even without loop keywords.
 - **The done-list ends the run, not the reference.** "Don't stop until it's as good as {reference}" is unreachable by construction. The reference sets direction; the list sets done.
 - **Do not impose a no-libraries or no-downloaded-assets rule** unless the user asks for one. From-scratch is an option, never a default.
 - **Plain language in the interview.** Never say "exemplar", "orchestrator", or "termination condition" to the user.
