@@ -401,7 +401,7 @@ You can inspect the local files, delete them anytime, and kill the gate log with
 ## Testing
 
 ```bash
-npm run check    # 334 tests + 4 benchmarks
+npm run check    # 344 tests + 4 benchmarks
 npm run test:reverse-engineer  # individual suite example
 ```
 

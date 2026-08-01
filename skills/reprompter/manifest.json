@@ -10,15 +10,15 @@
   },
   "source": {
     "root_skill": "SKILL.md",
-    "root_skill_sha256": "2cd3b288b41880a3d350b7c49d0d61c920a29fd859f388a65cb565069c972e32",
+    "root_skill_sha256": "bbbd3a6b9f2fd3121499cdb32a75919737a99f679681d6fdd9df6b3effd014b5",
     "sanitizer": "scripts/hermes-sanitizer.json",
     "sanitizer_sha256": "de7e8b3027a41890fcb523651b3c9c4ebe70c81445f9173c75d1456aae3faa99"
   },
   "files": [
     {
       "path": "SKILL.md",
-      "source_sha256": "2cd3b288b41880a3d350b7c49d0d61c920a29fd859f388a65cb565069c972e32",
-      "generated_sha256": "e1c6f3529b6f2f5985ed7d5ac21a3b73235f92dcf0498efd5e30c0a230c8b10f"
+      "source_sha256": "bbbd3a6b9f2fd3121499cdb32a75919737a99f679681d6fdd9df6b3effd014b5",
+      "generated_sha256": "1685b816517720ef59c763dd2c57e7124d5d97f625dab5be1016336c122ed259"
     },
     {
       "path": "references/api-template.md",
@@ -57,8 +57,8 @@
     },
     {
       "path": "references/oneshot-template.md",
-      "source_sha256": "466daee0b6c13fd2ed618b8c5047d2943c0680c010f7d9dfb7b5b1e818a1f460",
-      "generated_sha256": "466daee0b6c13fd2ed618b8c5047d2943c0680c010f7d9dfb7b5b1e818a1f460"
+      "source_sha256": "e20d96ee9bc892c869657d24a56b3aae6d0dacf3103e03fd2bd7e6f8ba6a3433",
+      "generated_sha256": "e20d96ee9bc892c869657d24a56b3aae6d0dacf3103e03fd2bd7e6f8ba6a3433"
     },
     {
       "path": "references/ops-swarm-template.md",
