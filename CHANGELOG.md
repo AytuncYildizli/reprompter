@@ -1,3 +1,23 @@
+## v13.1.0 (2026-08-01) — Findings from a long maximal run
+
+One maximal-mode One-Shot build (browser FPS, 20 hours, 42 commits) exposed four gaps in the template. Treat the run as one observation, not a study: the two general principles are the measurement rules; the maximal-mode notes describe how one runtime behaved in mid-2026 on one plan tier and may not hold elsewhere. Note the irony that motivated this release — the run's own gate passes were themselves measured under the wrong configuration, which is exactly the failure the first rule now guards against. The README's own dogfood numbers are restated with their conditions in this release for the same reason.
+
+### Changed
+
+- **Measured done-list items must name their conditions, and only conditions the checker can set itself.** The run reported every performance budget met while measuring at device pixel ratio 1; the artifact ran at pixel ratio 2 — four times the pixels — and froze on the owner's screen. The measurement was honest and the number was useless. Conditions must be settable by the checker (viewport, emulated pixel ratio, theme, scripted load) and must match the target's real configuration; owner-hardware descriptions turn a checkable item back into an uncheckable one. When the real conditions cannot be reproduced, the item is recorded **unverified** — a third outcome next to pass and platform-impossible — rather than passed under easier ones. Both emitted bodies carry this, including maximal, which is the mode the failure happened in.
+- **Scripted or measured checks must be calibrated** against something known-good and something known-bad before being trusted. Directly-inspectable items need no calibration. Documented four check-failure modes from the run — measuring the wrong property, a global average hiding one bad element, a pass that is necessary but not sufficient, and an instrument heavy enough to distort what it measures — and carried a one-line distillation into the emitted prompt so it reaches the run, not just the template reader.
+- **Maximal mode is described from observation instead of assumption.** In that run it stalled at the end of each long turn with its own next prompt unsent, needing a keypress; context filled before quota did on that plan, though a smaller plan hits quota first. The cost warning now names both wall-clock babysitting and plan-dependent quota risk rather than trading one for the other. Plateaus sometimes break after a reframing, so continuation should be decided on a measured gate; keep the best measured state rather than the last commit.
+
+### Added
+
+- `validate:oneshot-bodies` (`scripts/validate-oneshot-bodies.js`, wired into `npm run check`) — asserts that every rule this lane calls hard is present in the text a user actually pastes, in **both** emitted bodies, and that the maximal body still carries exactly one termination clause. Six review rounds on this release found the same defect five times: a rule added to the default body while the maximal body kept the old behaviour. `validate:templates` skips this template (it is prose by design), so nothing caught it. The check was calibrated against a known-bad copy before being trusted, per the rule it enforces.
+
+### Verification
+
+- `npm run validate:templates && npm run validate:tool-refs`
+- `npm run test:intent-router && npm run test:plugin-package && npm run test:hermes-package`
+- Both generated packages regenerated.
+
 ## v13.0.1 (2026-07-28) — Credits
 
 ### Added

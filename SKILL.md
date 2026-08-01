@@ -14,10 +14,10 @@ compatibility: |
   A post-output delivery step can — offered once as a structured choice (plain-text fallback) over the relay targets headless-relay's preflight marks available (built-in lanes plus user-connected custom/local targets), never auto-executed — hand a finished Single/Reverse prompt to the headless-relay skill; the orchestrator reviews the relayed answer against the prompt's success criteria by default. When the relay skill is not installed, no target is available, or availability cannot be verified, the step is invisible.
 metadata:
   author: AytuncYildizli
-  version: 13.0.1
+  version: 13.1.0
 ---
 
-# RePrompter v13.0.1
+# RePrompter v13.1.0
 
 > **Your prompt sucks. Let's fix that.** Two intents — improve my prompt, or build this whole thing — with `/goal`, Workflow, team execution and cross-model delivery as places the result can go. **v13 (RePrompter v2) restructures six lanes into two intents: a specifiability router picks spec-XML or an autonomous build prompt inside Improve, and Build can run as one prompt or split across a team. Every v12 trigger keeps working.**
 
@@ -1288,20 +1288,23 @@ For "one-shot this", "one-shot a X", "tek promptla", "tek seferde", "vibe a game
 
 Full template, interview, bracket-filling rules, and worked example: `references/oneshot-template.md`. Read it when this intent triggers.
 
-The shape in brief — three prose paragraphs, no XML:
+The shape in brief — three prose paragraphs, no XML. This describes **default mode**; maximal mode replaces paragraph 3's checklist with the unreachable reference as its only bar and has no done-list at all:
 
 1. **What good looks like** — a real named reference (never "AAA"/"polished", which let the model pick its own generous bar), one phrase of what quality means here, two seed work areas, then "anything you could think of" so the model enumerates the rest itself.
-2. **Who does the work** — get one end-to-end slice running first, then expand; work areas in parallel where they don't touch, one helper per area, integrating as you go. A **separate** helper checks each piece and is told to be a harsh critic, not an encouraging one. Never let a builder grade its own work - self-graded work always passes.
-3. **When it is done** — a 5-12 item done-list, each item checkable by looking at the built thing, each closable as "not possible in {stack}, because X" only when genuinely impossible. The checker confirms items on the real running artifact, never on the builder's summary, and a final smoothing pass reconciles the separately built pieces before stopping. Plus the stack, which is the only technical instruction and shapes the result more than it looks like it will.
+2. **Who does the work** — get one end-to-end slice running first, then expand; work areas in parallel where they don't touch, one helper per area, integrating as you go. A **separate** helper checks each piece and is told to be a harsh critic, not an encouraging one, and it writes and calibrates its own checks. Never let a builder grade its own work - self-graded work always passes. On a runtime with no helper mechanism, swap both helper sentences for an explicit hostile self-review pass and say it is weaker; never leave a prompt demanding a separate checker where none can exist.
+3. **When it is done** (default mode) — a 5-12 item done-list, each item checkable by looking at the built thing, each closable as "not possible in {stack}, because X" only when genuinely impossible, or recorded unverified when a named measurement condition cannot be reproduced. The checker confirms items on the real running artifact, never on the builder's summary, and a final smoothing pass reconciles the separately built pieces before stopping. Plus the stack, which is the only technical instruction and shapes the result more than it looks like it will.
 
-One-Shot output is **not scored** on the six dimensions - it is a prose build brief, not a structured prompt. Its bar is the checklist: 5-12 items, every one checkable by looking at the built thing.
+One-Shot output is **not scored** on the six dimensions - it is a prose build brief, not a structured prompt. Its bar in default mode is the checklist: 5-12 items, every one checkable by looking at the built thing. Maximal mode has no checklist by design.
 
 Hard rules for this lane:
 
-- **Never add `ultracode` or "/loop until perfect" on your own initiative.** Those are burn switches: an unbounded run against an unreachable bar does not stop itself, it stops when the platform cuts it off, consuming the user's 5-hour window and eating into their weekly cap. Default mode finishes inside one normal session.
+- **Never add `ultracode` or "/loop until perfect" on your own initiative.** Those are burn switches: an unbounded run against an unreachable bar never decides it is finished, so it runs for hours until someone stops it, and depending on the plan it can consume session or weekly caps. Default mode finishes inside one normal session. When the user does opt into maximal, the loop keywords are allowed as the runtime line only, and that line must repeat the prose's own stopping criterion with the same filled-in reference — never a different bar ("until it's perfect"), a checklist, or a deadline, each of which is a second stopping test that outlives the first.
 - **Maximal mode is opt-in**, chosen by the user in the interview, and when chosen you state the limit cost in one plain sentence before the prompt.
-- **Checklist items are uncapped; polish is not.** A checklist item is worked until it passes. Anything beyond the checklist goes back at most twice, then keep the best attempt and note it. An uncapped "send everything back until it's good" is an unbounded loop even without loop keywords.
-- **The done-list ends the run, not the reference.** "Don't stop until it's as good as {reference}" is unreachable by construction. The reference sets direction; the list sets done.
+- **Name the conditions for any measured item, and only conditions the checker can set itself.** "60fps" is not checkable; "60fps at 1600x900 with pixel ratio emulated to 2 and 40 enemies" is. Unstated conditions get filled in with whatever is easiest — one run reported every budget met at pixel ratio 1 and froze on the owner's pixel-ratio-2 screen. Owner-hardware conditions the checker cannot control make an item uncheckable again. This applies in both modes and to items the building agent adds itself, and when the real conditions cannot be reproduced the item is recorded unverified, never passed under easier ones.
+- **Calibrate any scripted or measured check before trusting it**, against something known-good and something known-bad — in both modes, and in team runs. When a builder claims done but the artifact still looks wrong, suspect the check first: measuring the wrong property, a global average hiding one bad element, a pass that is necessary but not sufficient, or an instrument heavy enough to distort what it measures.
+- **Maximal mode needs a babysitter.** In the one long run on record it stalled at the end of each turn with its own next prompt unsent, waiting for a keypress; context filled before quota did on that plan, though a smaller plan will hit quota first. Plateaus sometimes break after a reframing, so decide whether to continue on a measured gate rather than elapsed hope, and keep the best *verified* state — the one that passes your final check set, not an older high score under weaker checks.
+- **Checklist items are uncapped; polish is not.** A checklist item is worked until it passes. Anything beyond the checklist goes back at most twice, then keep the best attempt and note it. An uncapped "send everything back until it's good" is an unbounded loop even without loop keywords. This is the default-mode contract; maximal deliberately has no polish cap, which is exactly why it is opt-in and costed up front.
+- **In default mode the done-list ends the run, not the reference.** "Don't stop until it's as good as {reference}" is unreachable by construction. The reference sets direction; the list sets done. Maximal mode has no done-list and the unreachable reference is deliberately its only bar — that is the mode's mechanism, not an oversight, and it is why maximal must never also carry a checklist.
 - **Do not impose a no-libraries or no-downloaded-assets rule** unless the user asks for one. From-scratch is an option, never a default.
 - **Plain language in the interview.** Never say "exemplar", "orchestrator", or "termination condition" to the user.
 - **Runtime-agnostic.** The prompt body is portable prose. Append at most one runtime line, and only in maximal mode.

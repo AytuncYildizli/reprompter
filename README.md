@@ -8,7 +8,7 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-13.0.1-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-13.1.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-344%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
@@ -119,7 +119,7 @@ with unit tests for both API and UI, without breaking existing API contracts.
 You say:  one-shot this: a first-person shooter like the recent Call of Duty games, in the browser
 ```
 
-RePrompter asks a few plain questions, then emits one prose build prompt you paste into any coding agent. It names a real reference, staffs the work with a **separate harsh critic** that judges the running artifact (never the builder's summary), and ends on a checkable bar. The image below is one real frame from a single maximal-mode dogfood run — a browser FPS in a self-contained HTML file, textures/models/audio generated in code — captured at the `269 FPS` shown top-left. It is one run's result, not a guarantee for every run:
+RePrompter asks a few plain questions, then emits one prose build prompt you paste into any coding agent. It names a real reference, staffs the work with a **separate harsh critic** that judges the running artifact (never the builder's summary), and ends on a checkable bar. The image below is one real frame from a single maximal-mode dogfood run — a browser FPS in a self-contained HTML file, textures/models/audio generated in code — captured by the run's own screenshot harness at 1600x900 with device pixel ratio **1** — the image is 1600x900, which is what a 1600x900 viewport produces only at pixel ratio 1. That is the condition behind the `269 FPS` in the corner, and it is the whole point of this release: at the owner's real pixel ratio of 2 the same build did not hold that number. The run itself is not in this repository, so the frame and its stated conditions are what is auditable here; the rest is the maintainer's report. One run's result under stated conditions, not a guarantee for every run:
 
 <p align="center">
   <img src="assets/oneshot-demo.png" alt="One-Shot build result — a browser first-person shooter: industrial warehouse, red-dot rifle viewmodel, enemies, full HUD" width="820">
@@ -129,7 +129,7 @@ Two dogfood runs, same lane:
 
 | Mode | Prompt | Result |
 |------|--------|--------|
-| Default (one session) | Vampire-Survivors-style browser roguelite | a naive "build me X" prompt produced only scaffolding — a module contract, a build system, a test harness, **no game**; the One-Shot prompt produced a complete playable game (146 kills, level 7, ~70fps with 200+ enemies in an automated soak test) |
+| Default (one session) | Vampire-Survivors-style browser roguelite | a naive "build me X" prompt produced only scaffolding — a module contract, a build system, a test harness, **no game**; the One-Shot prompt produced a complete playable game (146 kills, level 7, ~70fps with 200+ enemies in an automated soak test driven by the build's own bot — viewport and pixel ratio were not recorded at the time, so by this release's own rule read that frame rate as unverified) |
 | Maximal (opt-in) | the CoD-style FPS above | one run: 7 sub-agents in isolated repo copies judged each round against 10 real Call-of-Duty stills; ~11.8k lines / 34 modules. Rough edges remain (see below) |
 
 > Lands at a strong working prototype — expect to keep iterating after it stops. It does **not** produce a shipped AAA title; the FPS above still has rough edges (muzzle-flash bloom, one stray additive box), and the honest close says so up front.
@@ -401,7 +401,7 @@ You can inspect the local files, delete them anytime, and kill the gate log with
 ## Testing
 
 ```bash
-npm run check    # 334 tests + 4 benchmarks
+npm run check    # 344 tests + 4 benchmarks
 npm run test:reverse-engineer  # individual suite example
 ```
 
