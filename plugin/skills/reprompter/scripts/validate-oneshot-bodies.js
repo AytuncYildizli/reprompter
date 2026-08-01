@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Invariants for the two emitted One-Shot prompt bodies.
+ * Invariants for every One-Shot emission path.
  *
  * The One-Shot template has three emission paths (default body, maximal body,
  * team mapping) and every rule has to reach all of them. Six review rounds on
@@ -9,13 +9,28 @@
  * skips this file (it is prose by design), so nothing caught it.
  *
  * This asserts that what the lane calls a hard rule is present in the text a user
- * actually pastes, in every body that carries it.
+ * actually pastes: both emitted bodies, the worked example, the team mapping, and
+ * the no-helper fallback (which has to name every helper reference it replaces).
+ *
+ * Calibrated against known-bad copies before being trusted, per the rule it enforces.
  */
 const fs = require('fs');
 const path = require('path');
 
 const FILE = path.join(__dirname, '..', 'references', 'oneshot-template.md');
 const lines = fs.readFileSync(FILE, 'utf8').split('\n');
+
+/** Collect the prose of a `## ` section, up to the next `## `. */
+function section(heading) {
+  const start = lines.findIndex((l) => l.startsWith(heading));
+  if (start === -1) throw new Error(`section not found: ${heading}`);
+  const out = [];
+  for (let i = start + 1; i < lines.length; i++) {
+    if (lines[i].startsWith('## ')) break;
+    out.push(lines[i]);
+  }
+  return out.join(' ');
+}
 
 /** Collect the contiguous blockquote that follows a heading. */
 function bodyAfter(headingPrefix) {
@@ -82,6 +97,32 @@ check('worked example', WORKED, [
   ['checker judges against the checklist, not the reference', /against the checklist/i],
 ]);
 
+// The team mapping is the third emission path: it hands the brief to Repromptverse
+// instead of emitting a one-prompt body, so the same rules have to survive the handoff.
+const TEAM = section('## Split across a team');
+check('team mapping', TEAM, [
+  ['measured criteria keep their conditions', /conditions/i],
+  ['the evaluator calibrates what it scripts', /calibrat/i],
+  ['the evaluator runs the artifact rather than reading a report', /run the built|not read a summary|live inspection/i],
+  ['what integration changes is re-checked', /re-check/i],
+]);
+
+// A helper reference the no-helper fallback does not mention is a reference that
+// silently survives onto a runtime with no helpers.
+const FALLBACK = section('## Helper wording');
+const HELPER_PHRASES = [
+  ['one helper per area', /one helper per area/],
+  ['a separate helper checks each piece', /separate helper/],
+  ['the checking helper', /the checking helper/],
+  ['the helper doing the checking', /the helper doing the checking/],
+];
+for (const [name, re] of HELPER_PHRASES) {
+  const inBodies = re.test(DEFAULT_BODY) || re.test(MAXIMAL_BODY);
+  if (inBodies && !re.test(FALLBACK)) {
+    failures.push(`no-helper fallback: does not say what replaces — "${name}"`);
+  }
+}
+
 if (failures.length) {
   console.error('One-Shot emitted-body invariants FAILED:\n');
   for (const f of failures) console.error(`  ✗ ${f}`);
@@ -90,5 +131,6 @@ if (failures.length) {
 }
 
 console.log(
-  `One-Shot emitted-body invariants OK — ${SHARED.length} shared rules present in both bodies, mode contracts intact, worked example compliant.`
+  `One-Shot emitted-body invariants OK — ${SHARED.length} shared rules present in both bodies, mode contracts intact, ` +
+    `worked example compliant, team mapping carries the same rules, no-helper fallback covers every helper reference.`
 );

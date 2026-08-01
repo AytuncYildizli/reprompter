@@ -86,9 +86,23 @@ Say this to the user in plain words before emitting it, as its own sentence:
 
 > This runs for hours and needs you to restart it each time it stalls; depending on your plan it can also eat your session or weekly cap.
 
-## Sub-agent wording (both modes)
+## Helper wording (both modes)
 
-The default body says "one helper per area". If the target runtime has no sub-agent or helper mechanism — a plain chat model, or any agent the user cannot confirm has one — replace **both** helper sentences — the per-area helper and the separate checker — with: *"do each area as a separate pass. Then, in a pass of its own, review the built thing as a hostile critic who did not write it: state what each check is before you run it, run it against the built thing, and record the result before you touch the code again."* Say plainly that this is weaker than an independent checker, because the same model is grading itself; it is the best available on a runtime with no helpers, not an equivalent. Never leave a prompt demanding a separate checker on a runtime that cannot produce one — that is the one instruction an agent resolves by quietly grading its own work. This applies in **both** modes.
+Both bodies staff the work with helpers in three distinct places, and a runtime with no helpers breaks all three, not just the first:
+
+1. `one helper per area`
+2. `Have a separate helper check each piece — one that did not build it, told to be a really harsh critic`
+3. every later mention of `the checking helper` / `the helper doing the checking` — the one that writes, calibrates and confirms the checks
+
+If the target runtime has no sub-agent or helper mechanism — a plain chat model, or any agent the user cannot confirm has one — replace **all three**:
+
+| In the body | Replace with |
+|---|---|
+| one helper per area | do each area as a separate pass |
+| a separate helper checks each piece, harsh critic | *"Then, in a pass of its own, review the built thing as a hostile critic who did not write it: state what each check is before you run it, run it against the built thing, and record the result before you touch the code again."* |
+| the checking helper writes / calibrates / confirms | *"in that review pass, write and calibrate each measured check — never reuse a check you wrote while building — and confirm each item against the built thing itself, never by reading the code"* |
+
+Leaving any of these as-is is worse than replacing them: a prompt that demands a checker the runtime cannot create is the one instruction an agent resolves by quietly grading its own work. Say plainly to the user that this is weaker than an independent checker, because the same model is grading itself — it is the best available on a runtime with no helpers, not an equivalent. This applies in **both** modes.
 
 ## Runtime line
 
