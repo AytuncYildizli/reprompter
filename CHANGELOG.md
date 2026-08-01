@@ -1,12 +1,12 @@
-## v13.1.0 (2026-08-01) — Findings from a 20-hour maximal run
+## v13.1.0 (2026-08-01) — Findings from a long maximal run
 
-Four gaps the five-model panel could not have found, because only running the thing exposes them. A maximal-mode One-Shot build (browser FPS, 20 hours, 42 commits) surfaced all four.
+One maximal-mode One-Shot build (browser FPS, 20 hours, 42 commits) exposed four gaps in the template. Treat the run as one observation, not a study: the two general principles are the measurement rules; the maximal-mode notes describe how one runtime behaved in mid-2026 and may not hold elsewhere.
 
 ### Changed
 
-- **Measured done-list items must name their conditions.** The run reported every performance budget met while measuring at device pixel ratio 1; the game shipped at pixel ratio 2 — four times the pixels — and froze on the owner's screen. The measurement was honest and the number was useless. The template now requires the viewport/resolution, pixel ratio, theme, and load to be stated for anything visual or performance-related.
-- **Checks must be calibrated before they are trusted** — against something known-good and something known-bad. Added the four check-failure modes observed: measuring the wrong property (presence where area mattered), a global average hiding one bad element, a pass that is necessary but not sufficient (hand on screen but occluded), and an instrument heavy enough to distort what it measures (a frame-time gate costing 26ms per frame).
-- **Maximal mode is described honestly.** It does not sustain itself: it runs one long turn (4-13 hours observed), then stops with its own next prompt unsent and needs a keypress. The ceiling is the session's context window, not the usage quota — quota held for 20 hours while context hit 98%. Progress is plateau-then-jump, so a run should not be judged at its first plateau, and the state worth keeping is the best *measured* one, not the last commit.
+- **Measured done-list items must name their conditions, and only conditions the checker can set itself.** The run reported every performance budget met while measuring at device pixel ratio 1; the artifact ran at pixel ratio 2 — four times the pixels — and froze on the owner's screen. The measurement was honest and the number was useless. Conditions must be settable by the checker (viewport, emulated pixel ratio, theme, scripted load); owner-hardware descriptions turn a checkable item back into an uncheckable one.
+- **Scripted or measured checks must be calibrated** against something known-good and something known-bad before being trusted. Directly-inspectable items need no calibration. Documented four check-failure modes from the run — measuring the wrong property, a global average hiding one bad element, a pass that is necessary but not sufficient, and an instrument heavy enough to distort what it measures — and carried a one-line distillation into the emitted prompt so it reaches the run, not just the template reader.
+- **Maximal mode is described from observation instead of assumption.** In that run it stalled at the end of each long turn with its own next prompt unsent, needing a keypress; context filled before quota did on that plan, though a smaller plan hits quota first. The cost warning now names both wall-clock babysitting and plan-dependent quota risk rather than trading one for the other. Plateaus sometimes break after a reframing, so continuation should be decided on a measured gate; keep the best measured state rather than the last commit.
 
 ### Verification
 
