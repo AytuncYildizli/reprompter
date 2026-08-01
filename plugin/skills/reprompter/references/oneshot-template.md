@@ -27,7 +27,7 @@ Derive the rest yourself and show it for confirmation rather than asking: the qu
 | Loop keywords | none | `/loop`, `ultracode` (Claude Code) |
 | Cost | completes inside a normal working session | **hours of wall-clock, needs babysitting, and can consume your session or weekly caps depending on plan** |
 
-Default is **finish in one session**. Only emit the maximal variant when the user explicitly picks it, and when they do, state the cost in one plain sentence before the prompt. Never add `ultracode` or "loop until perfect" on your own initiative.
+Default is **finish in one session**. Only emit the maximal variant when the user explicitly picks it, and when they do, state the cost in one plain sentence before the prompt. Never add `ultracode` or "loop until perfect" on your own initiative. Maximal opt-in is the one case where those words are allowed at all, and only as the runtime line below — never in the default body.
 
 **What one long maximal run looked like** — a single 20-hour run on Claude Code in mid-2026, so treat it as one observation, not the mode's guaranteed nature:
 
@@ -94,7 +94,7 @@ Append **at most one** runtime line, and **only in maximal mode** — the defaul
 
 | Runtime | Append |
 |---|---|
-| Claude Code | `/loop until it's utterly perfect. Fan out sub-agents and ultracode.` — matches maximal's single termination clause (the reference). Never append a line that names a checklist: maximal mode has none. |
+| Claude Code | `/loop until it's utterly perfect. Fan out sub-agents and ultracode.` — permitted only because the user opted into maximal. It restates the same deliberately unreachable bar the prose already sets, so it adds no second stopping condition; the reference stays the only bar the prose names. Never append a line that names a checklist or a deadline: maximal mode has neither, and either one turns an unreachable bar into a conflicting second one. |
 | Cursor · Gemini · Grok · Kimi · GLM · Hermes · OpenClaw · plain chat model · other | Nothing. The prose already asks for parallel helpers and a harsh checker in words every agent understands. |
 
 **Codex gets nothing appended, and must not be routed through the `/goal` preflight lane.** That lane compresses a prompt into a one-line objective, which would throw away the staffing paragraph and the checklist — the two things that make this artifact work. Paste the prose as-is.
