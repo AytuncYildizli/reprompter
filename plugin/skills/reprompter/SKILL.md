@@ -1288,13 +1288,13 @@ For "one-shot this", "one-shot a X", "tek promptla", "tek seferde", "vibe a game
 
 Full template, interview, bracket-filling rules, and worked example: `references/oneshot-template.md`. Read it when this intent triggers.
 
-The shape in brief — three prose paragraphs, no XML:
+The shape in brief — three prose paragraphs, no XML. This describes **default mode**; maximal mode replaces paragraph 3's checklist with the unreachable reference as its only bar and has no done-list at all:
 
 1. **What good looks like** — a real named reference (never "AAA"/"polished", which let the model pick its own generous bar), one phrase of what quality means here, two seed work areas, then "anything you could think of" so the model enumerates the rest itself.
-2. **Who does the work** — get one end-to-end slice running first, then expand; work areas in parallel where they don't touch, one helper per area, integrating as you go. A **separate** helper checks each piece and is told to be a harsh critic, not an encouraging one. Never let a builder grade its own work - self-graded work always passes.
-3. **When it is done** — a 5-12 item done-list, each item checkable by looking at the built thing, each closable as "not possible in {stack}, because X" only when genuinely impossible. The checker confirms items on the real running artifact, never on the builder's summary, and a final smoothing pass reconciles the separately built pieces before stopping. Plus the stack, which is the only technical instruction and shapes the result more than it looks like it will.
+2. **Who does the work** — get one end-to-end slice running first, then expand; work areas in parallel where they don't touch, one helper per area, integrating as you go. A **separate** helper checks each piece and is told to be a harsh critic, not an encouraging one, and it writes and calibrates its own checks. Never let a builder grade its own work - self-graded work always passes. On a runtime with no helper mechanism, swap both helper sentences for an explicit hostile self-review pass and say it is weaker; never leave a prompt demanding a separate checker where none can exist.
+3. **When it is done** (default mode) — a 5-12 item done-list, each item checkable by looking at the built thing, each closable as "not possible in {stack}, because X" only when genuinely impossible, or recorded unverified when a named measurement condition cannot be reproduced. The checker confirms items on the real running artifact, never on the builder's summary, and a final smoothing pass reconciles the separately built pieces before stopping. Plus the stack, which is the only technical instruction and shapes the result more than it looks like it will.
 
-One-Shot output is **not scored** on the six dimensions - it is a prose build brief, not a structured prompt. Its bar is the checklist: 5-12 items, every one checkable by looking at the built thing.
+One-Shot output is **not scored** on the six dimensions - it is a prose build brief, not a structured prompt. Its bar in default mode is the checklist: 5-12 items, every one checkable by looking at the built thing. Maximal mode has no checklist by design.
 
 Hard rules for this lane:
 

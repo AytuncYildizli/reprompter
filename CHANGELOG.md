@@ -8,6 +8,10 @@ One maximal-mode One-Shot build (browser FPS, 20 hours, 42 commits) exposed four
 - **Scripted or measured checks must be calibrated** against something known-good and something known-bad before being trusted. Directly-inspectable items need no calibration. Documented four check-failure modes from the run — measuring the wrong property, a global average hiding one bad element, a pass that is necessary but not sufficient, and an instrument heavy enough to distort what it measures — and carried a one-line distillation into the emitted prompt so it reaches the run, not just the template reader.
 - **Maximal mode is described from observation instead of assumption.** In that run it stalled at the end of each long turn with its own next prompt unsent, needing a keypress; context filled before quota did on that plan, though a smaller plan hits quota first. The cost warning now names both wall-clock babysitting and plan-dependent quota risk rather than trading one for the other. Plateaus sometimes break after a reframing, so continuation should be decided on a measured gate; keep the best measured state rather than the last commit.
 
+### Added
+
+- `validate:oneshot-bodies` (`scripts/validate-oneshot-bodies.js`, wired into `npm run check`) — asserts that every rule this lane calls hard is present in the text a user actually pastes, in **both** emitted bodies, and that the maximal body still carries exactly one termination clause. Six review rounds on this release found the same defect five times: a rule added to the default body while the maximal body kept the old behaviour. `validate:templates` skips this template (it is prose by design), so nothing caught it. The check was calibrated against a known-bad copy before being trusted, per the rule it enforces.
+
 ### Verification
 
 - `npm run validate:templates && npm run validate:tool-refs`
