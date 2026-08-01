@@ -1,3 +1,19 @@
+## v13.1.0 (2026-08-01) — Findings from a 20-hour maximal run
+
+Four gaps the five-model panel could not have found, because only running the thing exposes them. A maximal-mode One-Shot build (browser FPS, 20 hours, 42 commits) surfaced all four.
+
+### Changed
+
+- **Measured done-list items must name their conditions.** The run reported every performance budget met while measuring at device pixel ratio 1; the game shipped at pixel ratio 2 — four times the pixels — and froze on the owner's screen. The measurement was honest and the number was useless. The template now requires the viewport/resolution, pixel ratio, theme, and load to be stated for anything visual or performance-related.
+- **Checks must be calibrated before they are trusted** — against something known-good and something known-bad. Added the four check-failure modes observed: measuring the wrong property (presence where area mattered), a global average hiding one bad element, a pass that is necessary but not sufficient (hand on screen but occluded), and an instrument heavy enough to distort what it measures (a frame-time gate costing 26ms per frame).
+- **Maximal mode is described honestly.** It does not sustain itself: it runs one long turn (4-13 hours observed), then stops with its own next prompt unsent and needs a keypress. The ceiling is the session's context window, not the usage quota — quota held for 20 hours while context hit 98%. Progress is plateau-then-jump, so a run should not be judged at its first plateau, and the state worth keeping is the best *measured* one, not the last commit.
+
+### Verification
+
+- `npm run validate:templates && npm run validate:tool-refs`
+- `npm run test:intent-router && npm run test:plugin-package && npm run test:hermes-package`
+- Both generated packages regenerated.
+
 ## v13.0.1 (2026-07-28) — Credits
 
 ### Added

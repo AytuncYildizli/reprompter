@@ -14,10 +14,10 @@ compatibility: |
   A post-output delivery step can — offered once as a structured choice (plain-text fallback) over the relay targets headless-relay's preflight marks available (built-in lanes plus user-connected custom/local targets), never auto-executed — hand a finished Single/Reverse prompt to the headless-relay skill; the orchestrator reviews the relayed answer against the prompt's success criteria by default. When the relay skill is not installed, no target is available, or availability cannot be verified, the step is invisible.
 metadata:
   author: AytuncYildizli
-  version: 13.0.1
+  version: 13.1.0
 ---
 
-# RePrompter v13.0.1
+# RePrompter v13.1.0
 
 > **Your prompt sucks. Let's fix that.** Two intents — improve my prompt, or build this whole thing — with `/goal`, Workflow, team execution and cross-model delivery as places the result can go. **v13 (RePrompter v2) restructures six lanes into two intents: a specifiability router picks spec-XML or an autonomous build prompt inside Improve, and Build can run as one prompt or split across a team. Every v12 trigger keeps working.**
 
@@ -1300,6 +1300,9 @@ Hard rules for this lane:
 
 - **Never add `ultracode` or "/loop until perfect" on your own initiative.** Those are burn switches: an unbounded run against an unreachable bar does not stop itself, it stops when the platform cuts it off, consuming the user's 5-hour window and eating into their weekly cap. Default mode finishes inside one normal session.
 - **Maximal mode is opt-in**, chosen by the user in the interview, and when chosen you state the limit cost in one plain sentence before the prompt.
+- **Name the conditions for any measured item.** "60fps" is not checkable; "60fps in Chrome on an M-series laptop at native pixel ratio with 40 enemies" is. A measured run that names no conditions will pick the easiest ones — one did, reported every budget met at pixel ratio 1, and froze on the owner's pixel-ratio-2 screen.
+- **Calibrate checks before trusting them**, against something known-good and something known-bad. When a builder claims done but the artifact still looks wrong, suspect the check first: measuring the wrong property, a global average hiding one bad element, a pass that is necessary but not sufficient, or an instrument heavy enough to distort what it measures.
+- **Maximal mode needs a babysitter.** It runs one long turn, stops with its own next prompt unsent, and someone has to press enter; the real ceiling is the session's context window, not the usage quota. Progress is plateau-then-jump, so do not judge it at the first plateau, and keep the best *measured* state rather than the last commit.
 - **Checklist items are uncapped; polish is not.** A checklist item is worked until it passes. Anything beyond the checklist goes back at most twice, then keep the best attempt and note it. An uncapped "send everything back until it's good" is an unbounded loop even without loop keywords.
 - **The done-list ends the run, not the reference.** "Don't stop until it's as good as {reference}" is unreachable by construction. The reference sets direction; the list sets done.
 - **Do not impose a no-libraries or no-downloaded-assets rule** unless the user asks for one. From-scratch is an option, never a default.

@@ -23,11 +23,18 @@ Derive the rest yourself and show it for confirmation rather than asking: the qu
 
 | | Finish in one session (default) | Go maximal (opt-in only) |
 |---|---|---|
-| Ends when | the done-list is complete | the runtime stops it |
+| Ends when | the done-list is complete | the session's context fills up, or you stop it |
 | Loop keywords | none | `/loop`, `ultracode` (Claude Code) |
-| Cost | completes inside a normal working session | **consumes your 5-hour window and can eat into the weekly cap** |
+| Cost | completes inside a normal working session | **hours of wall-clock; expect to babysit it** |
 
-Default is **finish in one session**. Only emit the maximal variant when the user explicitly picks it, and when they do, state the limit cost in one plain sentence before the prompt. Never add `ultracode` or "loop until perfect" on your own initiative — those are the burn switches, and an unbounded run against an unreachable bar does not end on its own; it ends when the platform cuts it off.
+Default is **finish in one session**. Only emit the maximal variant when the user explicitly picks it, and when they do, state the cost in one plain sentence before the prompt. Never add `ultracode` or "loop until perfect" on your own initiative.
+
+**What maximal mode actually does** (measured on a 20-hour run, not assumed):
+
+- **The loop does not sustain itself.** It runs one long turn (4-13 hours observed), then stops with its own next-step prompt sitting unsent. Someone has to press enter. Tell the user this up front: maximal mode needs a babysitter, not a walk-away.
+- **The ceiling is the context window, not the usage quota.** That run filled 98% of context while the plan's quota held fine. When context fills, the session compacts and loses the accumulated understanding of what was already tried — which is where quality plateaus.
+- **Progress is not linear.** It went plateau, then a reframing, then a jump: at hour 8 three blockers looked permanent; by hour 20 every performance budget was met. Do not judge a maximal run at its first plateau.
+- **Tag the best measured state, not the last commit.** Big refactors mid-run cause temporary regressions (a gate score went 7/9 → 4/9 → 8/9). Whatever you keep should be the best *verified* state.
 
 ## The prompt (default mode)
 
@@ -37,16 +44,27 @@ Fill every bracket. Three paragraphs, no headings, no XML:
 >
 > Get one end-to-end slice working first — **[the thinnest thing that runs]** — then expand it to close the checklist below. Work the areas in parallel where they don't touch, one helper per area, and integrate as you go rather than at the end. Have a separate helper check each piece — one that did not build it, told to be a really harsh critic rather than an encouraging one. Separate two things: a checklist item either passes or it doesn't — no cap, keep working until it passes — while *polish* beyond the checklist goes back **at most twice**, after which you keep the best attempt, note it, and move on. The checker judges checklist items against the checklist, never against the reference.
 >
-> Before building, list the areas of work this needs — the two above plus whatever else you can think of — and fold anything essential into the checklist below. Then build only against that checklist. It is done when: **[done-list, 5-12 checkable items]**. The checking helper, not the builder, confirms each item, by running or looking at the built thing itself — the real pixels, the running product — never by reading the code or a summary the builder wrote. An item may be marked not possible in **[your tool or stack]** only when the platform genuinely cannot do it — expect zero or near-zero of those. Never **[hard negative]**. When every item is confirmed, do one last pass over the whole thing to smooth out inconsistencies between the separately built pieces — then stop. Resolve any ambiguity yourself with a sensible choice, note it, and keep going — do not wait for anyone. Build it in **[your tool or stack]**.
+> Before building, list the areas of work this needs — the two above plus whatever else you can think of — and fold anything essential into the checklist below. Then build only against that checklist. It is done when: **[done-list, 5-12 checkable items]**. Calibrate each check before trusting it — run it against something known-good and something known-bad and confirm it says so. The checking helper, not the builder, confirms each item, by running or looking at the built thing itself — the real pixels, the running product — never by reading the code or a summary the builder wrote. An item may be marked not possible in **[your tool or stack]** only when the platform genuinely cannot do it — expect zero or near-zero of those. Never **[hard negative]**. When every item is confirmed, do one last pass over the whole thing to smooth out inconsistencies between the separately built pieces — then stop. Resolve any ambiguity yourself with a sensible choice, note it, and keep going — do not wait for anyone. Build it in **[your tool or stack]**.
 
 ### Filling the blanks
 
 - **`[the best known example]`** — a real named thing, never an adjective. "AAA", "polished", "professional" let the model pick its own bar and it picks a generous one. Naming a real product hands over everything the model already knows about it: how it should feel, how it should read, what belongs on screen.
 - **`[what good looks like]`** — one phrase of what quality means here ("fast and readable", "calm and editorial"), not a paragraph.
 - **`[example area]` ×2** — two concrete areas of work, then "anything you could think of" hands the rest of the list back. The model enumerates the remaining areas itself, and working out what the work even *is* is the part people are worst at.
-- **`[done-list]`** — 5-12 items, each checkable by looking at the built thing, and confirmed by the checking helper rather than the builder. **This is what ends the run.** "Not possible here, because X" exists so a genuinely impossible item cannot block everything — it is not an escape hatch for hard items, and on a normal stack you should expect zero or near-zero of them.
+- **`[done-list]`** — 5-12 items, each checkable by looking at the built thing, and confirmed by the checking helper rather than the builder. **Name the conditions any measured item is measured under.** "Holds 60fps" is not checkable; "holds 60fps in Chrome on an M-series laptop at the display's native pixel ratio with 40 enemies on screen" is. A 20-hour run reported every performance budget met because it measured at pixel ratio 1 while the game shipped at 2 — four times the pixels, and it froze on the owner's screen. The measurement was honest and the number was useless. For anything visual or performance-related, state the viewport/resolution, the device pixel ratio, the theme, and the load. **This is what ends the run.** "Not possible here, because X" exists so a genuinely impossible item cannot block everything — it is not an escape hatch for hard items, and on a normal stack you should expect zero or near-zero of them.
 - **`[your tool or stack]`** — the primary technical instruction; it shapes the result more than it looks like it will.
 - **`[hard negative]`** — optional. A load-bearing thing that must NOT happen, captured verbatim from the user ("never touch auth"). Drop the sentence entirely if the ask has none — do not invent one.
+
+### When a check passes but the thing is still wrong
+
+Four failures came out of the 20-hour run, all in the checks rather than the build. Watch for them:
+
+- **Measuring the wrong property.** A highlight check measured whether bright pixels were *present*, when what mattered was how much of the frame they covered — a small bright lamp could never pass it.
+- **Global where it should be regional.** An average passes while one element fails badly. The run's own words: *"that's the second time a builder satisfied a number without satisfying the image."*
+- **Passing is necessary, not sufficient.** A framing check confirmed the hand was on screen; the hand was behind the weapon, invisible. A pass told you nothing about occlusion.
+- **The instrument distorting the thing.** The frame-time gate read pixels back from the GPU every frame and cost 26ms by itself — it was the performance problem it was measuring.
+
+Rule: when a builder claims done and the artifact still looks wrong, suspect the check before suspecting the builder.
 
 ### Why the done-list, and why the reference is not the finish line
 
