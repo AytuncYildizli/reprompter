@@ -23,18 +23,18 @@ Derive the rest yourself and show it for confirmation rather than asking: the qu
 
 | | Finish in one session (default) | Go maximal (opt-in only) |
 |---|---|---|
-| Ends when | the done-list is complete | you stop it — it stalls after each long turn until you resend; the hard ceiling is the session's context window or your plan's quota, whichever comes first |
+| Ends when | the done-list is complete | you stop resending — it stalls after each long turn until you do, and on a smaller plan quota can block it outright. A full context window does not end it: the session compacts and carries on with its history lost, which is worse than stopping |
 | Loop keywords | none | `/loop`, `ultracode` (Claude Code) |
 | Cost | completes inside a normal working session | **hours of wall-clock, needs babysitting, and can consume your session or weekly caps depending on plan** |
 
-Default is **finish in one session**. Only emit the maximal variant when the user explicitly picks it, and when they do, state the cost in one plain sentence before the prompt. Never add `ultracode` or "loop until perfect" on your own initiative. Maximal opt-in is the one case where those words are allowed at all, and only as the runtime line below — never in the default body.
+Default is **finish in one session**. Only emit the maximal variant when the user explicitly picks it, and when they do, state the cost in one plain sentence before the prompt. Never add `ultracode` or "loop until perfect" on your own initiative. Maximal opt-in is the one case where the loop keywords are allowed at all, and only as the runtime line below — which must carry the prose's own stopping criterion, never a different bar.
 
 **What one long maximal run looked like** — a single 20-hour run on Claude Code in mid-2026, so treat it as one observation, not the mode's guaranteed nature:
 
 - **It did not sustain itself.** It ran in long turns (roughly 4-13 hours each within that run), and at the end of each it stopped with its own next-step prompt sitting unsent, waiting for a keypress. Plan for babysitting rather than walking away, and check whether your runtime behaves the same.
 - **On that plan, context filled before quota did** — 98% of the session window while the usage quota held. On a smaller plan quota will bite first. Either way, when context fills the session compacts and loses what was already tried; that lost history is what makes a run start repeating itself, and progress resumes when it manages to reframe the problem rather than retry it.
 - **Progress was not smooth.** Three blockers looked permanent at hour 8, and by hour 20 the run's own gates reported every performance budget met — though those passes were the ones measured at the wrong pixel ratio, so read them as the run's gates being satisfied, not as the artifact being fast on the owner's machine. Plateaus sometimes break after the model reframes the problem — but decide whether to continue on a measured gate, not on elapsed hope.
-- **Keep the best verified state, not the last commit.** Mid-run refactors caused real regressions there: quality dipped after a rewrite before exceeding its previous best. Compare candidates with the *same* final set of checks — an old high score under an older, weaker check set is not better — and only keep a state that still satisfies every hard done-list item.
+- **Keep the best verified state, not the last commit.** Mid-run refactors caused real regressions there: quality dipped after a rewrite before exceeding its previous best. Compare candidates with the *same* final set of checks — an old high score under an older, weaker check set is not better — and in this mode, where there is no done-list, that means a state the harsh checker still passes on every check it was applying at the end.
 
 ## The prompt (default mode)
 
@@ -94,7 +94,7 @@ Append **at most one** runtime line, and **only in maximal mode** — the defaul
 
 | Runtime | Append |
 |---|---|
-| Claude Code | `/loop until it's utterly perfect. Fan out sub-agents and ultracode.` — permitted only because the user opted into maximal. It restates the same deliberately unreachable bar the prose already sets, so it adds no second stopping condition; the reference stays the only bar the prose names. Never append a line that names a checklist or a deadline: maximal mode has neither, and either one turns an unreachable bar into a conflicting second one. |
+| Claude Code | `/loop until that harsh checker is genuinely wowed comparing it with [the best known example]. Fan out sub-agents and ultracode.` — permitted only because the user opted into maximal, and it must repeat the prose's own stopping criterion with the **same filled-in reference**, so the prompt still has exactly one stopping test. Do not append a different bar (`until it's utterly perfect`), a checklist, or a deadline. Two unreachable bars are not the same bar: the loop would run on after the prose's own checker is already satisfied, which is the two-clause failure this section exists to prevent. |
 | Cursor · Gemini · Grok · Kimi · GLM · Hermes · OpenClaw · plain chat model · other | Nothing. The prose already asks for parallel helpers and a harsh checker in words every agent understands. |
 
 **Codex gets nothing appended, and must not be routed through the `/goal` preflight lane.** That lane compresses a prompt into a one-line objective, which would throw away the staffing paragraph and the checklist — the two things that make this artifact work. Paste the prose as-is.
