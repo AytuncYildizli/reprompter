@@ -57,8 +57,8 @@
     },
     {
       "path": "references/oneshot-template.md",
-      "source_sha256": "5fd967b6c2994a08600f96cceb874e3329d443073e4d9fec798e02ed1bd4bc98",
-      "generated_sha256": "5fd967b6c2994a08600f96cceb874e3329d443073e4d9fec798e02ed1bd4bc98"
+      "source_sha256": "b3708c1958612c8080755197096a109fea0de83eb8dae65e1f959a51601ed3e1",
+      "generated_sha256": "b3708c1958612c8080755197096a109fea0de83eb8dae65e1f959a51601ed3e1"
     },
     {
       "path": "references/ops-swarm-template.md",

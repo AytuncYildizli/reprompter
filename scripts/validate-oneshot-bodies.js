@@ -80,11 +80,20 @@ check('maximal body', MAXIMAL_BODY, SHARED);
 if (!/It is done when/.test(DEFAULT_BODY)) {
   failures.push('default body: missing — the done-list termination clause');
 }
-if (/It is done when/.test(MAXIMAL_BODY)) {
-  failures.push('maximal body: has a second termination clause ("It is done when") — maximal takes exactly one, the reference');
+// Maximal mode takes exactly ONE stopping clause. Banning a single phrase is not
+// enough: any second "stop when …" wording reintroduces the two-clause failure, so
+// count every stopping construction rather than blacklisting one.
+const STOP_CLAUSE = /it is done when|(?:do not|don't|dont) stop until|keep going until|stop once|you are finished when|finished when|until it (?:is|'s) perfect/gi;
+const stops = MAXIMAL_BODY.match(STOP_CLAUSE) || [];
+if (stops.length !== 1) {
+  failures.push(
+    `maximal body: found ${stops.length} stopping clause(s) [${stops.join(' | ')}] — maximal takes exactly one, the reference`
+  );
 }
 if (!/genuinely wowed/.test(MAXIMAL_BODY)) {
   failures.push('maximal body: missing — the reference stopping clause');
+} else if (stops.length === 1 && !/(?:do not|don't|dont) stop until/i.test(stops[0])) {
+  failures.push(`maximal body: its one stopping clause is not the reference clause (found "${stops[0]}")`);
 }
 if (!/re-confirm/i.test(DEFAULT_BODY)) {
   failures.push('default body: missing — re-confirmation after the smoothing pass');
