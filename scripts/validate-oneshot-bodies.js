@@ -105,6 +105,7 @@ check('team mapping', TEAM, [
   ['the evaluator calibrates what it scripts', /calibrat/i],
   ['the evaluator runs the artifact rather than reading a report', /run the built|not read a summary|live inspection/i],
   ['what integration changes is re-checked', /re-check/i],
+  ['unreproducible criteria are recorded unverified', /recorded unverified/i],
 ]);
 
 // A helper reference the no-helper fallback does not mention is a reference that

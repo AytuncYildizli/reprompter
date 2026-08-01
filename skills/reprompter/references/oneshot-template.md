@@ -90,17 +90,17 @@ Say this to the user in plain words before emitting it, as its own sentence:
 
 Both bodies staff the work with helpers in three distinct places, and a runtime with no helpers breaks all three, not just the first:
 
-1. `one helper per area`
+1. the whole parallel-staffing clause: `Work the areas in parallel where they don't touch, one helper per area, and integrate as you go rather than at the end`
 2. `Have a separate helper check each piece — one that did not build it, told to be a really harsh critic`
 3. every later mention of `the checking helper` / `the helper doing the checking` — the one that writes, calibrates and confirms the checks
 
-If the target runtime has no sub-agent or helper mechanism — a plain chat model, or any agent the user cannot confirm has one — replace **all three**:
+If the target runtime has no sub-agent or helper mechanism — a plain chat model, or any agent the user cannot confirm has one — replace **all three** — and replace whole clauses, not substrings: swapping only the words "one helper per area" leaves "Work the areas in parallel where they don't touch, do each area as a separate pass", which contradicts itself.
 
 | In the body | Replace with |
 |---|---|
-| one helper per area | do each area as a separate pass |
+| Work the areas in parallel where they don't touch, one helper per area, and integrate as you go | do each area as a pass of its own, in whatever order suits them, and integrate as you go rather than at the end |
 | a separate helper checks each piece, harsh critic | *"Then, in a pass of its own, review the built thing as a hostile critic who did not write it: state what each check is before you run it, run it against the built thing, and record the result before you touch the code again."* |
-| the checking helper writes / calibrates / confirms | *"in that review pass, write and calibrate each measured check — never reuse a check you wrote while building — and confirm each item against the built thing itself, never by reading the code"* |
+| the checking helper writes / calibrates / confirms | *"in that review pass, write each measured check yourself — never reuse a check you wrote while building — and before trusting it, run it against something you know is good and something you know is bad and confirm it says so; then confirm each item against the built thing itself, never by reading the code"* |
 
 Leaving any of these as-is is worse than replacing them: a prompt that demands a checker the runtime cannot create is the one instruction an agent resolves by quietly grading its own work. Say plainly to the user that this is weaker than an independent checker, because the same model is grading itself — it is the best available on a runtime with no helpers, not an equivalent. This applies in **both** modes.
 
@@ -142,7 +142,7 @@ Do not promise it matches the reference. The public run behind this shape was re
 If the user asks for a team — or says yes when the ask clearly spans 2+ independent domains — do not emit the one-prompt form. Hand the finished brief to Repromptverse (SKILL.md "Team execution") with this mapping:
 
 - the enumerated **work areas** → **2-5 agent scopes** (Repromptverse's cap): group related areas so each agent owns a coherent, non-overlapping slice, and name one agent as integrator for cross-cutting concerns;
-- the **done-list** → the team's success criteria, split per agent by area. Carry the measurement rules across with it: any criterion that is measured rather than looked at keeps the conditions it is measured under, and the evaluator calibrates any check it scripts against a known-good and a known-bad case before reporting a pass;
+- the **done-list** → the team's success criteria, split per agent by area. Carry the measurement rules across with it: any criterion that is measured rather than looked at keeps the conditions it is measured under, and the evaluator calibrates any check it scripts against a known-good and a known-bad case before reporting a pass. Carry the unverified outcome across too: a criterion whose target conditions the evaluator cannot reproduce is recorded unverified with the condition named, not left blocking the phase and not passed under a substitute configuration;
 - the **harsh checker** → the Phase-4 evaluator (separate from every builder, "neither passes" allowed). Be honest about the gap: standard Repromptverse Phase 4 reads each agent's report/artifact *file* and scores against criteria — it does not by default run the built product and judge live pixels the way the one-prompt path's checker does. If the artifacts are runnable and live inspection matters, say so in the per-agent success criteria ("the evaluator must run the built file, not read a summary") so the evaluator actually exercises them. Integration is the same trap as the smoothing pass: whatever the integrator changes has to be re-checked after it changes it, or the delivered whole is unverified even though every part passed.
 - the **smoothing pass** → the synthesis step after all agents complete. Again mind the gap: default synthesis composes the agents' reported outputs; a code-level integration pass that reconciles the separate pieces into one coherent artifact is extra work you must ask for explicitly in the synthesis instruction, not something the report-merge gives you for free.
 
