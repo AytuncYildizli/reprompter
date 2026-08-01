@@ -1,6 +1,6 @@
 ## v13.1.0 (2026-08-01) — Findings from a long maximal run
 
-One maximal-mode One-Shot build (browser FPS, 20 hours, 42 commits) exposed four gaps in the template. Treat the run as one observation, not a study: the two general principles are the measurement rules; the maximal-mode notes describe how one runtime behaved in mid-2026 on one plan tier and may not hold elsewhere. Note the irony that motivated this release — the run's own gate passes were themselves measured under the wrong configuration, which is exactly the failure the first rule now guards against.
+One maximal-mode One-Shot build (browser FPS, 20 hours, 42 commits) exposed four gaps in the template. Treat the run as one observation, not a study: the two general principles are the measurement rules; the maximal-mode notes describe how one runtime behaved in mid-2026 on one plan tier and may not hold elsewhere. Note the irony that motivated this release — the run's own gate passes were themselves measured under the wrong configuration, which is exactly the failure the first rule now guards against. The README's own dogfood numbers are restated with their conditions in this release for the same reason.
 
 ### Changed
 
