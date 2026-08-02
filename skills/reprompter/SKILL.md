@@ -14,10 +14,10 @@ compatibility: |
   A post-output delivery step can — offered once as a structured choice (plain-text fallback) over the relay targets headless-relay's preflight marks available (built-in lanes plus user-connected custom/local targets), never auto-executed — hand a finished Single/Reverse prompt to the headless-relay skill; the orchestrator reviews the relayed answer against the prompt's success criteria by default. When the relay skill is not installed, no target is available, or availability cannot be verified, the step is invisible.
 metadata:
   author: AytuncYildizli
-  version: 13.1.0
+  version: 13.2.0
 ---
 
-# RePrompter v13.1.0
+# RePrompter v13.2.0
 
 > **Your prompt sucks. Let's fix that.** Two intents — improve my prompt, or build this whole thing — with `/goal`, Workflow, team execution and cross-model delivery as places the result can go. **v13 (RePrompter v2) restructures six lanes into two intents: a specifiability router picks spec-XML or an autonomous build prompt inside Improve, and Build can run as one prompt or split across a team. Every v12 trigger keeps working.**
 

@@ -23,7 +23,7 @@ So the direction cannot come from adjectives. It has to come from the subject's 
 
 Before proposing anything, look for:
 
-- brand boards, mockups, concept art, logo files, any image checked into the repo or a sibling workspace
+- brand boards, mockups, concept art, logo files, any image checked into **this** repo. If the material is elsewhere, ask the user for the path — an unprompted scan of adjacent directories reads other people's secrets and proprietary work, and it lands in model-visible output.
 - a copy deck, positioning doc, or launch post draft — brand voice is usually written down somewhere before it is designed
 - prior versions in git history, and any "canonical source" the current code was extracted from
 - the product's own vocabulary: mascot names, mode names, campaign names, error strings, microcopy
@@ -46,7 +46,7 @@ Fill every bracket. This is the whole emitted prompt:
 
 > Redesign **[what]** for **[who lands on it]**. Its job is **[the one thing the page must do]**.
 >
-> Before designing anything, search the repo and any sibling workspace for material that already exists: brand boards, mockups, illustrations, copy decks, positioning docs, prior versions in git history, and the product's own names for things. List what you found. If any of it is stronger than what you would invent, use it and say which parts you took. Do not invent a direction over the top of one that already exists.
+> Before designing anything, search **this repository** for material that already exists: brand boards, mockups, illustrations, copy decks, positioning docs, prior versions in git history, and the product's own names for things. List what you found. If the brand material lives outside the repo, ask for the path rather than scanning around — do not read directories you were not pointed at, because adjacent workspaces hold other people's secrets and unrelated proprietary work. If any of it is stronger than what you would invent, use it and say which parts you took. Do not invent a direction over the top of one that already exists.
 >
 > Then commit to one direction in writing before writing any code: 4-6 named colours with hex values, the typefaces for display and body and data, a one-sentence layout idea, and **one** signature element the page will be remembered by. Derive the direction from **[the subject's own world]** — never from words like premium, editorial or high-end, which each point at a specific look regardless of what you are designing. Say what you are deliberately not doing. **[hard negative]**
 >
