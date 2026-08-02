@@ -508,7 +508,8 @@ Detect task type from input. Each type has a dedicated template in `references/`
 | Refactor | `refactor-template.md` | Structural cleanup |
 | Testing | `testing-template.md` | Test writing |
 | API | `api-template.md` | Endpoint/API work |
-| UI | `ui-template.md` | UI components |
+| UI | `ui-template.md` | UI components (built to a spec) |
+| Design loop | `design-loop-template.md` | how a page **looks**: direction, screenshot critique, fix loop |
 | Security | `security-template.md` | Security audit/hardening |
 | Docs | `docs-template.md` | Documentation |
 | Content | `content-template.md` | Blog posts, articles, marketing copy |
@@ -1293,6 +1294,17 @@ The shape in brief — three prose paragraphs, no XML. This describes **default 
 1. **What good looks like** — a real named reference (never "AAA"/"polished", which let the model pick its own generous bar), one phrase of what quality means here, two seed work areas, then "anything you could think of" so the model enumerates the rest itself.
 2. **Who does the work** — get one end-to-end slice running first, then expand; work areas in parallel where they don't touch, one helper per area, integrating as you go. A **separate** helper checks each piece and is told to be a harsh critic, not an encouraging one, and it writes and calibrates its own checks. Never let a builder grade its own work - self-graded work always passes. On a runtime with no helper mechanism, swap both helper sentences for an explicit hostile self-review pass and say it is weaker; never leave a prompt demanding a separate checker where none can exist.
 3. **When it is done** (default mode) — a 5-12 item done-list, each item checkable by looking at the built thing, each closable as "not possible in {stack}, because X" only when genuinely impossible, or recorded unverified when a named measurement condition cannot be reproduced. The checker confirms items on the real running artifact, never on the builder's summary, and a final smoothing pass reconciles the separately built pieces before stopping. Plus the stack, which is the only technical instruction and shapes the result more than it looks like it will.
+
+### When the thing is a page rather than a program
+
+If the ask is that something **look designed rather than generated** — a landing page, a marketing site, a redesign, the visual layer of a dashboard — read `references/design-loop-template.md` and emit its loop instead of the checklist body. It is the same Build intent with a different critic: the bar is pixels, not tests.
+
+Two rules from that template carry regardless of which body you emit, because a design pass fails on them first:
+
+- **Look for material that already exists before proposing a direction.** Brand boards, mockups, illustrations, copy decks, prior versions in git history, the product's own names for things. In the run the template is written from, a whole cycle was spent inventing a direction while a board, a copy deck and an original mascot sat unused in a sibling workspace; the version that worked was ported, not designed.
+- **Never spend a free choice on an adjective.** "Premium", "editorial", "high-end" and "museum quality" each point at one specific look regardless of subject, so they produce the templated result they were meant to avoid. Direction comes from the subject's own world - its materials, its jargon, its jokes.
+
+Note that `references/ui-template.md` is a different job: that one builds a component to a spec (props, variants, accessibility). This one decides how the thing looks.
 
 One-Shot output is **not scored** on the six dimensions - it is a prose build brief, not a structured prompt. Its bar in default mode is the checklist: 5-12 items, every one checkable by looking at the built thing. Maximal mode has no checklist by design.
 

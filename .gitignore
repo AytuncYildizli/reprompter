@@ -12,3 +12,6 @@ reprompter-skill.zip
 # Local agent scratch (never publish - contains machine-specific paths and infra names)
 .superpowers/
 .superset/
+
+# Playwright MCP scratch output (screenshots, console logs, snapshots)
+.playwright-mcp/
