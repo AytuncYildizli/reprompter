@@ -4,6 +4,8 @@
 
 - `references/design-loop-template.md` — the Build intent applied to pages rather than programs: find the material that already exists, commit a direction in writing before writing code, then build / screenshot / critique the pixels / fix, three rounds. Wired into SKILL.md's Build section and the template table. It is prose by design (a design pass needs a direction and a critic, not a spec to satisfy) so `validate:templates` skips it, like `oneshot-template.md`.
 
+- A motion stage for pages that are supposed to move, because a screenshot cannot judge animation. It requires naming the genre (scroll-scrubbed reveal, sticky stack, horizontal pan, staggered reveal) rather than "add animations", and it captures a **filmstrip** at fixed scroll positions instead of one still: every frame has to stand alone as a composed image, and the sequence has to read as one describable move. What is mechanically checkable is checked — frame time during a scripted scroll at the shipping pixel ratio, no layout properties animated, reduced motion resolving to a complete readable page, no orphaned triggers after unmount — and the section says plainly that these catch broken, not beautiful.
+
 ### Why
 
 Written from one real redesign of a live product landing page, including the parts that failed. Two findings drove it:

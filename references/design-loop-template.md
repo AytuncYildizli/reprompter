@@ -50,7 +50,9 @@ Fill every bracket. This is the whole emitted prompt:
 >
 > Then commit to one direction in writing before writing any code: 4-6 named colours with hex values, the typefaces for display and body and data, a one-sentence layout idea, and **one** signature element the page will be remembered by. Derive the direction from **[the subject's own world]** — never from words like premium, editorial or high-end, which each point at a specific look regardless of what you are designing. Say what you are deliberately not doing. **[hard negative]**
 >
-> Build it. Then, in a separate pass acting as a critic who did not build it and is trying to get the page rejected, open the built page in a browser, screenshot it and judge the pixels — never your own description of them. Before trusting any measurement, check the instrument: confirm the screenshot's real pixel dimensions rather than the flag you passed, and confirm that anything you compare is in the same coordinate space. Compute contrast ratios rather than eyeballing them. Walk hover, focus, active, loading and empty. Then fix what the critique found and screenshot again. Three rounds, or until a round finds nothing worth fixing.
+> Build it. If it is meant to move, say which motion genre you are building — a scroll-scrubbed reveal, a sticky stack, a horizontal pan, a staggered reveal — and build the layout for it rather than adding effects afterwards. Animate only `transform` and `opacity`, never `top`, `left`, `width` or `height`, and make sure the page is complete and readable with animation switched off.
+>
+> Then, in a separate pass acting as a critic who did not build it and is trying to get the page rejected, open the built page in a browser, screenshot it and judge the pixels — never your own description of them. If the page moves, capture it at fixed scroll positions (0, 25, 50, 75, 100 percent) and judge two things separately: every single frame has to stand alone as a composed image, and the sequence has to read as one move you can describe in a sentence. Measure frame time during a scripted scroll rather than while the page sits still. Before trusting any measurement, check the instrument: confirm the screenshot's real pixel dimensions rather than the flag you passed, and confirm that anything you compare is in the same coordinate space. Compute contrast ratios rather than eyeballing them. Walk hover, focus, active, loading and empty. Then fix what the critique found and screenshot again. Three rounds, or until a round finds nothing worth fixing.
 >
 > The signature element has to answer a question the page actually asks; if it is only decorative, cut it. Anything you claim in a demo must be labelled as a demo. It is done when: **[5-10 checkable items, each confirmed by looking at the built page]**. Build it in **[stack]**.
 
@@ -70,6 +72,26 @@ A critique that reads the code, or trusts the builder's summary, catches nothing
 4. **The craft floor**, which is where "feels expensive" actually lives: nested corner radii concentric (outer = inner + padding), optical rather than geometric centring for icons and asymmetric shapes, layered transparent shadows for depth and borders only where they carry structure or state, interruptible transitions for interactive states and keyframes only for one-shot sequences, ~100ms stagger on infrequent entrances and none on frequent ones, and a press scale no smaller than 0.96. Review motion at 10% speed in the browser's animations panel: what is subtly wrong at full speed is obvious there.
 5. **Every state, not just the happy one.** Hover, focus, active, loading, empty. An empty state that renders an empty bordered box is a defect, not a neutral.
 6. **The quality floor, at real viewports.** No horizontal overflow at 390px, visible keyboard focus, reduced motion respected.
+
+## When the page is supposed to move
+
+If the ask names motion, or the reference is a site that animates as you scroll, the loop gains a stage between build and critique. Do not treat animation as polish applied at the end: the layout has to be built for the motion, so the motion has to be decided with the direction.
+
+**Name the genre in the direction, not "add animations".** The common shapes each imply a different layout: a **scroll-scrubbed reveal** (one subject, usually a product, that turns or assembles as the scroll position advances), a **sticky stack** (sections pinned while their contents change), a **horizontal pan** (vertical scroll driving sideways travel), a **staggered reveal** (content entering as it comes into view). "Animated" is not a genre and produces the same scattered fades every time.
+
+**A screenshot cannot judge motion, so capture a filmstrip.** Drive the page to fixed scroll positions — 0, 25, 50, 75, 100 percent — and screenshot each. Then judge two separate things:
+
+- **Every frame has to stand alone as a composed image.** Mid-scrub is where AI motion falls apart: a subject half off-canvas, a headline overlapping the thing it introduces, text at 40% opacity that is neither in nor out. If a frame would be unacceptable as a still, the animation is unacceptable.
+- **The sequence has to read as one move.** Flip through the frames in order. If you cannot say in one sentence what happens, neither can a visitor.
+
+**What is actually measurable, and worth measuring:**
+
+- **Frame time during a scripted scroll**, not while sitting still. Record it under the configuration the thing ships at, including the real pixel ratio — a motion budget measured at the wrong pixel ratio is the same useless number as any other.
+- **Nothing animates a layout property.** `top`, `left`, `width`, `height` and `margin` force layout on every frame; `transform` and `opacity` do not. This is greppable, so grep it.
+- **Reduced motion resolves to a readable page**, not a frozen half-state. Set the preference and confirm the final composition is complete and legible with no animation at all. A scroll-scrubbed hero that shows nothing until you scroll fails this.
+- **No orphaned listeners or triggers.** Navigate away and back, or unmount and remount, then confirm nothing is still firing. Half-built motion — a cut-off trigger, a jumpy enter, a missing cleanup — reads worse than no motion.
+
+**The honest limit:** these checks catch broken, not beautiful. A filmstrip proves the frames compose and the sequence is legible; it cannot tell you the timing feels good. For that, review the motion at a tenth of normal speed in the browser's animation panel, where a wrong ease or a stagger that is 60ms too long is obvious, and then decide with your own eyes.
 
 ## When measurement and eyes disagree
 
