@@ -159,7 +159,7 @@ const DESIGN = [
   ['adjectives are refused as a source of direction', /never from words like premium/i],
   ['a different helper does the critique', /a different helper/i],
   ['the no-browser case stops instead of inventing screenshots', /do not describe screenshots you did not take/i],
-  ['fallback fonts are caught by computed value', /computed font family/i],
+  ['the chosen face is verified as loaded and rendering, not merely declared', /loaded and is rendering/i],
   ['contrast is computed, with a number', /4\.5:1/],
   ['the craft floor reaches the run', /concentric/i],
   ['the quality floor reaches the run', /390px/i],
