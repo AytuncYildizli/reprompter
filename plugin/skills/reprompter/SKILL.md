@@ -524,7 +524,7 @@ Detect task type from input. Each type has a dedicated template in `references/`
 | Reverse | `reverse-template.md` | Reverse-engineered prompt from exemplar output |
 | Team Brief | `team-brief-template.md` | Team orchestration brief |
 
-**Priority** (most specific wins): marketing-swarm > engineering-swarm > ops-swarm > research-swarm > repromptverse > api > security > ui > testing > bugfix > refactor > content > docs > research > feature. For multi-agent tasks, use the best-fit swarm template + `repromptverse-template` + `team-brief-template`, then type-specific templates for each agent sub-prompt.
+**Priority** (most specific wins): marketing-swarm > engineering-swarm > ops-swarm > research-swarm > repromptverse > api > security > design-loop > ui > testing > bugfix > refactor > content > docs > research > feature. Design-loop beats ui because the two answer different questions: reach for `design-loop-template.md` when the ask is about how a whole page **looks** ("redesign our landing page", "this looks like AI slop", "make the marketing site not templated"), and for `ui-template.md` when the ask is a component built to a spec (props, variants, states). A bounded change inside an existing visual direction is still spec-XML, not the design loop. For multi-agent tasks, use the best-fit swarm template + `repromptverse-template` + `team-brief-template`, then type-specific templates for each agent sub-prompt.
 
 **How it works:** Read the matching template from `references/{type}-template.md`, then fill it with task-specific context. Templates are NOT loaded into context by default — only read on demand when generating a prompt. If the template file is not found, fall back to the Base XML Structure below.
 
@@ -1301,7 +1301,7 @@ If the ask is that something **look designed rather than generated** — a landi
 
 Two rules from that template carry regardless of which body you emit, because a design pass fails on them first:
 
-- **Look for material that already exists before proposing a direction.** Brand boards, mockups, illustrations, copy decks, prior versions in git history, the product's own names for things. In the run the template is written from, a whole cycle was spent inventing a direction while a board, a copy deck and an original mascot sat unused in a sibling workspace; the version that worked was ported, not designed.
+- **Look for material that already exists before proposing a direction.** Brand boards, mockups, illustrations, copy decks, prior versions in git history, the product's own names for things. In the run the template is written from, a whole cycle was spent inventing a direction while a board, a copy deck and an original mascot sat unused in a directory the owner named when asked; the version that worked was ported, not designed. Port the look, but check every claim in found copy against what the code does — in that same run the deck described a product the code did not implement, and the page shipped claims the repo contradicts.
 - **Never spend a free choice on an adjective.** "Premium", "editorial", "high-end" and "museum quality" each point at one specific look regardless of subject, so they produce the templated result they were meant to avoid. Direction comes from the subject's own world - its materials, its jargon, its jokes.
 
 Note that `references/ui-template.md` is a different job: that one builds a component to a spec (props, variants, accessibility). This one decides how the thing looks.

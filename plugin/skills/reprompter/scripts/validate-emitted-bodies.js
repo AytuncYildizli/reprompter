@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Invariants for every One-Shot emission path.
+ * Invariants for every emission path in the Build intent - One-Shot and the design
+ * loop.
  *
  * The One-Shot template has three emission paths (default body, maximal body,
  * team mapping) and every rule has to reach all of them. Six review rounds on
@@ -18,7 +19,9 @@ const fs = require('fs');
 const path = require('path');
 
 const FILE = path.join(__dirname, '..', 'references', 'oneshot-template.md');
+const DESIGN_FILE = path.join(__dirname, '..', 'references', 'design-loop-template.md');
 const lines = fs.readFileSync(FILE, 'utf8').split('\n');
+const designLines = fs.readFileSync(DESIGN_FILE, 'utf8').split('\n');
 
 /** Collect the prose of a `## ` section, up to the next `## `. */
 function section(heading) {
@@ -33,13 +36,13 @@ function section(heading) {
 }
 
 /** Collect the contiguous blockquote that follows a heading. */
-function bodyAfter(headingPrefix) {
-  const start = lines.findIndex((l) => l.startsWith(headingPrefix));
+function bodyAfter(headingPrefix, src = lines) {
+  const start = src.findIndex((l) => l.startsWith(headingPrefix));
   if (start === -1) throw new Error(`heading not found: ${headingPrefix}`);
   const out = [];
   let seen = false;
-  for (let i = start + 1; i < lines.length; i++) {
-    const l = lines[i];
+  for (let i = start + 1; i < src.length; i++) {
+    const l = src[i];
     if (l.startsWith('>')) {
       out.push(l.slice(1).trim());
       seen = true;
@@ -133,6 +136,45 @@ for (const [name, re] of HELPER_PHRASES) {
   }
 }
 
+// ── the design loop's single emitted body ──────────────────────────────────
+// Three reviewers found the same class of defect here that six rounds found in the
+// One-Shot bodies: a rule the template calls hard, living in prose the pasted text
+// never carries. Each entry below was one of those findings.
+/** The design loop has one body and the blockquote starts on the anchor line itself. */
+function blockquoteFrom(src, anchor) {
+  const start = src.findIndex((l) => l.startsWith(anchor));
+  if (start === -1) throw new Error(`design-loop body not found: ${anchor}`);
+  const out = [];
+  for (let i = start; i < src.length && src[i].startsWith('>'); i++) {
+    out.push(src[i].slice(1).trim());
+  }
+  if (!out.length) throw new Error('design-loop body is empty');
+  return out.join(' ');
+}
+
+const DESIGN_BODY = blockquoteFrom(designLines, '> Redesign **[what]**');
+const DESIGN = [
+  ['found copy is checked against the code before porting a claim', /check it against what the code actually does/i],
+  ['the scan stays inside this repository', /this repository/i],
+  ['adjectives are refused as a source of direction', /never from words like premium/i],
+  ['a different helper does the critique', /a different helper/i],
+  ['the no-browser case stops instead of inventing screenshots', /do not describe screenshots you did not take/i],
+  ['fallback fonts are caught by computed value', /computed font family/i],
+  ['contrast is computed, with a number', /4\.5:1/],
+  ['the craft floor reaches the run', /concentric/i],
+  ['the quality floor reaches the run', /390px/i],
+  ['states are walked only where the page has them', /only where the page has them/i],
+  ['scripted checks are calibrated against known-good and known-bad', /you know is good and something you know is bad/i],
+  ['measured items carry their conditions', /emulated pixel ratio/i],
+  ['a measurement without a budget is not a check', /budget you are measuring against/i],
+  ['unreproducible conditions are recorded unverified', /record the item unverified/i],
+  ['the round cap never ends the run with an open item', /never ends the run with an item still open/i],
+  ['what already worked has to keep working', /keep working/i],
+  ['the load-bearing negative survives', /\[hard negative\]/],
+  ['the done-list is actually stated', /\[done-list/],
+];
+check('design-loop body', DESIGN_BODY, DESIGN);
+
 if (failures.length) {
   console.error('One-Shot emitted-body invariants FAILED:\n');
   for (const f of failures) console.error(`  ✗ ${f}`);
@@ -141,6 +183,7 @@ if (failures.length) {
 }
 
 console.log(
-  `One-Shot emitted-body invariants OK — ${SHARED.length} shared rules present in both bodies, mode contracts intact, ` +
-    `worked example compliant, team mapping carries the same rules, no-helper fallback covers every helper reference.`
+  `Emitted-body invariants OK — One-Shot: ${SHARED.length} shared rules in both bodies, mode contracts intact, worked ` +
+    `example compliant, team mapping carries the same rules, no-helper fallback covers every helper reference. ` +
+    `Design loop: ${DESIGN.length} rules present in the pasted text.`
 );
