@@ -14,10 +14,10 @@ compatibility: |
   A post-output delivery step can — offered once as a structured choice (plain-text fallback) over the relay targets headless-relay's preflight marks available (built-in lanes plus user-connected custom/local targets), never auto-executed — hand a finished Single/Reverse prompt to the headless-relay skill; the orchestrator reviews the relayed answer against the prompt's success criteria by default. When the relay skill is not installed, no target is available, or availability cannot be verified, the step is invisible.
 metadata:
   author: AytuncYildizli
-  version: 13.1.0
+  version: 13.2.0
 ---
 
-# RePrompter v13.1.0
+# RePrompter v13.2.0
 
 > **Your prompt sucks. Let's fix that.** Two intents — improve my prompt, or build this whole thing — with `/goal`, Workflow, team execution and cross-model delivery as places the result can go. **v13 (RePrompter v2) restructures six lanes into two intents: a specifiability router picks spec-XML or an autonomous build prompt inside Improve, and Build can run as one prompt or split across a team. Every v12 trigger keeps working.**
 
@@ -432,7 +432,7 @@ After interview completes, immediately:
 Ask via `AskUserQuestion`. **Max 5 questions total.**
 
 **Standard questions** (priority order — drop lower ones if task-specific questions are needed):
-1. Task type: Build Feature / Fix Bug / Refactor / Write Tests / API Work / UI / Security / Docs / Content / Research / Multi-Agent
+1. Task type: Build Feature / Fix Bug / Refactor / Write Tests / API Work / UI / Design loop / Security / Docs / Content / Research / Multi-Agent
    - If user selects **Multi-Agent** while currently in **Single mode**, immediately transition to **Repromptverse Phase 1 (Team Plan)** and confirm team execution mode (Parallel vs Sequential).
 2. Execution mode: Single Agent / Team (Parallel) / Team (Sequential) / Let RePrompter decide
 3. Motivation: User-facing / Internal tooling / Bug fix / Exploration / Skip *(drop first if space needed)*
@@ -508,7 +508,8 @@ Detect task type from input. Each type has a dedicated template in `references/`
 | Refactor | `refactor-template.md` | Structural cleanup |
 | Testing | `testing-template.md` | Test writing |
 | API | `api-template.md` | Endpoint/API work |
-| UI | `ui-template.md` | UI components |
+| UI | `ui-template.md` | UI components (built to a spec) |
+| Design loop | `design-loop-template.md` | how a page **looks**: direction, screenshot critique, fix loop |
 | Security | `security-template.md` | Security audit/hardening |
 | Docs | `docs-template.md` | Documentation |
 | Content | `content-template.md` | Blog posts, articles, marketing copy |
@@ -523,7 +524,7 @@ Detect task type from input. Each type has a dedicated template in `references/`
 | Reverse | `reverse-template.md` | Reverse-engineered prompt from exemplar output |
 | Team Brief | `team-brief-template.md` | Team orchestration brief |
 
-**Priority** (most specific wins): marketing-swarm > engineering-swarm > ops-swarm > research-swarm > repromptverse > api > security > ui > testing > bugfix > refactor > content > docs > research > feature. For multi-agent tasks, use the best-fit swarm template + `repromptverse-template` + `team-brief-template`, then type-specific templates for each agent sub-prompt.
+**Priority** (most specific wins): marketing-swarm > engineering-swarm > ops-swarm > research-swarm > repromptverse > api > security > design-loop > ui > testing > bugfix > refactor > content > docs > research > feature. Design-loop beats ui because the two answer different questions: reach for `design-loop-template.md` when the ask is about how a whole page **looks** ("redesign our landing page", "this looks like AI slop", "make the marketing site not templated"), and for `ui-template.md` when the ask is a component built to a spec (props, variants, states). A bounded change inside an existing visual direction is still spec-XML, not the design loop. For multi-agent tasks, use the best-fit swarm template + `repromptverse-template` + `team-brief-template`, then type-specific templates for each agent sub-prompt.
 
 **How it works:** Read the matching template from `references/{type}-template.md`, then fill it with task-specific context. Templates are NOT loaded into context by default — only read on demand when generating a prompt. If the template file is not found, fall back to the Base XML Structure below.
 
@@ -1293,6 +1294,17 @@ The shape in brief — three prose paragraphs, no XML. This describes **default 
 1. **What good looks like** — a real named reference (never "AAA"/"polished", which let the model pick its own generous bar), one phrase of what quality means here, two seed work areas, then "anything you could think of" so the model enumerates the rest itself.
 2. **Who does the work** — get one end-to-end slice running first, then expand; work areas in parallel where they don't touch, one helper per area, integrating as you go. A **separate** helper checks each piece and is told to be a harsh critic, not an encouraging one, and it writes and calibrates its own checks. Never let a builder grade its own work - self-graded work always passes. On a runtime with no helper mechanism, swap both helper sentences for an explicit hostile self-review pass and say it is weaker; never leave a prompt demanding a separate checker where none can exist.
 3. **When it is done** (default mode) — a 5-12 item done-list, each item checkable by looking at the built thing, each closable as "not possible in {stack}, because X" only when genuinely impossible, or recorded unverified when a named measurement condition cannot be reproduced. The checker confirms items on the real running artifact, never on the builder's summary, and a final smoothing pass reconciles the separately built pieces before stopping. Plus the stack, which is the only technical instruction and shapes the result more than it looks like it will.
+
+### When the thing is a page rather than a program
+
+If the ask is that something **look designed rather than generated** — a landing page, a marketing site, a redesign, the visual layer of a dashboard — read `references/design-loop-template.md` and emit its loop instead of the checklist body. It is the same Build intent with a different critic: the bar is pixels, not tests.
+
+Two rules from that template carry regardless of which body you emit, because a design pass fails on them first:
+
+- **Look for material that already exists before proposing a direction.** Brand boards, mockups, illustrations, copy decks, prior versions in git history, the product's own names for things. In the run the template is written from, a whole cycle was spent inventing a direction while a board, a copy deck and an original mascot sat unused in a directory the owner named when asked; the version that worked was ported, not designed. Port the look, but check every claim in found copy against what the code does — in that same run the deck described a product the code did not implement, and the page shipped claims the repo contradicts.
+- **Never spend a free choice on an adjective.** "Premium", "editorial", "high-end" and "museum quality" each point at one specific look regardless of subject, so they produce the templated result they were meant to avoid. Direction comes from the subject's own world - its materials, its jargon, its jokes.
+
+Note that `references/ui-template.md` is a different job: that one builds a component to a spec (props, variants, accessibility). This one decides how the thing looks.
 
 One-Shot output is **not scored** on the six dimensions - it is a prose build brief, not a structured prompt. Its bar in default mode is the checklist: 5-12 items, every one checkable by looking at the built thing. Maximal mode has no checklist by design.
 

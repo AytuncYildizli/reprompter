@@ -1,3 +1,30 @@
+## v13.2.0 (2026-08-02) — The design loop
+
+### Added
+
+- `references/design-loop-template.md` — the Build intent applied to pages rather than programs: find the material that already exists, commit a direction in writing before writing code, then build / screenshot / critique the pixels / fix, three rounds. Wired into SKILL.md's Build section and the template table. It is prose by design (a design pass needs a direction and a critic, not a spec to satisfy) so `validate:templates` skips it, like `oneshot-template.md`.
+
+- A motion stage for pages that are supposed to move, because a screenshot cannot judge animation. It requires naming the genre (scroll-scrubbed reveal, sticky stack, horizontal pan, staggered reveal) rather than "add animations", and it captures a **filmstrip** at fixed scroll positions instead of one still: every frame has to stand alone as a composed image, and the sequence has to read as one describable move. What is mechanically checkable is checked — frame time during a scripted scroll at the shipping pixel ratio, no layout properties animated, reduced motion resolving to a complete readable page, no orphaned triggers after unmount — and the section says plainly that these catch broken, not beautiful.
+
+- `validate:oneshot-bodies` is renamed **`validate:emitted-bodies`** (`scripts/validate-emitted-bodies.js`) and now covers the design loop's single emitted body as well as One-Shot's two: 18 rules the template calls hard must be present in the text a user actually pastes. Three reviewers found the same class of defect in the new template that six rounds found in One-Shot — the craft floor, the fallback-font check, calibration, measurement conditions and the browser fallback were all prose the run never received. Calibrated against two known-bad copies before being trusted.
+
+### Why
+
+Written from one real redesign of a live product landing page, including the parts that failed. Two findings drove it:
+
+- **Ban lists cannot produce a point of view.** With the three documented AI-design clusters closed off, the first attempt landed on a fourth default (a cold technical dashboard) and was rejected in the same words as the version it replaced. Direction has to come from the subject's own world.
+- **The vocabulary used to demand quality is itself a style attractor.** "Premium", "editorial", "museum quality" each point at one look regardless of subject. Anthropic's harness write-up records the same effect from one phrase in an evaluator's criteria.
+
+The stage that decided the outcome was the one a model skips: a brand board, a copy deck and an original mascot illustration already existed in a directory the owner named when asked, and had never reached the live site. The version the owner accepted was ported, not invented. The same run then failed the other half of that stage — the deck described a product the code did not implement, so the page shipped claims the repo contradicts — which is why the emitted prompt now requires checking found copy against the code before porting a claim.
+
+The template also carries what the critic must check, because three rounds of critique on that page found nothing a summary would have caught: type rendering in a fallback font rather than the chosen face, an accent failing contrast at a measured 4.36:1, and a connector line drawn through a sentence that a geometric check had missed because it was comparing SVG user units to viewport coordinates.
+
+### Review
+
+Three models reviewed it (GPT-5.6-sol, GLM-5.2, Fable) plus the Codex and Droid bots. Two returned DO-NOT-SHIP. Every finding was the same shape and it is the one this project keeps making: a rule stated in a template's prose while the emitted prompt — the only text that reaches a run — does not carry it. What the reviewers caught, in the template written from that lesson: no separate critic (the prompt had one agent switching hats), no calibration clause, frame time with no conditions and no budget, the whole craft and quality floor prose-only, a browser assumed with no fallback, and the worked example still narrating the cross-workspace scan the same PR had just forbidden. Fable also found the half of Stage 0 that was missing entirely: found brand material was tested for being *stronger* than an invention, never for being *true*, and in the run behind the template the deck described a product the code did not implement. `validate:emitted-bodies` now asserts each of those reaches the pasted text.
+
+Treat it as one observation. The run is not in this repository.
+
 ## v13.1.0 (2026-08-01) — Findings from a long maximal run
 
 One maximal-mode One-Shot build (browser FPS, 20 hours, 42 commits) exposed four gaps in the template. Treat the run as one observation, not a study: the two general principles are the measurement rules; the maximal-mode notes describe how one runtime behaved in mid-2026 on one plan tier and may not hold elsewhere. Note the irony that motivated this release — the run's own gate passes were themselves measured under the wrong configuration, which is exactly the failure the first rule now guards against. The README's own dogfood numbers are restated with their conditions in this release for the same reason.
