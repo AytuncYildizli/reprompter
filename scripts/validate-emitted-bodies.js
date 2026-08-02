@@ -176,7 +176,7 @@ const DESIGN = [
 check('design-loop body', DESIGN_BODY, DESIGN);
 
 if (failures.length) {
-  console.error('One-Shot emitted-body invariants FAILED:\n');
+  console.error('Emitted-body invariants FAILED:\n');
   for (const f of failures) console.error(`  ✗ ${f}`);
   console.error(`\n${failures.length} failure(s). A rule that is not in the emitted body does not reach the run.`);
   process.exit(1);

@@ -432,7 +432,7 @@ After interview completes, immediately:
 Ask via `AskUserQuestion`. **Max 5 questions total.**
 
 **Standard questions** (priority order — drop lower ones if task-specific questions are needed):
-1. Task type: Build Feature / Fix Bug / Refactor / Write Tests / API Work / UI / Security / Docs / Content / Research / Multi-Agent
+1. Task type: Build Feature / Fix Bug / Refactor / Write Tests / API Work / UI / Design loop / Security / Docs / Content / Research / Multi-Agent
    - If user selects **Multi-Agent** while currently in **Single mode**, immediately transition to **Repromptverse Phase 1 (Team Plan)** and confirm team execution mode (Parallel vs Sequential).
 2. Execution mode: Single Agent / Team (Parallel) / Team (Sequential) / Let RePrompter decide
 3. Motivation: User-facing / Internal tooling / Bug fix / Exploration / Skip *(drop first if space needed)*
