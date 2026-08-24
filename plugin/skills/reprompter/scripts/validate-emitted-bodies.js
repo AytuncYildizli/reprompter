@@ -153,6 +153,27 @@ function blockquoteFrom(src, anchor) {
 }
 
 const DESIGN_BODY = blockquoteFrom(designLines, '> Redesign **[what]**');
+
+/** The same blockquote, kept as paragraphs, because where a rule sits decides
+ *  whether an assembly path can drop it. */
+function blockquoteParagraphs(src, anchor) {
+  const start = src.findIndex((l) => l.startsWith(anchor));
+  const paras = [];
+  let current = [];
+  for (let i = start; i < src.length && src[i].startsWith('>'); i++) {
+    const line = src[i].slice(1).trim();
+    if (!line) {
+      if (current.length) paras.push(current.join(' '));
+      current = [];
+      continue;
+    }
+    current.push(line);
+  }
+  if (current.length) paras.push(current.join(' '));
+  return paras;
+}
+
+const DESIGN_PARAS = blockquoteParagraphs(designLines, '> Redesign **[what]**');
 const DESIGN = [
   ['found copy is checked against the code before porting a claim', /check it against what the code actually does/i],
   ['the scan stays inside this repository', /this repository/i],
@@ -172,8 +193,20 @@ const DESIGN = [
   ['what already worked has to keep working', /keep working/i],
   ['the load-bearing negative survives', /\[hard negative\]/],
   ['the done-list is actually stated', /\[done-list/],
+  ['lifecycle cleanup is checked where the page has one', /still firing/i],
+  ['git history is opt-in and path-only', /unless the user asks you to/i],
 ];
 check('design-loop body', DESIGN_BODY, DESIGN);
+
+// "fix what's broken" drops the direction paragraph. A load-bearing negative that
+// lives in it goes with it, silently, taking a constraint the user stated out loud.
+// Presence in the body is not enough: the paragraph matters.
+const DIRECTION_PARA = DESIGN_PARAS.find((para) => para.startsWith('Then commit to one direction'));
+if (!DIRECTION_PARA) {
+  failures.push('design-loop body: the direction paragraph is no longer identifiable, so the drop rule cannot be checked');
+} else if (/\[hard negative\]/.test(DIRECTION_PARA)) {
+  failures.push('design-loop body: [hard negative] sits in the direction paragraph, which "fix what\'s broken" drops — the user\'s constraint would be dropped with it');
+}
 
 if (failures.length) {
   console.error('Emitted-body invariants FAILED:\n');

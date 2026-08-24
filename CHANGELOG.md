@@ -35,6 +35,13 @@ The template also carries what the critic must check, because three rounds of cr
 
 ### Review
 
+Three more findings after the three-model round, from the Codex and Droid bots, all of them the same shape as the rest:
+
+- **A load-bearing negative could be dropped silently.** `Never [hard negative]` sat in the direction paragraph, and the assembly rule for "fix what's broken" drops that paragraph whole — so a user who said "never touch the existing colour tokens" and asked only for a repair got a prompt with their constraint deleted. It now sits in the build paragraph, which every assembly path emits, and `validate:emitted-bodies` asserts it is not in the droppable one. Presence in the body was never the invariant; the paragraph was.
+- **Lifecycle cleanup was prose while this changelog claimed it was checked.** The emitted motion critique now carries it: leave a framework route and come back, then confirm nothing from the old instance is still firing.
+- **Stage 0 swept too wide.** It searched the repository and git history and then listed what it found, which surfaces whatever sits next to the design files — and history still holds what was deleted from the tree, including things deleted because they should not have been committed. It now looks in the places brand material actually lives, reports paths and filenames rather than contents, and reads history only when the user asks, by path.
+
+
 Three models reviewed it (GPT-5.6-sol, GLM-5.2, Fable) plus the Codex and Droid bots. Two returned DO-NOT-SHIP. Every finding was the same shape and it is the one this project keeps making: a rule stated in a template's prose while the emitted prompt — the only text that reaches a run — does not carry it. What the reviewers caught, in the template written from that lesson: no separate critic (the prompt had one agent switching hats), no calibration clause, frame time with no conditions and no budget, the whole craft and quality floor prose-only, a browser assumed with no fallback, and the worked example still narrating the cross-workspace scan the same PR had just forbidden. Fable also found the half of Stage 0 that was missing entirely: found brand material was tested for being *stronger* than an invention, never for being *true*, and in the run behind the template the deck described a product the code did not implement. `validate:emitted-bodies` now asserts each of those reaches the pasted text.
 
 Treat it as one observation. The run is not in this repository.

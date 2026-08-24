@@ -37,8 +37,8 @@
     },
     {
       "path": "references/design-loop-template.md",
-      "source_sha256": "9e7f706479bff3cfc9b584ebe4cff9a9326c785273dbf90baa248d6ef37b2839",
-      "generated_sha256": "9e7f706479bff3cfc9b584ebe4cff9a9326c785273dbf90baa248d6ef37b2839"
+      "source_sha256": "f544e35f0878f11cd1ea98ab99c833b2643fbc64cfa833ce51acabb831ecc483",
+      "generated_sha256": "f544e35f0878f11cd1ea98ab99c833b2643fbc64cfa833ce51acabb831ecc483"
     },
     {
       "path": "references/docs-template.md",
