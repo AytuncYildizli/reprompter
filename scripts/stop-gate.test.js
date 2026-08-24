@@ -37,6 +37,17 @@ function runStop(payload, options = {}) {
   });
 }
 
+function runStopDefaultOff(payload, cache = tmpDir()) {
+  const env = { ...process.env, XDG_CACHE_HOME: cache };
+  delete env.REPROMPTER_AMBIENT;
+  return spawnSync(process.execPath, ["scripts/stop-gate.js"], {
+    cwd: repoRoot,
+    input: JSON.stringify(payload),
+    encoding: "utf8",
+    env,
+  });
+}
+
 function spawnStop(input, env = {}) {
   return new Promise((resolve, reject) => {
     let timedOut = false;
@@ -205,6 +216,16 @@ test("kill switches are silent and record nothing", () => {
     assertSilentSuccess(result);
     assert.equal(readEvents(cache).filter((event) => event.stage === "gate_outcome").length, 0);
   }
+});
+
+test("ambient Stop hook is disabled by default", () => {
+  const cache = tmpDir();
+  const sessionId = "default-off-stop";
+  seedGatePrompt(cache, sessionId, true);
+  const transcriptPath = writeTranscript(cache, ['{"type":"user","content":"reprompt this"}']);
+
+  assertSilentSuccess(runStopDefaultOff({ session_id: sessionId, transcript_path: transcriptPath }, cache));
+  assert.equal(readEvents(cache).filter((event) => event.stage === "gate_outcome").length, 0);
 });
 
 test("malformed stdin and missing transcript exit silently", () => {

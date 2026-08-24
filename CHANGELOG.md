@@ -1,3 +1,17 @@
+## Unreleased — Ambient hooks default off
+
+### Fixed
+
+- Claude Code plugin packages no longer auto-register `UserPromptSubmit` or `Stop`. The generated hook manifest is empty, so installing RePrompter adds zero hook-process latency to ordinary turns while `/reprompter:reprompter` remains packaged and unchanged.
+- `scripts/prompt-gate.js` and `scripts/stop-gate.js` now require exact `REPROMPTER_AMBIENT=1` and return before reading stdin when it is absent. This makes stale/manual hook registrations fail open immediately instead of waiting on the previous 3-second internal deadline or 10-second harness timeout.
+- Regression coverage locks default-off packaging and runtime behavior, explicit opt-in behavior, timeout/failure fail-open behavior, and the explicit skill path.
+- The documented Codex and Hermes opt-in commands set the flag through `env` rather than a bare `VAR=1` prefix, which only works if the runtime executes the command through a shell. Nothing in this repo verifies that Codex does; `env` is a real binary and is correct either way.
+- The documented hook timeouts are 4s rather than 1s. The gate fails open by itself at its 3s stdin deadline (measured: 3038ms with stdin held open and no data), so a 1s harness timeout killed the process before that path could run — the two numbers contradicted each other in exactly the case the deadline exists for. `REPROMPTER_HOOK_DEADLINE_MS` is named in the docs for anyone who wants a tighter bound than 4s.
+
+### Migration
+
+- Update or reinstall the Claude plugin to replace the old generated hook registrations with an empty manifest. Remove any manually copied ambient hook entries to eliminate their process-spawn overhead. Users who want ambient suggestions must add the documented hooks and `REPROMPTER_AMBIENT=1`; explicit `/reprompter:reprompter` use needs no migration.
+
 ## v13.2.0 (2026-08-02) — The design loop
 
 ### Added

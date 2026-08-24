@@ -4,8 +4,8 @@
 // Design rules:
 //   - FAIL-SOFT: any internal error resolves to empty stdout and exit 0. The
 //     gate must never block work or add meaningful latency to a prompt.
-//   - OPT-IN: this only runs when a user installs the hook. Set
-//     REPROMPTER_AMBIENT=0 as the kill switch.
+//   - OPT-IN: this only runs when a user installs the hook and sets
+//     REPROMPTER_AMBIENT=1.
 //   - PRIVACY: raw prompt text never leaves the process; it is not written to
 //     telemetry, state files, or any other persisted artifact.
 //   - NEVER-BLOCK: the process always exits 0 and never exits 2.
@@ -302,7 +302,7 @@ function shouldNudge(prompt, options = {}) {
   const statePath = options.statePath || defaultStatePath(env);
   const trimmed = normalizedText(prompt).trim();
 
-  if (env.REPROMPTER_AMBIENT === "0") return { nudge: false, reason: "disabled" };
+  if (env.REPROMPTER_AMBIENT !== "1") return { nudge: false, reason: "disabled" };
   if (/^[!/]/.test(trimmed)) return { nudge: false, reason: "slash-command" };
   if (trimmed.length < 40) return { nudge: false, reason: "too-short" };
   if (/^(yes|no|ok(?:ay)?|sure|continue|go ahead|thanks?|ty|lgtm|approved?|evet|tamam|devam|olur)\b/i.test(trimmed)) {
@@ -455,6 +455,8 @@ function readStdinWithDeadline(options = {}) {
 }
 
 async function runHookMode() {
+  if (process.env.REPROMPTER_AMBIENT !== "1") return;
+
   const raw = await readStdinWithDeadline();
   if (raw == null) return;
   if (!raw.trim()) return;

@@ -1771,19 +1771,20 @@ The Ambient Prompt Gate scores every incoming prompt with the same six RePrompte
 
 Local-only, nothing ever leaves the machine. The hook NEVER blocks a prompt. It is fail-soft: malformed stdin, unreadable state, telemetry errors, or any internal failure produce empty stdout and exit 0. It never writes prompt text to telemetry or state; telemetry contains only score, weakest dimensions, whether it nudged, the reason, runtime, and a hashed session correlation id. The same script, heuristics, cooldowns, kill switches, and local-only privacy contract apply on all three runtimes.
 
-The Claude Code plugin also registers a `Stop` hook that measures whether a nudged session later accepted the nudge. It reads the local transcript only inside the hook process, derives a boolean, and records at most one `gate_outcome` event per session with `metadata.accepted: true|false`. It never prints output, never exits 2, never blocks stopping, and never persists transcript text. Stop-hook acceptance recording remains Claude Code-only for now.
+When explicitly configured, Claude Code can also run a `Stop` hook that measures whether a nudged session later accepted the nudge. It reads the local transcript only inside the hook process, derives a boolean, and records at most one `gate_outcome` event per session with `metadata.accepted: true|false`. It never prints output, never exits 2, never blocks stopping, and never persists transcript text. Stop-hook acceptance recording remains Claude Code-only for now.
 
-Recommended Claude Code install: install the plugin. The plugin registers the `/reprompter:reprompter` skill namespace plus both Ambient Prompt Gate hooks automatically:
+Recommended Claude Code install: install the plugin. The plugin registers the `/reprompter:reprompter` skill namespace, while Ambient Prompt Gate hooks remain off unless configured separately:
 
 ```text
 /plugin marketplace add AytuncYildizli/reprompter
 /plugin install reprompter@reprompter
 ```
 
-For copy-based installs only, add both hooks in `~/.claude/settings.json`:
+To opt in, keep a checkout or copy-based install at a stable absolute path, add both hooks in `~/.claude/settings.json`, and set the explicit enable flag. A plugin-only install intentionally has no ambient registration:
 
 ```json
 {
+  "env": { "REPROMPTER_AMBIENT": "1" },
   "hooks": {
     "UserPromptSubmit": [
       { "hooks": [ { "type": "command", "command": "node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js" } ] }
@@ -1795,7 +1796,7 @@ For copy-based installs only, add both hooks in `~/.claude/settings.json`:
 }
 ```
 
-Plugin hooks can still be globally disabled by Claude Code's `disableAllHooks`; use `REPROMPTER_AMBIENT=0` for the granular per-feature off switch while keeping the plugin skill installed.
+The plugin package itself registers no ambient hooks, so normal turns incur no RePrompter hook process or latency. Existing manual hook entries exit before reading stdin unless `REPROMPTER_AMBIENT=1`. Remove old entries entirely for zero process-spawn overhead; explicit `/reprompter:reprompter` use is independent of them.
 
 For Codex CLI copy-based installs, add a hook definition to `~/.codex/hooks.json`:
 
@@ -1807,8 +1808,8 @@ For Codex CLI copy-based installs, add a hook definition to `~/.codex/hooks.json
         "hooks": [
           {
             "type": "command",
-            "command": "node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js --format=codex",
-            "timeout": 10
+            "command": "env REPROMPTER_AMBIENT=1 node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js --format=codex",
+            "timeout": 4
           }
         ]
       }
@@ -1817,22 +1818,22 @@ For Codex CLI copy-based installs, add a hook definition to `~/.codex/hooks.json
 }
 ```
 
-Review and trust the hook via `/hooks`. Codex keys trust to the SHA-256 of the hook definition, so editing the command requires re-trusting it. Keep an explicit short timeout; Codex's default hook timeout is much longer than this gate needs. Codex's `[features] hooks = false` disables all hooks; `REPROMPTER_AMBIENT=0` remains the RePrompter-specific off switch.
+Review and trust the hook via `/hooks`. Codex keys trust to the SHA-256 of the hook definition, so editing the command requires re-trusting it. Keep an explicit short timeout, but keep it above the gate's own stdin deadline (3s, tunable via `REPROMPTER_HOOK_DEADLINE_MS`): the script fails open by itself at that deadline, and a harness timeout below it kills the process before that path can run. Codex's own default is 600s, far longer than this gate needs. Codex's `[features] hooks = false` disables all hooks; without exact `REPROMPTER_AMBIENT=1`, RePrompter's gate stays off.
 
 For Hermes Agent, use a git clone or copied RePrompter checkout that includes `scripts/` (Hermes installs ship no `scripts/` helpers), then add the shell hook in `~/.hermes/config.yaml`:
 
 ```yaml
 hooks:
   pre_llm_call:
-    - command: "node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js --format=hermes"
-      timeout: 5
+    - command: "env REPROMPTER_AMBIENT=1 node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js --format=hermes"
+      timeout: 4
 ```
 
 Hermes `pre_llm_call` cannot block, which matches this gate's never-block design. Hermes asks for first-use interactive approval per `(event, command)` and persists it to `~/.hermes/shell-hooks-allowlist.json`; non-TTY runs need `HERMES_ACCEPT_HOOKS=1` or `hooks_auto_accept: true`, otherwise the hook may stay unregistered. Malformed output and timeouts are ignored by Hermes.
 
 | Env flag | Values | Effect |
 |----------|--------|--------|
-| `REPROMPTER_AMBIENT` | `"0"` / unset | Kill switch. `"0"` disables all nudges. |
+| `REPROMPTER_AMBIENT` | `"1"` / unset | Explicit opt-in. Only exact `"1"` enables ambient hooks; unset or any other value disables them. |
 | `REPROMPTER_AMBIENT_THRESHOLD` | number | Overall score threshold for nudging. Default `5`. |
 | `REPROMPTER_AMBIENT_COOLDOWN_MIN` | number | Per-session cooldown after a nudge. Default `15`. |
 | `REPROMPTER_TELEMETRY` | `"0"` / unset | `"0"` disables privacy-safe `gate_prompt` and `gate_outcome` telemetry events. |
