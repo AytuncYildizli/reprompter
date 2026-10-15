@@ -267,7 +267,7 @@ For both modes, RePrompter supports post-execution evaluation:
 
 ---
 
-> The **Deliver via headless-relay (post-output step)** section referenced in "After the final prompt" lives in `../reprompter-goal-workflow/SKILL.md`.
+> The **Deliver via headless-relay (post-output step)** section referenced in "After the final prompt" lives in `../reprompter-goal-workflow/references/headless-relay.md`.
 
 ## More (moved to references)
 

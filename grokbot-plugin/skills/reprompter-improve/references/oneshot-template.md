@@ -139,7 +139,7 @@ Do not promise it matches the reference. The public run behind this shape was re
 
 **Team execution is default-mode only.** It needs a done-list to become the team's success criteria, and maximal mode deliberately has none — so if the user wants a team, use the default (done-list) prompt, never the maximal one. Decide one-prompt-vs-team before offering maximal.
 
-If the user asks for a team — or says yes when the ask clearly spans 2+ independent domains — do not emit the one-prompt form. Hand the finished brief to Repromptverse (SKILL.md "Team execution") with this mapping:
+If the user asks for a team — or says yes when the ask clearly spans 2+ independent domains — do not emit the one-prompt form. Hand the finished brief to Repromptverse (`../reprompter-team/SKILL.md`, "Team execution") with this mapping:
 
 - the enumerated **work areas** → **2-5 agent scopes** (Repromptverse's cap): group related areas so each agent owns a coherent, non-overlapping slice, and name one agent as integrator for cross-cutting concerns;
 - the **done-list** → the team's success criteria, split per agent by area. Carry the measurement rules across with it: any criterion that is measured rather than looked at keeps the conditions it is measured under, and the evaluator calibrates any check it scripts against a known-good and a known-bad case before reporting a pass. Carry the unverified outcome across too: a criterion whose target conditions the evaluator cannot reproduce is recorded unverified with the condition named, not left blocking the phase and not passed under a substitute configuration;

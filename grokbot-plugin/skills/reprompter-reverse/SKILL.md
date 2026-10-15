@@ -10,7 +10,7 @@ description: |
 
 # RePrompter — Reverse (prompt DNA extraction)
 
-> Mode skill of the `reprompter` plugin. Entry/routing: `../reprompter/SKILL.md`. Content below is verbatim from root SKILL.md lines 1314-1479; the reverse template is `references/reverse-template.md`. Task templates, scoring and `outcome-schema.md` live in `../reprompter-improve/`; headless-relay delivery of a finished Reverse prompt is in `../reprompter-goal-workflow/SKILL.md`; the Prompt Flywheel is in `../reprompter/references/advanced-features.md`. `scripts/<name>` paths resolve to the bundled `../reprompter/scripts/<name>` (e.g. `../reprompter/scripts/reverse-engineer.js`).
+> Mode skill of the `reprompter` plugin. Entry/routing: `../reprompter/SKILL.md`. Content below is verbatim from root SKILL.md lines 1314-1479; the reverse template is `references/reverse-template.md`. Task templates, scoring and `outcome-schema.md` live in `../reprompter-improve/`; headless-relay delivery of a finished Reverse prompt is in `../reprompter-goal-workflow/references/headless-relay.md`; the Prompt Flywheel is in `../reprompter/references/advanced-features.md`. `scripts/<name>` paths resolve to the bundled `../reprompter/scripts/<name>` (e.g. `../reprompter/scripts/reverse-engineer.js`).
 >
 > **Required reading:** `../reprompter/references/advanced-features.md`. The always-on rules in `../reprompter/SKILL.md` → "Core shared rules" (context check, uncertainty permission, WHAT not HOW) apply to every extracted prompt.
 
