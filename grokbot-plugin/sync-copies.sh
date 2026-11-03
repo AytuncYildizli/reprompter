@@ -12,7 +12,7 @@ while IFS= read -r copy; do
   inner="${copy#grokbot-plugin/skills/}"
   rel="${inner#*/}"
   case "$rel" in references/*|scripts/*) ;; *) continue ;; esac
-  if [ ! -e "$rel" ]; then split_only=$((split_only+1)); continue; fi
+  if [ ! -e "$rel" ]; then echo "SPLIT-ONLY $copy (no root $rel)"; split_only=$((split_only+1)); continue; fi
   if printf '%s\n' "$diverged_list" | grep -qxF "$inner"; then echo "DIVERGED $copy (listed in DIVERGED-COPIES)"; diverged=$((diverged+1)); continue; fi
   if cmp -s "$rel" "$copy"; then current=$((current+1)); continue; fi
   echo "STALE $copy <- $rel"; stale=$((stale+1))

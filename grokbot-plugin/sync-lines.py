@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
-"""Carry root SKILL.md edits into the grokbot-plugin split.
+"""Carry root SKILL.md edits into the grokbot-plugin split, or say why not.
 
 Diffs root SKILL.md between the blob in grokbot-plugin/SPLIT-BASE and the
-working tree, then applies each replaced, inserted or deleted line to the
-split file that holds it. New lines go after the nearest preceding root line
-that appears exactly once in the split bodies, never inside YAML frontmatter.
-Anything it cannot place is printed as UNPLACED for a human to put in the
-right mode skill. --apply is all or nothing: it writes the files and moves
-SPLIT-BASE only when every change was placed.
+working tree, and applies only edits it can place without guessing:
+
+- A changed or deleted line is edited where the split holds a copy whose
+  nearest non-blank neighbours match the root's. The split repeats some lines
+  (headings in several mode skills, a fenced copy of the frontmatter), so a
+  bare text match is not enough.
+- New lines go after a root body line that has exactly one such copy outside
+  frontmatter and code fences.
+
+Everything else is printed as UNPLACED. --apply is all or nothing: with any
+UNPLACED edit it writes no file, leaves SPLIT-BASE alone and exits 1.
 
 usage: python3 grokbot-plugin/sync-lines.py [--apply]
 """
@@ -20,86 +25,122 @@ import sys
 os.chdir(subprocess.run(["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True, check=True).stdout.strip())
 
 base_blob = pathlib.Path("grokbot-plugin/SPLIT-BASE").read_text().strip()
+if subprocess.run(["git", "cat-file", "-e", base_blob], capture_output=True).returncode != 0:
+    sys.exit(f"SPLIT-BASE blob {base_blob} is not in this clone. Fetch full history (git fetch --unshallow) and rerun.")
 old = subprocess.run(["git", "cat-file", "-p", base_blob], capture_output=True, text=True, check=True).stdout.split("\n")
 new = pathlib.Path("SKILL.md").read_text().split("\n")
 texts = {f: f.read_text().split("\n") for f in sorted(pathlib.Path("grokbot-plugin/skills").rglob("*.md"))}
 apply = "--apply" in sys.argv
-unplaced = []
+root_body_start = [i for i, line in enumerate(old) if line == "---"][1] + 1
 
 
-def frontmatter_end(lines):
-    if not lines or lines[0] != "---":
-        return -1
-    return next((i for i in range(1, len(lines)) if lines[i] == "---"), -1)
+def sheltered(lines):
+    """Indices inside YAML frontmatter or a fenced code block."""
+    out, fence = set(), False
+    if lines and lines[0] == "---":
+        end = next((i for i in range(1, len(lines)) if lines[i] == "---"), len(lines) - 1)
+        out.update(range(end + 1))
+    for i, line in enumerate(lines):
+        if line.startswith("```"):
+            fence = not fence
+            out.add(i)
+        elif fence:
+            out.add(i)
+    return out
 
 
-def locate(line, body_only=False):
-    hits = []
-    for f, lines in texts.items():
-        fm = frontmatter_end(lines) if body_only else -1
-        hits += [(f, i) for i, l in enumerate(lines) if i > fm and l == line and line.strip()]
-    return hits
+shelter = {f: sheltered(lines) for f, lines in texts.items()}
 
 
-def insertion_point(i1):
-    """Position after the nearest preceding root line that is unique in the split bodies."""
-    for k in range(i1 - 1, -1, -1):
-        cand = old[k].strip()
-        if len(cand) < 4 or cand == "---":
-            continue
-        hits = locate(old[k], body_only=True)
-        if len(hits) != 1:
-            continue
-        f, p = hits[0]
-        lines = texts[f]
-        for j in range(k + 1, i1):
-            if p + 1 < len(lines) and lines[p + 1] == old[j]:
-                p += 1
-            else:
-                break
-        return f, p
+def neighbour(lines, i, step):
+    j = i + step
+    while 0 <= j < len(lines):
+        if lines[j].strip():
+            return lines[j]
+        j += step
     return None
 
 
+def copies_of(k):
+    """Split copies of root line k whose nearest non-blank neighbours match the root's."""
+    line, before, after = old[k], neighbour(old, k, -1), neighbour(old, k, 1)
+    return [
+        (f, i)
+        for f, lines in texts.items()
+        for i, text in enumerate(lines)
+        if text == line and line.strip() and neighbour(lines, i, -1) == before and neighbour(lines, i, 1) == after
+    ]
+
+
+def slot_for_insert(i1):
+    """(file, index to insert at) after the nearest unique, unsheltered root body anchor."""
+    for k in range(i1 - 1, root_body_start - 1, -1):
+        if len(old[k].strip()) < 4 or old[k].strip() == "---":
+            continue
+        hits = [(f, i) for f, i in copies_of(k) if i not in shelter[f]]
+        if len(hits) != 1:
+            return None
+        f, p = hits[0]
+        for j in range(k + 1, i1):
+            if p + 1 < len(texts[f]) and texts[f][p + 1] == old[j]:
+                p += 1
+            else:
+                return None
+        return f, p + 1
+    return None
+
+
+edits, unplaced = [], []  # edits: (file, index, kind, payload)
 for op, i1, i2, j1, j2 in difflib.SequenceMatcher(None, old, new, autojunk=False).get_opcodes():
     if op == "equal":
         continue
     olds, news = old[i1:i2], new[j1:j2]
     if op == "replace" and len(olds) == len(news):
-        for o, n in zip(olds, news):
-            if not o.strip() and not n.strip():
+        for k, replacement in zip(range(i1, i2), news):
+            if not old[k].strip() and not replacement.strip():
                 continue
-            hits = locate(o)
+            hits = copies_of(k)
             if not hits:
-                unplaced.append(("replace", o[:90], n[:90]))
-                continue
-            for f, i in hits:
-                print(f"REPLACE {f}:{i + 1}\n  - {o[:110]}\n  + {n[:110]}")
-                texts[f][i] = n
+                unplaced.append(f"change: {old[k][:70]!r} -> {replacement[:70]!r}")
+            edits += [(f, i, "set", replacement) for f, i in hits]
         continue
-    for o in olds:
-        for f, i in locate(o):
-            print(f"DELETE {f}:{i + 1} {o[:100]}")
-            texts[f][i] = None
+    for k in range(i1, i2):
+        if not old[k].strip():
+            continue
+        hits = copies_of(k)
+        if not hits:
+            unplaced.append(f"delete: {old[k][:90]!r}")
+        edits += [(f, i, "delete", None) for f, i in hits]
     if op == "delete":
         continue
-    at = insertion_point(i1)
-    if at is None:
-        unplaced.append(("insert", " | ".join(x[:60] for x in news if x.strip())))
+    slot = slot_for_insert(i1)
+    if slot is None:
+        unplaced.append("insert: " + " | ".join(x[:60] for x in news if x.strip()))
         continue
-    f, p = at
-    print(f"INSERT after {f}:{p + 1} ({len(news)} lines): {' | '.join(x[:70] for x in news if x.strip())}")
-    texts[f][p + 1:p + 1] = news
+    edits.append((slot[0], slot[1], "insert", news))
 
+for f, i, kind, payload in edits:
+    shown = payload if isinstance(payload, str) else " | ".join(x[:60] for x in (payload or []) if x.strip())
+    print(f"{kind.upper():6} {f}:{i + 1} {shown[:110]}")
 for u in unplaced:
     print("UNPLACED", u)
-print(f"unplaced={len(unplaced)}")
+print(f"edits={len(edits)} unplaced={len(unplaced)}")
 
-if apply and unplaced:
-    print("Nothing written: place the UNPLACED lines by hand, or fix them at root, then rerun.")
-elif apply:
-    for f, lines in texts.items():
-        f.write_text("\n".join(l for l in lines if l is not None))
+if unplaced:
+    if apply:
+        print("Nothing written. Place the UNPLACED lines by hand, then move SPLIT-BASE to `git hash-object SKILL.md`.")
+    sys.exit(1)
+if apply:
+    for f in texts:
+        lines = list(texts[f])
+        for _, i, kind, payload in sorted((e for e in edits if e[0] == f), key=lambda e: e[1], reverse=True):
+            if kind == "set":
+                lines[i] = payload
+            elif kind == "delete":
+                del lines[i]
+            else:
+                lines[i:i] = payload
+        f.write_text("\n".join(lines))
     blob = subprocess.run(["git", "hash-object", "-w", "SKILL.md"], capture_output=True, text=True, check=True).stdout.strip()
     pathlib.Path("grokbot-plugin/SPLIT-BASE").write_text(blob + "\n")
     print(f"SPLIT-BASE -> {blob}")
