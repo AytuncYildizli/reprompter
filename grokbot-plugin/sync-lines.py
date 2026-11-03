@@ -15,7 +15,8 @@ working tree, and applies only edits it can place without guessing:
 Two edits aimed at one split line, new text with a relative link or path that
 would need rewriting for the split, and everything else, are UNPLACED. Copies
 of root reference and script files are left to sync-copies.sh. After --apply
-the tool runs verify-split.sh and restores every file if it fails. --apply is all or nothing: with any
+the tool runs verify-split.sh against the old SPLIT-BASE and restores every
+file if it fails, so an old line left in any copy undoes the sync. --apply is all or nothing: with any
 UNPLACED edit it writes no file, leaves SPLIT-BASE alone and exits 1.
 
 usage: python3 grokbot-plugin/sync-lines.py [--apply]
@@ -183,15 +184,14 @@ if apply:
             else:
                 lines[i:i] = payload
         f.write_text("\n".join(lines))
-    base_file = pathlib.Path("grokbot-plugin/SPLIT-BASE")
-    previous_base = base_file.read_text()
-    blob = subprocess.run(["git", "hash-object", "-w", "SKILL.md"], capture_output=True, text=True, check=True).stdout.strip()
-    base_file.write_text(blob + "\n")
+    # Verify against the old base first: its stale check is what finds an old
+    # line left behind in a copy the sync could not tie to the root edit.
     check = subprocess.run(["bash", "grokbot-plugin/verify-split.sh"], capture_output=True, text=True)
     if check.returncode != 0:
         for f, text in originals.items():
             f.write_text(text)
-        base_file.write_text(previous_base)
-        summary = [l for l in check.stdout.splitlines() if l.startswith("SUMMARY")]
-        sys.exit(f"verify-split.sh failed after the sync, so every file was restored. {summary[0] if summary else ''}")
+        summary = [l for l in check.stdout.splitlines() if l.startswith(("SUMMARY", "STALE", "MISSING"))]
+        sys.exit("verify-split.sh failed after the sync, so every file was restored.\n" + "\n".join(summary[:12]))
+    blob = subprocess.run(["git", "hash-object", "-w", "SKILL.md"], capture_output=True, text=True, check=True).stdout.strip()
+    pathlib.Path("grokbot-plugin/SPLIT-BASE").write_text(blob + "\n")
     print(f"SPLIT-BASE -> {blob}")
