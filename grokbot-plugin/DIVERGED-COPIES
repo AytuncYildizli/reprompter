@@ -1,0 +1,6 @@
+# Copies under grokbot-plugin/skills/ that intentionally differ from their root
+# file. sync-copies.sh reports these and never overwrites them; every other
+# copy is refreshed from root. Paths are relative to grokbot-plugin/skills/.
+reprompter-improve/references/oneshot-template.md
+reprompter-oneshot/references/oneshot-template.md
+reprompter/scripts/version-check.js
