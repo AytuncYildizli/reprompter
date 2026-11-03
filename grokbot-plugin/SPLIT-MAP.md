@@ -4,7 +4,7 @@ Each row maps a root `SKILL.md` heading (line number) to where its text now live
 
 Status: every root heading is placed (chunk 1 + chunk 2), synced to v13.3.0. Run `bash grokbot-plugin/verify-split.sh` to check that every non-blank line of root `SKILL.md` appears in some file under `skills/`, that no line root has deleted since `SPLIT-BASE` survives here, and that relative links and backticked `references/` / `../` paths resolve.
 
-`SPLIT-BASE` holds the git blob id of the root `SKILL.md` this split was last synced against; line numbers below refer to that blob. To sync again: apply `git diff <that blob> HEAD:SKILL.md` to the files named here, refresh the `references/` and `scripts/` copies, then write `git rev-parse HEAD:SKILL.md` into `SPLIT-BASE` and rerun `verify-split.sh`.
+`SPLIT-BASE` holds the git blob id of the root `SKILL.md` this split was last synced against; line numbers below refer to that blob. To sync again, run `python3 grokbot-plugin/sync-lines.py --apply && bash grokbot-plugin/sync-copies.sh --apply`, then rerun `verify-split.sh`. `sync-lines.py` applies the root `SKILL.md` diff since `SPLIT-BASE` to the split file holding each neighbouring line and moves `SPLIT-BASE`; it prints anything it cannot place as UNPLACED, and those lines go in the mode skill this map names. `sync-copies.sh` refreshes the verbatim `references/` and `scripts/` copies and only reports the split's intentional edits. The line numbers below are from the last full remap and drift after a tool sync.
 
 ## Placed (chunk 1)
 

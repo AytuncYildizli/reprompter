@@ -209,4 +209,7 @@ echo "broken scripts: $broken_scripts"
 
 echo
 echo "SUMMARY: missing=$missing stale=$stale broken_links=$broken_links broken_refs=$broken_refs broken_scripts=$broken_scripts"
+if [ "$missing" != 0 ] || { [ "$stale" != skipped ] && [ "$stale" != 0 ]; }; then
+  echo "To re-sync after a root SKILL.md edit: python3 grokbot-plugin/sync-lines.py --apply && bash grokbot-plugin/sync-copies.sh --apply"
+fi
 [ "$missing" -eq 0 ] && { [ "$stale" = skipped ] || [ "$stale" -eq 0 ]; } && [ "$broken_links" -eq 0 ] && [ "$broken_refs" -eq 0 ] && [ "$broken_scripts" -eq 0 ]
