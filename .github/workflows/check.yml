@@ -37,8 +37,11 @@ jobs:
           test ! -e /tmp/fresh/plugin
           test ! -e /tmp/fresh/.claude-plugin
 
-          printf '%s\n' '{"session_id":"ci","prompt":"uhh build a crypto dashboard, maybe coingecko data, add caching, test it too"}' \
-            | XDG_CACHE_HOME="$(mktemp -d)" node /tmp/fresh/scripts/prompt-gate.js \
+          prompt='{"session_id":"ci","prompt":"uhh build a crypto dashboard, maybe coingecko data, add caching, test it too"}'
+          off=$(printf '%s\n' "$prompt" | XDG_CACHE_HOME="$(mktemp -d)" node /tmp/fresh/scripts/prompt-gate.js)
+          test -z "$off"
+          printf '%s\n' "$prompt" \
+            | REPROMPTER_AMBIENT=1 XDG_CACHE_HOME="$(mktemp -d)" node /tmp/fresh/scripts/prompt-gate.js \
             | grep reprompter-ambient-gate
 
       # Clone path: what /plugin marketplace add users get (git clone keeps
@@ -46,6 +49,9 @@ jobs:
       - run: |
           node -e "for (const f of ['.claude-plugin/marketplace.json','plugin/.claude-plugin/plugin.json']) JSON.parse(require('node:fs').readFileSync(f,'utf8'))"
 
-          printf '%s\n' '{"session_id":"ci","prompt":"uhh build a crypto dashboard, maybe coingecko data, add caching, test it too"}' \
-            | XDG_CACHE_HOME="$(mktemp -d)" node plugin/skills/reprompter/scripts/prompt-gate.js \
+          prompt='{"session_id":"ci","prompt":"uhh build a crypto dashboard, maybe coingecko data, add caching, test it too"}'
+          off=$(printf '%s\n' "$prompt" | XDG_CACHE_HOME="$(mktemp -d)" node plugin/skills/reprompter/scripts/prompt-gate.js)
+          test -z "$off"
+          printf '%s\n' "$prompt" \
+            | REPROMPTER_AMBIENT=1 XDG_CACHE_HOME="$(mktemp -d)" node plugin/skills/reprompter/scripts/prompt-gate.js \
             | grep reprompter-ambient-gate
