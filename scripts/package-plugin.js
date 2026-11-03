@@ -123,32 +123,7 @@ function main() {
     author: { name: "AytuncYildizli" },
   });
 
-  writeJson(path.join(PLUGIN_DIR, "hooks", "hooks.json"), {
-    hooks: {
-      UserPromptSubmit: [
-        {
-          hooks: [
-            {
-              type: "command",
-              command: 'node "${CLAUDE_PLUGIN_ROOT}/skills/reprompter/scripts/prompt-gate.js"',
-              timeout: 10,
-            },
-          ],
-        },
-      ],
-      Stop: [
-        {
-          hooks: [
-            {
-              type: "command",
-              command: 'node "${CLAUDE_PLUGIN_ROOT}/skills/reprompter/scripts/stop-gate.js"',
-              timeout: 10,
-            },
-          ],
-        },
-      ],
-    },
-  });
+  writeJson(path.join(PLUGIN_DIR, "hooks", "hooks.json"), { hooks: {} });
 
   copyFile("SKILL.md", path.join("skills", "reprompter", "SKILL.md"));
   copyTree("references", path.join("skills", "reprompter", "references"));

@@ -14,10 +14,10 @@ compatibility: |
   A post-output delivery step can — offered once as a structured choice (plain-text fallback) over the relay targets headless-relay's preflight marks available (built-in lanes plus user-connected custom/local targets), never auto-executed — hand a finished Single/Reverse prompt to the headless-relay skill; the orchestrator reviews the relayed answer against the prompt's success criteria by default. When the relay skill is not installed, no target is available, or availability cannot be verified, the step is invisible.
 metadata:
   author: AytuncYildizli
-  version: 13.1.0
+  version: 13.2.0
 ---
 
-# RePrompter v13.1.0
+# RePrompter v13.2.0
 
 > **Your prompt sucks. Let's fix that.** Two intents — improve my prompt, or build this whole thing — with `/goal`, Workflow, team execution and cross-model delivery as places the result can go. **v13 (RePrompter v2) restructures six lanes into two intents: a specifiability router picks spec-XML or an autonomous build prompt inside Improve, and Build can run as one prompt or split across a team. Every v12 trigger keeps working.**
 
@@ -29,16 +29,16 @@ Users learn two sentences. Everything else is machinery underneath them.
 
 | Intent | Trigger | What happens |
 |--------|---------|-------------|
-| **Improve** — "make my prompt better" | "reprompt this", "clean up this prompt" | Interview → the specifiability router picks the shape: **spec-XML** when the done-state is enumerable up front (bugfix with a repro, endpoint with a contract, bounded feature), **outcome-prose** in the One-Shot shape when done can only be judged against a quality bar (whole product, "like X", aesthetic outcome) → score (spec-XML only) → output-format step |
+| **Improve** — "make my prompt better" | "reprompt this", "clean up this prompt" | Interview → the specifiability router picks the shape: **spec-XML** when the done-state is enumerable up front (bugfix with a repro, endpoint with a contract, bounded feature), **outcome-prose** in the One-Shot shape when done can only be judged against a quality bar (whole product, "like X"), or in the **design-loop** shape when the ask is how a page looks → score (spec-XML only) → output-format step |
 | **Build** — "build this whole thing" | "one-shot this", "one-shot a X", "tek promptla", "tek seferde", "vibe a game", "build me a whole app/game/site" | Plain-language interview (max 4) → done-list brief → execution choice: **one prompt** (default; finishes in one session, maximal/loop opt-in) or **split across a team** (the brief seeds Repromptverse: done-list becomes the team's success criteria, the harsh checker becomes the evaluator) |
 
-**Output formats (Improve):** these apply to **spec-XML results only** — an outcome-prose build brief is delivered as-is (it must not be compressed to `/goal` or compiled to a workflow, which would discard its staffing plan and checklist). paste (default) · compress to a `/goal <objective>` command (Codex CLI, Claude Code v2.1.139+, Hermes) · compile to a runnable `.workflow.js` (Claude Workflow tool) · deliver to another model via headless-relay (post-output step). The `/goal` and Workflow sections below define these formats; their triggers ("before /goal", "workflow preflight", "compile to workflow", "dynamic workflow", ...) jump straight to Improve with that format.
+**Output formats (Improve):** these apply to **spec-XML results only** — an outcome-prose build brief or a design-loop prompt is delivered as-is (it must not be compressed to `/goal` or compiled to a workflow, which would discard its staffing plan, its critic and its checklist). paste (default) · compress to a `/goal <objective>` command (Codex CLI, Claude Code v2.1.139+, Hermes) · compile to a runnable `.workflow.js` (Claude Workflow tool) · deliver to another model via headless-relay (post-output step). The `/goal` and Workflow sections below define these formats; their triggers ("before /goal", "workflow preflight", "compile to workflow", "dynamic workflow", ...) jump straight to Improve with that format.
 
 **Team execution (Build and beyond):** "repromptverse", "reprompter teams", "smart run", "smart agents", "run with quality" and the swarm triggers route to the Repromptverse machinery below — either standalone as today, or seeded by a Build brief.
 
 **Advanced:** Reverse mode (extract the prompt DNA from a great output — "reverse reprompt", "prompt dna") keeps working exactly as before and feeds the flywheel; it lives in its own section below.
 
-**Specifiability rule (Improve):** when the router picks outcome-prose, announce it in one line — "This looks like a whole-product ask — generating an autonomous build prompt; say 'spec' for the structured version." — and switch shapes if the user objects. Outcome-prose always keeps a constraints sentence (the home for "never touch auth"); it is not scored on the six dimensions.
+**Specifiability rule (Improve):** the prose shapes (outcome-prose and the design loop) are exempt from every spec-XML rule in this file; see the precedence rule under Shape decision. When the router picks outcome-prose, announce it in one line — "This looks like a whole-product ask — generating an autonomous build prompt; say 'spec' for the structured version." — and switch shapes if the user objects. Outcome-prose always keeps a constraints sentence (the home for "never touch auth"); it is not scored on the six dimensions.
 
 Auto-detection: if task mentions 2+ systems, "audit", or "parallel" → ask: "This looks like a multi-agent task. Want to use Repromptverse mode?"
 
@@ -365,6 +365,9 @@ Before the template pick, decide the OUTPUT SHAPE from the interview:
 
 - **Spec-XML (default)** — any bounded change (bugfix, endpoint, refactor, a feature in named files), anything with an enumerable done-state, and anything ambiguous. Scored on the six dimensions, exactly as always.
 - **Outcome-prose (only on a strong signal)** — the ask is to build a WHOLE product or artifact from near-zero (a whole app/game/site/deck), OR it names a real product as the quality bar for a from-scratch build ("build me X like Linear"). Then emit the One-Shot three-paragraph shape (`references/oneshot-template.md`), including its constraints sentence for load-bearing negatives ("never touch auth"). **Announce and offer the exit:** "This looks like a whole-product build — I'll write an autonomous build prompt; say 'spec' for the structured, scored version instead." The user's override always wins. Outcome-prose is not scored on the six dimensions. **This is the same artifact the Build intent produces** — an Improve ask that is really a whole-product build and the Build intent converge on one prose brief, deliberately; there is no separate Improve-only build shape to disambiguate.
+- **Design-loop prose (a page judged by how it looks)** — the ask is how a page looks: a redesign, a landing page, the visual layer of a dashboard. Emit `references/design-loop-template.md` instead of spec-XML, because a design pass needs a direction and a critic, not a spec to satisfy. Like outcome-prose, it is not scored on the six dimensions.
+
+**Precedence: the prose shapes are exempt from every spec-XML rule in this file.** One-Shot outcome-prose and the design loop take no base tags, none of the template fields, no `<success_criteria>` block, no score, no evaluator loop, no flywheel template override, and no `/goal` or workflow compilation. Wherever another section says "all templates", "every prompt", "always" or "both modes" about structure or scoring, it means every spec-XML prompt.
 - **Mixed asks** (a *bounded* change described with a reference, e.g. "add a settings page like Linear's to our app") are spec-XML: the reference informs the requirements, it does not trigger a from-scratch build. When genuinely unsure which one an ask is, ask one discriminator question — "a fresh build, or a change to something that exists?" — and default to spec-XML on a fresh session with no answer.
 
 ### Process
@@ -376,7 +379,7 @@ Before the template pick, decide the OUTPUT SHAPE from the interview:
 3. **Quick Mode gate** — under 20 words, single action, no complexity indicators → generate immediately. A quick-mode task is bounded by definition, so it is always spec-XML; the shape decision does not run on this path (there is nothing whole-product about a sub-20-word atomic task).
 4. **Smart Interview** — use `AskUserQuestion` with clickable options (2-5 questions max) for interactive Single mode. For prompts destined for autonomous execution (goal/workflow/team lanes), skip questions with reasonable defaults and emit an `<assumptions>` block the user can veto before running.
 5. **Flywheel bias check (optional, read-only)** — if `REPROMPTER_FLYWHEEL_BIAS=1` is set in the environment, consult past outcomes before choosing a template. See "Flywheel bias injection" below.
-6. **Generate + Score** — **if the shape decision above chose outcome-prose, skip this step's scoring**: emit the One-Shot prose brief (`references/oneshot-template.md`) and stop — outcome-prose is not scored on the six dimensions. Otherwise (spec-XML) apply the template and show before/after quality metrics. Generated prompts include a `<success_criteria schema_version="1">` block with 3-6 `<criterion>` entries. Each criterion has `id` (kebab-case slug, unique in block), `verification_method` (`rule` | `llm_judge` | `manual`), a one-sentence `<description>`, and — depending on method — an inline `<rule type="regex|predicate">` or `<judge_prompt>` (neither for `manual`). Schema of record: `references/outcome-schema.md`.
+6. **Generate + Score** — **if the shape decision above chose outcome-prose or the design loop, skip this step's scoring**: emit the One-Shot prose brief (`references/oneshot-template.md`) or the design-loop prompt (`references/design-loop-template.md`) and stop. Neither prose shape is scored on the six dimensions. Otherwise (spec-XML) apply the template and show before/after quality metrics. Generated prompts include a `<success_criteria schema_version="1">` block with 3-6 `<criterion>` entries. Each criterion has `id` (kebab-case slug, unique in block), `verification_method` (`rule` | `llm_judge` | `manual`), a one-sentence `<description>`, and — depending on method — an inline `<rule type="regex|predicate">` or `<judge_prompt>` (neither for `manual`). Schema of record: `references/outcome-schema.md`.
 7. **Single-pass evaluator** — run self-eval rubric and do one delta rewrite if score < 7
 
 **Why criteria are emitted:** so every prompt carries its own testable assertions; outcome records produced by `the root repository outcome recording helper` (added in the same PR) join criteria to results for flywheel learning.
@@ -419,7 +422,7 @@ Transport is user-owned: put packs in a shared directory, rsync them, or move th
 After interview completes, immediately:
 1. Select template based on task type
 2. Generate the full polished prompt
-3. Show quality score (before/after table)
+3. Show quality score (before/after table) for spec-XML. Outcome-prose and design-loop prompts are delivered unscored.
 4. Ask if user wants to execute or copy
 
 ```
@@ -432,7 +435,7 @@ After interview completes, immediately:
 Ask via `AskUserQuestion`. **Max 5 questions total.**
 
 **Standard questions** (priority order — drop lower ones if task-specific questions are needed):
-1. Task type: Build Feature / Fix Bug / Refactor / Write Tests / API Work / UI / Security / Docs / Content / Research / Multi-Agent
+1. Task type: Build Feature / Fix Bug / Refactor / Write Tests / API Work / UI / Design loop / Security / Docs / Content / Research / Multi-Agent
    - If user selects **Multi-Agent** while currently in **Single mode**, immediately transition to **Repromptverse Phase 1 (Team Plan)** and confirm team execution mode (Parallel vs Sequential).
 2. Execution mode: Single Agent / Team (Parallel) / Team (Sequential) / Let RePrompter decide
 3. Motivation: User-facing / Internal tooling / Bug fix / Exploration / Skip *(drop first if space needed)*
@@ -445,7 +448,7 @@ Ask via `AskUserQuestion`. **Max 5 questions total.**
 
 ### Single mode pattern pack (Microsoft-inspired)
 
-Apply these patterns even without multi-agent execution:
+Apply these patterns to spec-XML output, even without multi-agent execution. The prose shapes (One-Shot outcome-prose and the design loop) skip the spec contract and the evaluator loop.
 
 1. **Intent router** — map task to template with explicit priority rules
 2. **Constraint normalizer** — convert vague goals into measurable requirements/limits
@@ -508,7 +511,8 @@ Detect task type from input. Each type has a dedicated template in `references/`
 | Refactor | `refactor-template.md` | Structural cleanup |
 | Testing | `testing-template.md` | Test writing |
 | API | `api-template.md` | Endpoint/API work |
-| UI | `ui-template.md` | UI components |
+| UI | `ui-template.md` | UI components (built to a spec) |
+| Design loop | `design-loop-template.md` | how a page **looks**: direction, screenshot critique, fix loop |
 | Security | `security-template.md` | Security audit/hardening |
 | Docs | `docs-template.md` | Documentation |
 | Content | `content-template.md` | Blog posts, articles, marketing copy |
@@ -523,7 +527,7 @@ Detect task type from input. Each type has a dedicated template in `references/`
 | Reverse | `reverse-template.md` | Reverse-engineered prompt from exemplar output |
 | Team Brief | `team-brief-template.md` | Team orchestration brief |
 
-**Priority** (most specific wins): marketing-swarm > engineering-swarm > ops-swarm > research-swarm > repromptverse > api > security > ui > testing > bugfix > refactor > content > docs > research > feature. For multi-agent tasks, use the best-fit swarm template + `repromptverse-template` + `team-brief-template`, then type-specific templates for each agent sub-prompt.
+**Priority** (most specific wins): marketing-swarm > engineering-swarm > ops-swarm > research-swarm > repromptverse > api > security > design-loop > ui > testing > bugfix > refactor > content > docs > research > feature. Design-loop beats ui because the two answer different questions: reach for `design-loop-template.md` when the ask is about how a whole page **looks** ("redesign our landing page", "this looks like AI slop", "make the marketing site not templated"), and for `ui-template.md` when the ask is a component built to a spec (props, variants, states). A bounded change inside an existing visual direction is still spec-XML, not the design loop. For multi-agent tasks, use the best-fit swarm template + `repromptverse-template` + `team-brief-template`, then type-specific templates for each agent sub-prompt.
 
 **How it works:** Read the matching template from `references/{type}-template.md`, then fill it with task-specific context. Templates are NOT loaded into context by default — only read on demand when generating a prompt. If the template file is not found, fall back to the Base XML Structure below.
 
@@ -1294,6 +1298,17 @@ The shape in brief — three prose paragraphs, no XML. This describes **default 
 2. **Who does the work** — get one end-to-end slice running first, then expand; work areas in parallel where they don't touch, one helper per area, integrating as you go. A **separate** helper checks each piece and is told to be a harsh critic, not an encouraging one, and it writes and calibrates its own checks. Never let a builder grade its own work - self-graded work always passes. On a runtime with no helper mechanism, swap both helper sentences for an explicit hostile self-review pass and say it is weaker; never leave a prompt demanding a separate checker where none can exist.
 3. **When it is done** (default mode) — a 5-12 item done-list, each item checkable by looking at the built thing, each closable as "not possible in {stack}, because X" only when genuinely impossible, or recorded unverified when a named measurement condition cannot be reproduced. The checker confirms items on the real running artifact, never on the builder's summary, and a final smoothing pass reconciles the separately built pieces before stopping. Plus the stack, which is the only technical instruction and shapes the result more than it looks like it will.
 
+### When the thing is a page rather than a program
+
+If the ask is that something **look designed rather than generated** — a landing page, a marketing site, a redesign, the visual layer of a dashboard — read `references/design-loop-template.md` and emit its loop instead of the checklist body. It is the same Build intent with a different critic: the bar is pixels, not tests.
+
+Two rules from that template carry regardless of which body you emit, because a design pass fails on them first:
+
+- **Look for material that already exists before proposing a direction.** Brand boards, mockups, illustrations, copy decks, prior versions in git history, the product's own names for things. In the run the template is written from, a whole cycle was spent inventing a direction while a board, a copy deck and an original mascot sat unused in a directory the owner named when asked; the version that worked was ported, not designed. Port the look, but check every claim in found copy against what the code does — in that same run the deck described a product the code did not implement, and the page shipped claims the repo contradicts.
+- **Never spend a free choice on an adjective.** "Premium", "editorial", "high-end" and "museum quality" each point at one specific look regardless of subject, so they produce the templated result they were meant to avoid. Direction comes from the subject's own world - its materials, its jargon, its jokes.
+
+Note that `references/ui-template.md` is a different job: that one builds a component to a spec (props, variants, accessibility). This one decides how the thing looks.
+
 One-Shot output is **not scored** on the six dimensions - it is a prose build brief, not a structured prompt. Its bar in default mode is the checklist: 5-12 items, every one checkable by looking at the built thing. Maximal mode has no checklist by design.
 
 Hard rules for this lane:
@@ -1559,7 +1574,7 @@ Hard rules:
 
 ## Quality scoring
 
-**Always show before/after metrics:**
+**Always show before/after metrics for spec-XML prompts.** One-Shot outcome-prose and design-loop prompts are not scored.
 
 | Dimension | Weight | Criteria |
 |-----------|--------|----------|
@@ -1759,19 +1774,20 @@ The Ambient Prompt Gate scores every incoming prompt with the same six RePrompte
 
 Local-only, nothing ever leaves the machine. The hook NEVER blocks a prompt. It is fail-soft: malformed stdin, unreadable state, telemetry errors, or any internal failure produce empty stdout and exit 0. It never writes prompt text to telemetry or state; telemetry contains only score, weakest dimensions, whether it nudged, the reason, runtime, and a hashed session correlation id. The same script, heuristics, cooldowns, kill switches, and local-only privacy contract apply on all three runtimes.
 
-The Claude Code plugin also registers a `Stop` hook that measures whether a nudged session later accepted the nudge. It reads the local transcript only inside the hook process, derives a boolean, and records at most one `gate_outcome` event per session with `metadata.accepted: true|false`. It never prints output, never exits 2, never blocks stopping, and never persists transcript text. Stop-hook acceptance recording remains Claude Code-only for now.
+When explicitly configured, Claude Code can also run a `Stop` hook that measures whether a nudged session later accepted the nudge. It reads the local transcript only inside the hook process, derives a boolean, and records at most one `gate_outcome` event per session with `metadata.accepted: true|false`. It never prints output, never exits 2, never blocks stopping, and never persists transcript text. Stop-hook acceptance recording remains Claude Code-only for now.
 
-Recommended Claude Code install: install the plugin. The plugin registers the `/reprompter:reprompter` skill namespace plus both Ambient Prompt Gate hooks automatically:
+Recommended Claude Code install: install the plugin. The plugin registers the `/reprompter:reprompter` skill namespace, while Ambient Prompt Gate hooks remain off unless configured separately:
 
 ```text
 /plugin marketplace add AytuncYildizli/reprompter
 /plugin install reprompter@reprompter
 ```
 
-For copy-based installs only, add both hooks in `Claude Code settings file`:
+To opt in, keep a checkout or copy-based install at a stable absolute path, add both hooks in `Claude Code settings file`, and set the explicit enable flag. A plugin-only install intentionally has no ambient registration:
 
 ```json
 {
+  "env": { "REPROMPTER_AMBIENT": "1" },
   "hooks": {
     "UserPromptSubmit": [
       { "hooks": [ { "type": "command", "command": "node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js" } ] }
@@ -1783,7 +1799,7 @@ For copy-based installs only, add both hooks in `Claude Code settings file`:
 }
 ```
 
-Plugin hooks can still be globally disabled by Claude Code's `disableAllHooks`; use `REPROMPTER_AMBIENT=0` for the granular per-feature off switch while keeping the plugin skill installed.
+The plugin package itself registers no ambient hooks, so normal turns incur no RePrompter hook process or latency. Existing manual hook entries exit before reading stdin unless `REPROMPTER_AMBIENT=1`. Remove old entries entirely for zero process-spawn overhead; explicit `/reprompter:reprompter` use is independent of them.
 
 For Codex CLI copy-based installs, add a hook definition to `~/.codex/hooks.json`:
 
@@ -1795,8 +1811,8 @@ For Codex CLI copy-based installs, add a hook definition to `~/.codex/hooks.json
         "hooks": [
           {
             "type": "command",
-            "command": "node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js --format=codex",
-            "timeout": 10
+            "command": "env REPROMPTER_AMBIENT=1 node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js --format=codex",
+            "timeout": 4
           }
         ]
       }
@@ -1805,22 +1821,22 @@ For Codex CLI copy-based installs, add a hook definition to `~/.codex/hooks.json
 }
 ```
 
-Review and trust the hook via `/hooks`. Codex keys trust to the SHA-256 of the hook definition, so editing the command requires re-trusting it. Keep an explicit short timeout; Codex's default hook timeout is much longer than this gate needs. Codex's `[features] hooks = false` disables all hooks; `REPROMPTER_AMBIENT=0` remains the RePrompter-specific off switch.
+Review and trust the hook via `/hooks`. Codex keys trust to the SHA-256 of the hook definition, so editing the command requires re-trusting it. Keep an explicit short timeout, but keep it above the gate's own stdin deadline (3s, tunable via `REPROMPTER_HOOK_DEADLINE_MS`): the script fails open by itself at that deadline, and a harness timeout below it kills the process before that path can run. Codex's own default is 600s, far longer than this gate needs. Codex's `[features] hooks = false` disables all hooks; without exact `REPROMPTER_AMBIENT=1`, RePrompter's gate stays off.
 
 For Hermes Agent, the Ambient Prompt Gate requires RePrompter's `scripts/` directory, which Hermes skill installs do not include; repository README setup guidance covers other runtimes.
 
 ```yaml
 hooks:
   pre_llm_call:
-    - command: "node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js --format=hermes"
-      timeout: 5
+    - command: "env REPROMPTER_AMBIENT=1 node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js --format=hermes"
+      timeout: 4
 ```
 
 Hermes `pre_llm_call` cannot block, which matches this gate's never-block design. Hermes asks for first-use interactive approval per `(event, command)` and persists it to `~/.hermes/shell-hooks-allowlist.json`; non-TTY runs need `HERMES_ACCEPT_HOOKS=1` or `hooks_auto_accept: true`, otherwise the hook may stay unregistered. Malformed output and timeouts are ignored by Hermes.
 
 | Env flag | Values | Effect |
 |----------|--------|--------|
-| `REPROMPTER_AMBIENT` | `"0"` / unset | Kill switch. `"0"` disables all nudges. |
+| `REPROMPTER_AMBIENT` | `"1"` / unset | Explicit opt-in. Only exact `"1"` enables ambient hooks; unset or any other value disables them. |
 | `REPROMPTER_AMBIENT_THRESHOLD` | number | Overall score threshold for nudging. Default `5`. |
 | `REPROMPTER_AMBIENT_COOLDOWN_MIN` | number | Per-session cooldown after a nudge. Default `15`. |
 | `REPROMPTER_TELEMETRY` | `"0"` / unset | `"0"` disables privacy-safe `gate_prompt` and `gate_outcome` telemetry events. |

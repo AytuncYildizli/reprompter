@@ -283,8 +283,8 @@ Historical note: this reference used to say Codex had no `PreToolUse` / `PostToo
         "hooks": [
           {
             "type": "command",
-            "command": "node /path/to/skills/reprompter/scripts/prompt-gate.js --format=codex",
-            "timeout": 10
+            "command": "env REPROMPTER_AMBIENT=1 node /path/to/skills/reprompter/scripts/prompt-gate.js --format=codex",
+            "timeout": 4
           }
         ]
       }

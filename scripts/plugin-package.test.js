@@ -34,13 +34,6 @@ function gateEnv(cacheDir, overrides = {}) {
   };
 }
 
-function resolveHookCommand(command) {
-  return command
-    .replace(/^node\s+/, "")
-    .replace(/^"|"$/g, "")
-    .replace("${CLAUDE_PLUGIN_ROOT}", pluginRoot);
-}
-
 test("plugin manifest matches package metadata and marketplace version", () => {
   const packageJson = readJson("package.json");
   const pluginJson = readJson("plugin/.claude-plugin/plugin.json");
@@ -57,51 +50,9 @@ test("plugin manifest matches package metadata and marketplace version", () => {
   assert.equal(marketplace.plugins[0].version, pluginJson.version);
 });
 
-test("plugin hooks use CLAUDE_PLUGIN_ROOT and resolve to generated scripts", () => {
+test("plugin ships with ambient hooks disabled by default", () => {
   const hooksJson = readJson("plugin/hooks/hooks.json");
-  const commands = [
-    hooksJson.hooks.UserPromptSubmit[0].hooks[0],
-    hooksJson.hooks.Stop[0].hooks[0],
-  ];
-
-  for (const hook of commands) {
-    assert.equal(hook.type, "command");
-    assert.equal(hook.timeout, 10);
-    assert.ok(hook.command.includes("${CLAUDE_PLUGIN_ROOT}"));
-    const resolved = resolveHookCommand(hook.command);
-    assert.ok(fs.existsSync(resolved), `missing generated hook script: ${resolved}`);
-  }
-});
-
-test("plugin hook manifest matches the documented shape exactly", () => {
-  const hooksJson = readJson("plugin/hooks/hooks.json");
-
-  assert.deepEqual(hooksJson, {
-    hooks: {
-      UserPromptSubmit: [
-        {
-          hooks: [
-            {
-              type: "command",
-              command: 'node "${CLAUDE_PLUGIN_ROOT}/skills/reprompter/scripts/prompt-gate.js"',
-              timeout: 10,
-            },
-          ],
-        },
-      ],
-      Stop: [
-        {
-          hooks: [
-            {
-              type: "command",
-              command: 'node "${CLAUDE_PLUGIN_ROOT}/skills/reprompter/scripts/stop-gate.js"',
-              timeout: 10,
-            },
-          ],
-        },
-      ],
-    },
-  });
+  assert.deepEqual(hooksJson, { hooks: {} });
 });
 
 test("plugin skill is byte-identical to root SKILL.md", () => {
@@ -109,6 +60,15 @@ test("plugin skill is byte-identical to root SKILL.md", () => {
   const pluginSkill = fs.readFileSync(path.join(pluginRoot, "skills/reprompter/SKILL.md"));
 
   assert.deepEqual(pluginSkill, rootSkill);
+});
+
+test("explicit /reprompter skill remains packaged when ambient hooks are off", () => {
+  const pluginJson = readJson("plugin/.claude-plugin/plugin.json");
+  const skillPath = path.join(pluginRoot, "skills/reprompter/SKILL.md");
+
+  assert.equal(pluginJson.name, "reprompter");
+  assert.ok(fs.existsSync(skillPath));
+  assert.match(fs.readFileSync(skillPath, "utf8"), /^name:\s*reprompter$/m);
 });
 
 test("plugin package includes references and prompt-gate runtime dependencies", () => {
@@ -164,7 +124,7 @@ test("generated prompt gate runs from the plugin package", () => {
   assert.match(result.stdout, /<reprompter-ambient-gate>/);
 });
 
-test("generated prompt gate honors REPROMPTER_AMBIENT=0", () => {
+test("generated prompt gate stays off unless REPROMPTER_AMBIENT=1", () => {
   const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "reprompter-plugin-gate-off-"));
   const result = spawnSync(process.execPath, [path.join(pluginRoot, "skills/reprompter/scripts/prompt-gate.js")], {
     input: JSON.stringify({
@@ -172,7 +132,7 @@ test("generated prompt gate honors REPROMPTER_AMBIENT=0", () => {
       prompt: "uhh build a crypto dashboard, maybe coingecko data, add caching, test it too",
     }),
     encoding: "utf8",
-    env: gateEnv(cacheDir, { REPROMPTER_AMBIENT: "0" }),
+    env: gateEnv(cacheDir, { REPROMPTER_AMBIENT: "" }),
   });
 
   assert.equal(result.status, 0);

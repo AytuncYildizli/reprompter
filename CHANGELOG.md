@@ -1,3 +1,51 @@
+## Unreleased — Ambient hooks default off
+
+### Fixed
+
+- Claude Code plugin packages no longer auto-register `UserPromptSubmit` or `Stop`. The generated hook manifest is empty, so installing RePrompter adds zero hook-process latency to ordinary turns while `/reprompter:reprompter` remains packaged and unchanged.
+- `scripts/prompt-gate.js` and `scripts/stop-gate.js` now require exact `REPROMPTER_AMBIENT=1` and return before reading stdin when it is absent. This makes stale/manual hook registrations fail open immediately instead of waiting on the previous 3-second internal deadline or 10-second harness timeout.
+- Regression coverage locks default-off packaging and runtime behavior, explicit opt-in behavior, timeout/failure fail-open behavior, and the explicit skill path.
+- The documented Codex and Hermes opt-in commands set the flag through `env` rather than a bare `VAR=1` prefix, which only works if the runtime executes the command through a shell. Nothing in this repo verifies that Codex does; `env` is a real binary and is correct either way.
+- The documented hook timeouts are 4s rather than 1s. The gate fails open by itself at its 3s stdin deadline (measured: 3038ms with stdin held open and no data), so a 1s harness timeout killed the process before that path could run — the two numbers contradicted each other in exactly the case the deadline exists for. `REPROMPTER_HOOK_DEADLINE_MS` is named in the docs for anyone who wants a tighter bound than 4s.
+
+### Migration
+
+- Update or reinstall the Claude plugin to replace the old generated hook registrations with an empty manifest. Remove any manually copied ambient hook entries to eliminate their process-spawn overhead. Users who want ambient suggestions must add the documented hooks and `REPROMPTER_AMBIENT=1`; explicit `/reprompter:reprompter` use needs no migration.
+
+## v13.2.0 (2026-08-02) — The design loop
+
+### Added
+
+- `references/design-loop-template.md` — the Build intent applied to pages rather than programs: find the material that already exists, commit a direction in writing before writing code, then build / screenshot / critique the pixels / fix, three rounds. Wired into SKILL.md's Build section and the template table. It is prose by design (a design pass needs a direction and a critic, not a spec to satisfy) so `validate:templates` skips it, like `oneshot-template.md`.
+
+- A motion stage for pages that are supposed to move, because a screenshot cannot judge animation. It requires naming the genre (scroll-scrubbed reveal, sticky stack, horizontal pan, staggered reveal) rather than "add animations", and it captures a **filmstrip** at fixed scroll positions instead of one still: every frame has to stand alone as a composed image, and the sequence has to read as one describable move. What is mechanically checkable is checked — frame time during a scripted scroll at the shipping pixel ratio, no layout properties animated, reduced motion resolving to a complete readable page, no orphaned triggers after unmount — and the section says plainly that these catch broken, not beautiful.
+
+- `validate:oneshot-bodies` is renamed **`validate:emitted-bodies`** (`scripts/validate-emitted-bodies.js`) and now covers the design loop's single emitted body as well as One-Shot's two: 18 rules the template calls hard must be present in the text a user actually pastes. Three reviewers found the same class of defect in the new template that six rounds found in One-Shot — the craft floor, the fallback-font check, calibration, measurement conditions and the browser fallback were all prose the run never received. Calibrated against two known-bad copies before being trusted.
+
+### Why
+
+Written from one real redesign of a live product landing page, including the parts that failed. Two findings drove it:
+
+- **Ban lists cannot produce a point of view.** With the three documented AI-design clusters closed off, the first attempt landed on a fourth default (a cold technical dashboard) and was rejected in the same words as the version it replaced. Direction has to come from the subject's own world.
+- **The vocabulary used to demand quality is itself a style attractor.** "Premium", "editorial", "museum quality" each point at one look regardless of subject. Anthropic's harness write-up records the same effect from one phrase in an evaluator's criteria.
+
+The stage that decided the outcome was the one a model skips: a brand board, a copy deck and an original mascot illustration already existed in a directory the owner named when asked, and had never reached the live site. The version the owner accepted was ported, not invented. The same run then failed the other half of that stage — the deck described a product the code did not implement, so the page shipped claims the repo contradicts — which is why the emitted prompt now requires checking found copy against the code before porting a claim.
+
+The template also carries what the critic must check, because three rounds of critique on that page found nothing a summary would have caught: type rendering in a fallback font rather than the chosen face, an accent failing contrast at a measured 4.36:1, and a connector line drawn through a sentence that a geometric check had missed because it was comparing SVG user units to viewport coordinates.
+
+### Review
+
+Three more findings after the three-model round, from the Codex and Droid bots, all of them the same shape as the rest:
+
+- **A load-bearing negative could be dropped silently.** `Never [hard negative]` sat in the direction paragraph, and the assembly rule for "fix what's broken" drops that paragraph whole — so a user who said "never touch the existing colour tokens" and asked only for a repair got a prompt with their constraint deleted. It now sits in the build paragraph, which every assembly path emits, and `validate:emitted-bodies` asserts it is not in the droppable one. Presence in the body was never the invariant; the paragraph was.
+- **Lifecycle cleanup was prose while this changelog claimed it was checked.** The emitted motion critique now carries it: leave a framework route and come back, then confirm nothing from the old instance is still firing.
+- **Stage 0 swept too wide.** It searched the repository and git history and then listed what it found, which surfaces whatever sits next to the design files — and history still holds what was deleted from the tree, including things deleted because they should not have been committed. It now looks in the places brand material actually lives, reports paths and filenames rather than contents, and reads history only when the user asks, by path.
+
+
+Three models reviewed it (GPT-5.6-sol, GLM-5.2, Fable) plus the Codex and Droid bots. Two returned DO-NOT-SHIP. Every finding was the same shape and it is the one this project keeps making: a rule stated in a template's prose while the emitted prompt — the only text that reaches a run — does not carry it. What the reviewers caught, in the template written from that lesson: no separate critic (the prompt had one agent switching hats), no calibration clause, frame time with no conditions and no budget, the whole craft and quality floor prose-only, a browser assumed with no fallback, and the worked example still narrating the cross-workspace scan the same PR had just forbidden. Fable also found the half of Stage 0 that was missing entirely: found brand material was tested for being *stronger* than an invention, never for being *true*, and in the run behind the template the deck described a product the code did not implement. `validate:emitted-bodies` now asserts each of those reaches the pasted text.
+
+Treat it as one observation. The run is not in this repository.
+
 ## v13.1.0 (2026-08-01) — Findings from a long maximal run
 
 One maximal-mode One-Shot build (browser FPS, 20 hours, 42 commits) exposed four gaps in the template. Treat the run as one observation, not a study: the two general principles are the measurement rules; the maximal-mode notes describe how one runtime behaved in mid-2026 on one plan tier and may not hold elsewhere. Note the irony that motivated this release — the run's own gate passes were themselves measured under the wrong configuration, which is exactly the failure the first rule now guards against. The README's own dogfood numbers are restated with their conditions in this release for the same reason.

@@ -62,6 +62,13 @@ const CHECKS = [
     pattern: /\bclaude-(?:opus|sonnet|haiku)-\d+-\d+\b/,
     files: ["SKILL.md", "references", "scripts"],
   },
+  {
+    name: "Codex/Hermes gate command without REPROMPTER_AMBIENT=1 (the gate is opt-in; without it the hook does nothing)",
+    // Claude Code examples set the flag in the settings env block; Codex and
+    // Hermes have no such block, so the flag must be on the command itself.
+    pattern: /^(?![^\n]*REPROMPTER_AMBIENT=1)[^\n]*(?:prompt|stop)-gate\.js --format=(?:codex|hermes)/m,
+    files: ["SKILL.md", "references", "README.md"],
+  },
 ];
 
 const SCANNABLE_EXT = new Set([".md", ".js", ".sh"]);

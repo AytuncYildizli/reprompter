@@ -3,8 +3,8 @@
 //
 // Design rules:
 //   - FAIL-SOFT: any internal error exits 0 silently.
-//   - OPT-IN: this only runs when a user installs the hook. Set
-//     REPROMPTER_AMBIENT=0 or REPROMPTER_TELEMETRY=0 as kill switches.
+//   - OPT-IN: this only runs when a user installs the hook and sets
+//     REPROMPTER_AMBIENT=1. REPROMPTER_TELEMETRY=0 remains a kill switch.
 //   - PRIVACY: transcript text never leaves the process; only the boolean
 //     accepted outcome is written to telemetry.
 //   - NEVER-BLOCK: Stop hooks must never exit 2, print output, or block stop.
@@ -58,7 +58,7 @@ function telemetryStore(env) {
 }
 
 async function runHookMode(env = process.env) {
-  if (env.REPROMPTER_TELEMETRY === "0" || env.REPROMPTER_AMBIENT === "0") return;
+  if (env.REPROMPTER_AMBIENT !== "1" || env.REPROMPTER_TELEMETRY === "0") return;
 
   const payload = await readPayload();
   if (!payload) return;

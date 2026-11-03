@@ -70,8 +70,8 @@ Hermes Agent can run the same local Ambient Prompt Gate before model calls. Use 
 ```yaml
 hooks:
   pre_llm_call:
-    - command: "node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js --format=hermes"
-      timeout: 5
+    - command: "env REPROMPTER_AMBIENT=1 node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js --format=hermes"
+      timeout: 4
 ```
 
 Hermes passes the prompt as `extra.user_message`; the gate returns `{"context":"..."}` only when it nudges and otherwise prints nothing. `pre_llm_call` cannot block, which matches the gate's never-block design. First-use approval is per `(event, command)` and is persisted to `~/.hermes/shell-hooks-allowlist.json`; non-TTY runs need `HERMES_ACCEPT_HOOKS=1` or `hooks_auto_accept: true`.

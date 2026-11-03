@@ -142,7 +142,7 @@ Two dogfood runs, same lane:
 
 ### Claude Code
 
-Recommended: install the Claude Code plugin. One install registers the RePrompter skill namespace and both Ambient Prompt Gate hooks; future updates use Claude Code's native plugin update flow.
+Recommended: install the Claude Code plugin. One install registers the RePrompter skill namespace; future updates use Claude Code's native plugin update flow. Ambient hooks are not registered by default.
 
 ```text
 /plugin marketplace add AytuncYildizli/reprompter
@@ -151,7 +151,7 @@ Recommended: install the Claude Code plugin. One install registers the RePrompte
 
 If you previously installed `~/.claude/skills/reprompter`, remove that personal copy before using the plugin. Personal skills shadow/duplicate plugin skills, so leaving it in place can make Claude Code load the old copy instead of `/reprompter:reprompter`.
 
-The plugin ships the Ambient Prompt Gate enabled for Claude Code `UserPromptSubmit` and `Stop`. Use `REPROMPTER_AMBIENT=0` as the per-feature off switch; Claude Code's `disableAllHooks` still disables all hooks, including plugin hooks.
+The plugin ships the Ambient Prompt Gate **off by default**, so ordinary Claude turns spawn no RePrompter hook process and incur no hook latency. Explicit `/reprompter:reprompter` use is unchanged. To opt in, add the hooks shown under [Configuration](#ambient-prompt-gate-claude-code-codex-cli-hermes-agent) and set `REPROMPTER_AMBIENT=1`.
 
 Fallback for copy-based or non-plugin setups:
 
@@ -472,10 +472,11 @@ Hermes parallel paths: **G1 `delegate_task` batch** for normal Repromptverse, **
 
 ### Ambient Prompt Gate (Claude Code, Codex CLI, Hermes Agent)
 
-Claude Code plugin installs register the prompt and Stop hooks automatically. For copy-based Claude Code installs, add them manually:
+Ambient hooks are explicit opt-in. To enable them, keep a checkout or copy-based install at a stable absolute path, add the hooks manually, and enable the feature in the same settings file. A plugin-only install intentionally has no ambient registration.
 
 ```json
 {
+  "env": { "REPROMPTER_AMBIENT": "1" },
   "hooks": {
     "UserPromptSubmit": [
       { "hooks": [ { "type": "command", "command": "node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js" } ] }
@@ -497,8 +498,8 @@ For Codex CLI copy-based installs, add a documented hook definition:
         "hooks": [
           {
             "type": "command",
-            "command": "node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js --format=codex",
-            "timeout": 10
+            "command": "env REPROMPTER_AMBIENT=1 node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js --format=codex",
+            "timeout": 4
           }
         ]
       }
@@ -514,13 +515,15 @@ For Hermes Agent, use a clone or copied checkout that includes `scripts/`, then 
 ```yaml
 hooks:
   pre_llm_call:
-    - command: "node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js --format=hermes"
-      timeout: 5
+    - command: "env REPROMPTER_AMBIENT=1 node /absolute/path/to/skills/reprompter/scripts/prompt-gate.js --format=hermes"
+      timeout: 4
 ```
 
-Hermes asks for first-use approval per `(event, command)`; non-TTY runs need `HERMES_ACCEPT_HOOKS=1` or `hooks_auto_accept: true`. `pre_llm_call` cannot block, matching RePrompter's never-block contract.
+Hermes asks for first-use approval per `(event, command)`; non-TTY runs need `HERMES_ACCEPT_HOOKS=1` or `hooks_auto_accept: true`. Both snippets use `env` so the variable is set whether or not the runtime executes the command through a shell, and both timeouts stay above the gate's 3s internal stdin deadline so its fail-open path is reachable. `pre_llm_call` cannot block, matching RePrompter's never-block contract.
 
-Ambient flags: `REPROMPTER_AMBIENT=0` disables nudges and outcome recording, `REPROMPTER_AMBIENT_THRESHOLD` changes the default score threshold (`5`), `REPROMPTER_AMBIENT_COOLDOWN_MIN` changes the per-session cooldown (`15`), and `REPROMPTER_TELEMETRY=0` disables the privacy-safe gate local outcome log. Runtime-wide hook kill switches still win globally. The gate never blocks prompts or Stop events and never persists prompt or transcript text.
+Ambient flags: `REPROMPTER_AMBIENT=1` explicitly enables nudges and outcome recording; unset, empty, `0`, and every other value keep them off. `REPROMPTER_AMBIENT_THRESHOLD` changes the default score threshold (`5`), `REPROMPTER_AMBIENT_COOLDOWN_MIN` changes the per-session cooldown (`15`), and `REPROMPTER_TELEMETRY=0` disables the privacy-safe gate local outcome log. Runtime-wide hook kill switches still win globally. The gate fails open on malformed input, timeout, or internal failure and never persists prompt or transcript text.
+
+Migration from releases that auto-registered hooks, including v13.1.0 and v13.2.0: update or reinstall the plugin so its generated `hooks.json` becomes empty. If you manually copied either old hook into a user settings file, remove it to eliminate the process spawn on normal turns. Keeping the entry is safe while `REPROMPTER_AMBIENT` is unset because the script now exits before reading stdin, but only removing the entry guarantees zero hook-process latency. Add the opt-in settings above only if you want ambient suggestions; `/reprompter:reprompter` does not depend on them.
 
 ### Repromptverse
 

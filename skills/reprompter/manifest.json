@@ -10,15 +10,15 @@
   },
   "source": {
     "root_skill": "SKILL.md",
-    "root_skill_sha256": "c7af9da4eb068330665b50a85ef3bbde2547c4a4d64f716886f79b0c25096b27",
+    "root_skill_sha256": "fb70b3654cc3362c06f5e214b21ea1caeb4f9b0045cb031a830a8b102385a7c8",
     "sanitizer": "scripts/hermes-sanitizer.json",
-    "sanitizer_sha256": "de7e8b3027a41890fcb523651b3c9c4ebe70c81445f9173c75d1456aae3faa99"
+    "sanitizer_sha256": "c46cf3fa0f7333745443b61eadbabe41e52014243b8213ffb328d9d609e4a297"
   },
   "files": [
     {
       "path": "SKILL.md",
-      "source_sha256": "c7af9da4eb068330665b50a85ef3bbde2547c4a4d64f716886f79b0c25096b27",
-      "generated_sha256": "b5fa2635b791a4bed12c18785da1c73ffdfcd504e6781cf9e6bb96045bd693ab"
+      "source_sha256": "fb70b3654cc3362c06f5e214b21ea1caeb4f9b0045cb031a830a8b102385a7c8",
+      "generated_sha256": "2291adcc114abd0887e21ff3371712c0214ea27d5daaa6a56f0ba15d3c8f1322"
     },
     {
       "path": "references/api-template.md",
@@ -34,6 +34,11 @@
       "path": "references/content-template.md",
       "source_sha256": "c37dc760b4037bfc70a7cfec9141c625f68288c73baadee11865c1f4012c6b82",
       "generated_sha256": "c37dc760b4037bfc70a7cfec9141c625f68288c73baadee11865c1f4012c6b82"
+    },
+    {
+      "path": "references/design-loop-template.md",
+      "source_sha256": "d8fddec2fe2aa98f6cd36e0abdec9472729066caa648be5afaca1a652a46a7aa",
+      "generated_sha256": "d8fddec2fe2aa98f6cd36e0abdec9472729066caa648be5afaca1a652a46a7aa"
     },
     {
       "path": "references/docs-template.md",
@@ -112,8 +117,8 @@
     },
     {
       "path": "references/runtime/codex-runtime.md",
-      "source_sha256": "0dbbbbf9cc1b8272d344f8106881b468375865a9705cd12f4f3f65fb7c43d635",
-      "generated_sha256": "8f95c99dbc8c77ad350200e287abf0212c4c849bac5250a57eae81f6e9796232"
+      "source_sha256": "3b58d603cf5ec423b60e55e7d5f09a8cfb33925732430043abe1f8bb3de90b8a",
+      "generated_sha256": "611375279224ee7364bd575f3d7fa8f718bbe2bd387df370da9b5843bdc6b55f"
     },
     {
       "path": "references/runtime/context-layers.md",
@@ -132,8 +137,8 @@
     },
     {
       "path": "references/runtime/hermes-agent-runtime.md",
-      "source_sha256": "e965ccbce050c821e8b01a5f68872e517dfc34bb6c16cb936c024dbe6f25de56",
-      "generated_sha256": "07b1bb3668e86cda520e4a4081a1708c41f91e6171f4bb3bdbb325e4a1016ce1"
+      "source_sha256": "287b50171ba063e0b46743859bf39692425f5f9cfbe0d595ad18cebf570577fc",
+      "generated_sha256": "092ccde6766468619790551104aaa8940ee116512b6e1db30edf7dd077f9651f"
     },
     {
       "path": "references/security-template.md",

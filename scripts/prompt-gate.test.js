@@ -11,6 +11,7 @@ const { scorePrompt, shouldNudge } = require("./prompt-gate");
 
 const roughPrompt = "uhh build a crypto dashboard, maybe coingecko data, add caching, test it too";
 const claudeNudgeFixture = `<reprompter-ambient-gate>Heuristic prompt quality: 2/10 (weakest: constraints, structure). If this request is a nontrivial task, briefly offer once for this request to structure it first via the reprompter skill (user can say "reprompt this"); if the user declines or the task is trivial, proceed normally.</reprompter-ambient-gate>\n`;
+const ambientEnv = { REPROMPTER_AMBIENT: "1" };
 
 function tmpDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), "rpt-prompt-gate-"));
@@ -29,6 +30,17 @@ function runGate(input, env = {}, args = []) {
       XDG_CACHE_HOME: tmpDir(),
       ...env,
     },
+    encoding: "utf8",
+  });
+}
+
+function runGateDefaultOff(input) {
+  const env = { ...process.env, XDG_CACHE_HOME: tmpDir() };
+  delete env.REPROMPTER_AMBIENT;
+  return execFileSync(process.execPath, ["scripts/prompt-gate.js"], {
+    cwd: path.join(__dirname, ".."),
+    input,
+    env,
     encoding: "utf8",
   });
 }
@@ -82,7 +94,7 @@ function nudgeOptions(sessionId, options = {}) {
   const dir = tmpDir();
   return {
     ...options,
-    env: options.env || {},
+    env: { REPROMPTER_AMBIENT: "1", ...(options.env || {}) },
     sessionId,
     statePath: options.statePath || path.join(dir, "ambient-gate.json"),
   };
@@ -121,6 +133,12 @@ test("skip reason: disabled", () => {
   const result = shouldNudge(roughPrompt, nudgeOptions("skip-disabled", { env: { REPROMPTER_AMBIENT: "0" } }));
   assert.equal(result.reason, "disabled");
   assert.equal(result.nudge, false);
+});
+
+test("ambient prompt gate is disabled by default", () => {
+  const result = shouldNudge(roughPrompt, nudgeOptions("default-off", { env: { REPROMPTER_AMBIENT: "" } }));
+  assert.deepEqual(result, { nudge: false, reason: "disabled" });
+  assert.equal(runGateDefaultOff(JSON.stringify({ session_id: "default-off", prompt: roughPrompt })), "");
 });
 
 test("skip reason: slash-command", () => {
@@ -197,7 +215,7 @@ test("empty threshold env uses default threshold", () => {
   const dir = tmpDir();
   const statePath = path.join(dir, "ambient-gate.json");
   const result = shouldNudge(roughPrompt, {
-    env: { REPROMPTER_AMBIENT_THRESHOLD: "  " },
+    env: { ...ambientEnv, REPROMPTER_AMBIENT_THRESHOLD: "  " },
     sessionId: "empty-threshold",
     statePath,
   });
@@ -209,10 +227,10 @@ test("skip reason: cooldown", () => {
   const dir = tmpDir();
   const statePath = path.join(dir, "ambient-gate.json");
   const now = Date.parse("2026-07-02T10:00:00.000Z");
-  assert.equal(shouldNudge(roughPrompt, { env: {}, sessionId: "s1", statePath, now: () => now }).nudge, true);
+  assert.equal(shouldNudge(roughPrompt, { env: ambientEnv, sessionId: "s1", statePath, now: () => now }).nudge, true);
 
   const result = shouldNudge(roughPrompt, {
-    env: {},
+    env: ambientEnv,
     sessionId: "s1",
     statePath,
     now: () => now + 5 * 60 * 1000,
@@ -224,7 +242,7 @@ test("cooldown treats zero and empty env values as default window", () => {
   const dir = tmpDir();
   const statePath = path.join(dir, "ambient-gate.json");
   const now = Date.parse("2026-07-02T10:00:00.000Z");
-  const env = { REPROMPTER_AMBIENT_COOLDOWN_MIN: "0" };
+  const env = { ...ambientEnv, REPROMPTER_AMBIENT_COOLDOWN_MIN: "0" };
 
   assert.equal(shouldNudge(roughPrompt, { env, sessionId: "s1", statePath, now: () => now }).nudge, true);
   assert.equal(
@@ -232,7 +250,7 @@ test("cooldown treats zero and empty env values as default window", () => {
     "cooldown"
   );
 
-  const blankEnv = { REPROMPTER_AMBIENT_COOLDOWN_MIN: " " };
+  const blankEnv = { ...ambientEnv, REPROMPTER_AMBIENT_COOLDOWN_MIN: " " };
   assert.equal(
     shouldNudge(roughPrompt, { env: blankEnv, sessionId: "s1", statePath, now: () => now + 2 }).reason,
     "cooldown"
@@ -245,7 +263,7 @@ test("future-dated cooldown state still suppresses nudges", () => {
   const now = Date.parse("2026-07-02T10:00:00.000Z");
   fs.writeFileSync(statePath, JSON.stringify({ s1: new Date(now + 5 * 60 * 1000).toISOString() }), "utf8");
 
-  const result = shouldNudge(roughPrompt, { env: {}, sessionId: "s1", statePath, now: () => now });
+  const result = shouldNudge(roughPrompt, { env: ambientEnv, sessionId: "s1", statePath, now: () => now });
   assert.equal(result.reason, "cooldown");
 });
 
@@ -254,10 +272,10 @@ test("cooldown expires after the configured window", () => {
   const statePath = path.join(dir, "ambient-gate.json");
   const now = Date.parse("2026-07-02T10:00:00.000Z");
 
-  assert.equal(shouldNudge(roughPrompt, { env: {}, sessionId: "s1", statePath, now: () => now }).nudge, true);
+  assert.equal(shouldNudge(roughPrompt, { env: ambientEnv, sessionId: "s1", statePath, now: () => now }).nudge, true);
   assert.equal(
     shouldNudge(roughPrompt, {
-      env: {},
+      env: ambientEnv,
       sessionId: "s1",
       statePath,
       now: () => now + 14 * 60 * 1000,
@@ -266,7 +284,7 @@ test("cooldown expires after the configured window", () => {
   );
   assert.equal(
     shouldNudge(roughPrompt, {
-      env: {},
+      env: ambientEnv,
       sessionId: "s1",
       statePath,
       now: () => now + 16 * 60 * 1000,
@@ -279,7 +297,7 @@ test("weak Turkish task prompt nudges", () => {
   const prompt = "lütfen bu dağınık akışı belki düzelt ve daha kullanışlı yap ama detaylar bende yok";
   const dir = tmpDir();
   const statePath = path.join(dir, "ambient-gate.json");
-  const result = shouldNudge(prompt, { env: {}, sessionId: "weak-turkish-task", statePath });
+  const result = shouldNudge(prompt, { env: ambientEnv, sessionId: "weak-turkish-task", statePath });
 
   assert.equal(result.nudge, true);
   assert.equal(result.reason, "below-threshold");
