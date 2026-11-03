@@ -92,8 +92,8 @@ test("flywheelPreferredTier boosts models matching the preferred tier", () => {
   );
 
   // With latency_optimized preferred tier, latency-heavy models should get a +2 boost
-  // gemini-2.5-flash has latency:10 which scores well under latency_optimized weights
-  const flashCandidate = plan.rankedCandidates.find((c) => c.model === "google/gemini-2.5-flash");
+  // gemini-3.8-flash has latency:10 which scores well under latency_optimized weights
+  const flashCandidate = plan.rankedCandidates.find((c) => c.model === "google/gemini-3.8-flash");
   assert.ok(flashCandidate, "flash model should be in candidates");
 
   // Run again without the flywheel tier to compare
@@ -101,7 +101,7 @@ test("flywheelPreferredTier boosts models matching the preferred tier", () => {
     { domain: "ops", outputType: "triage", complexity: 3 },
     { preferredOutcome: "quality_reliability", task: "Quick triage" }
   );
-  const flashWithout = planWithout.rankedCandidates.find((c) => c.model === "google/gemini-2.5-flash");
+  const flashWithout = planWithout.rankedCandidates.find((c) => c.model === "google/gemini-3.8-flash");
   assert.ok(flashCandidate.score > flashWithout.score, "flywheel tier should boost the score");
 });
 
