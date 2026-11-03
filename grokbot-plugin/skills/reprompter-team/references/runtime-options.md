@@ -1,6 +1,6 @@
 # Repromptverse Phase 3 — runtime auto-pick, tool-schema guard, Options A-H
 
-> Part of `reprompter-team`. Verbatim from root SKILL.md lines 841-956 (runtime auto-pick, tool-schema guard, Option A, critical tmux rules) and 994-1283 (Options B, C, D, H, G, E), in original order. `references/runtime/...` paths below are relative to the skill root (`../SKILL.md`), i.e. this directory's `runtime/` folder. Phase 4 and Expected cost & time stay in `../SKILL.md`. `scripts/<name>` paths resolve to the bundled `../../reprompter/scripts/<name>`.
+> Part of `reprompter-team`. Verbatim from root SKILL.md lines 844-959 (runtime auto-pick, tool-schema guard, Option A, critical tmux rules) and 997-1286 (Options B, C, D, H, G, E), in original order. `references/runtime/...` paths below are relative to the skill root (`../SKILL.md`), i.e. this directory's `runtime/` folder. Phase 4 and Expected cost & time stay in `../SKILL.md`. `scripts/<name>` paths resolve to the bundled `../../reprompter/scripts/<name>`.
 
 #### Runtime auto-pick (default behaviour — do this first)
 
@@ -206,7 +206,7 @@ Define each repromptverse role once as `~/.codex/agents/<name>.toml`:
 ```toml
 name = "rpt_audit_explorer"
 description = "Read-only exploration for Repromptverse audit fan-out."
-model = "gpt-5.4"
+# model = "<codex-model>"  # optional; when omitted the role inherits your configured default
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """
@@ -253,7 +253,7 @@ ls /tmp/rpt-{taskname}-*.prompt.md
 #    after `wait`).
 #    `--ephemeral` skips on-disk session state; recommended for
 #    isolated parallel runs (historical reference: closed issue #11435).
-MODEL="gpt-5.4"
+MODEL="<codex-model>"  # any model your Codex account serves
 for agent in planner critic synthesizer; do
   codex exec \
     --model "$MODEL" \

@@ -62,6 +62,30 @@ test("plugin skill is byte-identical to root SKILL.md", () => {
   assert.deepEqual(pluginSkill, rootSkill);
 });
 
+test("skill discovery stays explicit while preserving supported Reprompter entry points", () => {
+  const skillPaths = [
+    "SKILL.md",
+    "plugin/skills/reprompter/SKILL.md",
+    "skills/reprompter/SKILL.md",
+  ];
+
+  for (const skillPath of skillPaths) {
+    const skill = fs.readFileSync(path.join(repoRoot, skillPath), "utf8");
+
+    assert.match(skill, /Use when:.*"reprompt"/);
+    assert.match(skill, /Use when:.*"before \/goal"/);
+    assert.match(skill, /Use when:.*"reprompter teams"/);
+    assert.match(skill, /Use when:.*"one-shot this"/);
+    for (const phrase of ["one-shot a X", "tek promptla", "reverse reprompt", "prompt dna", "extract prompt from", "smart run", "run with quality", "compile to workflow"]) {
+      assert.ok(skill.split("\n").some((line) => line.includes("Use when:") && line.includes(`"${phrase}"`)), `description names "${phrase}"`);
+    }
+    assert.doesNotMatch(skill, /multi-agent tasks, audits/);
+    assert.doesNotMatch(skill, /Auto-detection: if task mentions 2\+ systems, "audit", or "parallel"/);
+    assert.match(skill, /Only inside an already-selected RePrompter workflow:/);
+    assert.match(skill, /Quoted keywords, ordinary audits, and parallel implementation requests do not select RePrompter/);
+  }
+});
+
 test("explicit /reprompter skill remains packaged when ambient hooks are off", () => {
   const pluginJson = readJson("plugin/.claude-plugin/plugin.json");
   const skillPath = path.join(pluginRoot, "skills/reprompter/SKILL.md");

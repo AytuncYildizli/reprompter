@@ -140,19 +140,7 @@ for (const [name, re] of HELPER_PHRASES) {
 // Three reviewers found the same class of defect here that six rounds found in the
 // One-Shot bodies: a rule the template calls hard, living in prose the pasted text
 // never carries. Each entry below was one of those findings.
-/** The design loop has one body and the blockquote starts on the anchor line itself. */
-function blockquoteFrom(src, anchor) {
-  const start = src.findIndex((l) => l.startsWith(anchor));
-  if (start === -1) throw new Error(`design-loop body not found: ${anchor}`);
-  const out = [];
-  for (let i = start; i < src.length && src[i].startsWith('>'); i++) {
-    out.push(src[i].slice(1).trim());
-  }
-  if (!out.length) throw new Error('design-loop body is empty');
-  return out.join(' ');
-}
-
-const DESIGN_BODY = blockquoteFrom(designLines, '> Redesign **[what]**');
+const DESIGN_BODY = bodyAfter('## The prompt', designLines);
 
 /** The same blockquote, kept as paragraphs, because where a rule sits decides
  *  whether an assembly path can drop it. */

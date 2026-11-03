@@ -61,6 +61,17 @@ const CHECKS = [
     // freeze in time. Unconditionally banned in skill-side files.
     pattern: /\bclaude-(?:opus|sonnet|haiku)-\d+-\d+\b/,
     files: ["SKILL.md", "references", "scripts"],
+    // Routing tables hand provider/model ids to an injected spawn function
+    // (OpenClaw), not to the Claude Code CLI. Their aliases resolve only where
+    // a runtime config defines them, so these two files name exact ids.
+    exclude: ["scripts/capability-policy.js", "scripts/repromptverse-runtime.js"],
+  },
+  {
+    name: "Codex/Hermes gate command without REPROMPTER_AMBIENT=1 (the gate is opt-in; without it the hook does nothing)",
+    // Claude Code examples set the flag in the settings env block; Codex and
+    // Hermes have no such block, so the flag must be on the command itself.
+    pattern: /^(?![^\n]*REPROMPTER_AMBIENT=1)[^\n]*(?:prompt|stop)-gate\.js --format=(?:codex|hermes)/m,
+    files: ["SKILL.md", "references", "README.md"],
   },
 ];
 
@@ -148,7 +159,10 @@ function main() {
   let failCount = 0;
 
   for (const check of CHECKS) {
-    const targets = excludeSelf(check.files.flatMap(walk));
+    const excluded = new Set(check.exclude || []);
+    const targets = excludeSelf(check.files.flatMap(walk)).filter(
+      (file) => !excluded.has(path.relative(REPO_ROOT, file).split(path.sep).join("/"))
+    );
     const allHits = [];
     for (const file of targets) {
       const content = fs.readFileSync(file, "utf8");

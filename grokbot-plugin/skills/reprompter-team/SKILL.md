@@ -2,15 +2,15 @@
 name: reprompter-team
 description: |
   RePrompter team execution (Repromptverse / Agent Teams) — score the raw task, plan a 2-5 agent team, write a reprompted prompt per agent, run it on the detected runtime (Grok CLI, Hermes, Claude Code TeamCreate/Workflow/tmux, OpenClaw, Codex, or sequential), then evaluate and retry.
-  Use when: "repromptverse", "reprompter teams", "smart run", "smart agents", "run with quality", "engineering/ops/research/marketing swarm", multi-agent tasks, audits, "parallel", tasks spanning 2+ systems; or a Build (One-Shot) brief the user wants "split across a team".
-  Don't use for single-prompt improvement (use reprompter-improve), simple Q&A, or casual chat.
+  Use when: "repromptverse", "reprompter teams", "smart run", "smart agents", "run with quality", "engineering/ops/research/marketing swarm"; the Repromptverse offer accepted inside a selected RePrompter workflow (the prompt spans 2+ systems, "audit", or "parallel"); or a Build (One-Shot) brief the user wants "split across a team".
+  Don't use for single-prompt improvement (use reprompter-improve), simple Q&A, or casual chat. Quoted keywords and ordinary audit, review, research, multi-agent, or parallel implementation requests do not select it.
   Outputs: optional team brief + per-agent prompts + Agent Cards (Plan/Status/Result) + reprompt quality scorecard + final synthesis.
   Target score: per-agent >= 8/10.
 ---
 
 # RePrompter — Team execution (Repromptverse)
 
-> Mode skill of the `reprompter` plugin. Entry/routing: `../reprompter/SKILL.md`. Content below is verbatim from root SKILL.md lines 594-840 and 957-993. Phase 3 runtime detail (root lines 841-956 and 994-1283: runtime auto-pick, tool-schema guard, Options A-H) is in `references/runtime-options.md`; Settings (root 1832-1922) is in `references/settings.md`; Hermes Agent and Grok CLI support (root 2000-2071) is in `references/hermes-grok-support.md`. Templates (`repromptverse`, `swarm`, `team-brief`, `*-swarm`), `outcome-schema.md` and `references/runtime/*.md` are copied alongside. `scripts/<name>` paths resolve to the bundled `../reprompter/scripts/<name>` (e.g. `node ../reprompter/scripts/run-supervisor.js`).
+> Mode skill of the `reprompter` plugin. Entry/routing: `../reprompter/SKILL.md`. Content below is verbatim from root SKILL.md lines 597-843 and 960-996. Phase 3 runtime detail (root lines 844-959 and 997-1286: runtime auto-pick, tool-schema guard, Options A-H) is in `references/runtime-options.md`; Settings (root 1847-1937) is in `references/settings.md`; Hermes Agent and Grok CLI support (root 2015-2086) is in `references/hermes-grok-support.md`. Templates (`repromptverse`, `swarm`, `team-brief`, `*-swarm`), `outcome-schema.md` and `references/runtime/*.md` are copied alongside. `scripts/<name>` paths resolve to the bundled `../reprompter/scripts/<name>` (e.g. `node ../reprompter/scripts/run-supervisor.js`).
 >
 > **Required reading:** `../reprompter/references/advanced-features.md` (capability routing, layered context, artifact gate, flags, telemetry, Flywheel). The always-on rules in `../reprompter/SKILL.md` → "Core shared rules" (context check, uncertainty permission, WHAT not HOW) apply to every per-agent prompt.
 

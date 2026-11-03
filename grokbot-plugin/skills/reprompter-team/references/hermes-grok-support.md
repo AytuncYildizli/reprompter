@@ -1,6 +1,6 @@
 # Hermes Agent and Grok CLI support
 
-> Part of `reprompter-team` (`../SKILL.md`). Verbatim from root SKILL.md lines 2000-2071. `references/runtime/...` paths are relative to the skill root, i.e. this directory's `runtime/` folder; Options F and G are in `runtime-options.md`.
+> Part of `reprompter-team` (`../SKILL.md`). Verbatim from root SKILL.md lines 2015-2086. `references/runtime/...` paths are relative to the skill root, i.e. this directory's `runtime/` folder; Options F and G are in `runtime-options.md`.
 
 ## Hermes Agent Support (Additive Section — Zero Impact on Claude, Codex, OpenClaw, Grok)
 

@@ -12,7 +12,7 @@ description: |
 > Mode skill of the `reprompter` plugin. Entry/routing: `../reprompter/SKILL.md`. Output formats beyond paste (`/goal` card, `.workflow.js`, headless-relay delivery): `../reprompter-goal-workflow/SKILL.md`. Whole-product builds: `../reprompter-oneshot/SKILL.md`. Multi-agent: `../reprompter-team/SKILL.md`. `scripts/<name>` paths resolve to the bundled `../reprompter/scripts/<name>` (e.g. `../reprompter/scripts/outcome-record.js`).
 >
 > **Required reading:** `../reprompter/references/advanced-features.md` (context engineering, uncertainty handling, token budget, Flywheel, pattern library). The always-on rules in `../reprompter/SKILL.md` → "Core shared rules" (context check, uncertainty permission, WHAT not HOW) apply to every generated prompt.
-> Every template named below lives in `references/` next to this file. Content below is verbatim from root SKILL.md (lines 358-591, 1560-1606) except where marked _Moved_.
+> Every template named below lives in `references/` next to this file. Content below is verbatim from root SKILL.md (lines 360-594, 1574-1620) except where marked _Moved_.
 
 ## Intent: Improve (Single prompt)
 
@@ -24,6 +24,9 @@ Before the template pick, decide the OUTPUT SHAPE from the interview:
 
 - **Spec-XML (default)** — any bounded change (bugfix, endpoint, refactor, a feature in named files), anything with an enumerable done-state, and anything ambiguous. Scored on the six dimensions, exactly as always.
 - **Outcome-prose (only on a strong signal)** — the ask is to build a WHOLE product or artifact from near-zero (a whole app/game/site/deck), OR it names a real product as the quality bar for a from-scratch build ("build me X like Linear"). Then emit the One-Shot three-paragraph shape (`references/oneshot-template.md`), including its constraints sentence for load-bearing negatives ("never touch auth"). **Announce and offer the exit:** "This looks like a whole-product build — I'll write an autonomous build prompt; say 'spec' for the structured, scored version instead." The user's override always wins. Outcome-prose is not scored on the six dimensions. **This is the same artifact the Build intent produces** — an Improve ask that is really a whole-product build and the Build intent converge on one prose brief, deliberately; there is no separate Improve-only build shape to disambiguate.
+- **Design-loop prose (a page judged by how it looks)** — the ask is how a page looks: a redesign, a landing page, the visual layer of a dashboard. Emit `references/design-loop-template.md` instead of spec-XML, because a design pass needs a direction and a critic, not a spec to satisfy. Like outcome-prose, it is not scored on the six dimensions.
+
+**Precedence: the prose shapes are exempt from every spec-XML rule in this file.** One-Shot outcome-prose and the design loop take no base tags, none of the template fields, no `<success_criteria>` block, no score, no evaluator loop, no flywheel template override, and no `/goal` or workflow compilation. Wherever another section says "all templates", "every prompt", "always" or "both modes" about structure or scoring, it means every spec-XML prompt.
 - **Mixed asks** (a *bounded* change described with a reference, e.g. "add a settings page like Linear's to our app") are spec-XML: the reference informs the requirements, it does not trigger a from-scratch build. When genuinely unsure which one an ask is, ask one discriminator question — "a fresh build, or a change to something that exists?" — and default to spec-XML on a fresh session with no answer.
 
 ### Process
@@ -35,7 +38,7 @@ Before the template pick, decide the OUTPUT SHAPE from the interview:
 3. **Quick Mode gate** — under 20 words, single action, no complexity indicators → generate immediately. A quick-mode task is bounded by definition, so it is always spec-XML; the shape decision does not run on this path (there is nothing whole-product about a sub-20-word atomic task).
 4. **Smart Interview** — use `AskUserQuestion` with clickable options (2-5 questions max) for interactive Single mode. For prompts destined for autonomous execution (goal/workflow/team lanes), skip questions with reasonable defaults and emit an `<assumptions>` block the user can veto before running.
 5. **Flywheel bias check (optional, read-only)** — if `REPROMPTER_FLYWHEEL_BIAS=1` is set in the environment, consult past outcomes before choosing a template. See "Flywheel bias injection" below.
-6. **Generate + Score** — **if the shape decision above chose outcome-prose, skip this step's scoring**: emit the One-Shot prose brief (`references/oneshot-template.md`) and stop — outcome-prose is not scored on the six dimensions. Otherwise (spec-XML) apply the template and show before/after quality metrics. Generated prompts include a `<success_criteria schema_version="1">` block with 3-6 `<criterion>` entries. Each criterion has `id` (kebab-case slug, unique in block), `verification_method` (`rule` | `llm_judge` | `manual`), a one-sentence `<description>`, and — depending on method — an inline `<rule type="regex|predicate">` or `<judge_prompt>` (neither for `manual`). Schema of record: `references/outcome-schema.md`.
+6. **Generate + Score** — **if the shape decision above chose outcome-prose or the design loop, skip this step's scoring**: emit the One-Shot prose brief (`references/oneshot-template.md`) or the design-loop prompt (`references/design-loop-template.md`) and stop. Neither prose shape is scored on the six dimensions. Otherwise (spec-XML) apply the template and show before/after quality metrics. Generated prompts include a `<success_criteria schema_version="1">` block with 3-6 `<criterion>` entries. Each criterion has `id` (kebab-case slug, unique in block), `verification_method` (`rule` | `llm_judge` | `manual`), a one-sentence `<description>`, and — depending on method — an inline `<rule type="regex|predicate">` or `<judge_prompt>` (neither for `manual`). Schema of record: `references/outcome-schema.md`.
 7. **Single-pass evaluator** — run self-eval rubric and do one delta rewrite if score < 7
 
 **Why criteria are emitted:** so every prompt carries its own testable assertions; outcome records produced by `scripts/outcome-record.js` (added in the same PR) join criteria to results for flywheel learning.
@@ -49,7 +52,7 @@ _Moved:_ the full rules for step 5 (flywheel bias injection and attribution) and
 After interview completes, immediately:
 1. Select template based on task type
 2. Generate the full polished prompt
-3. Show quality score (before/after table)
+3. Show quality score (before/after table) for spec-XML. Outcome-prose and design-loop prompts are delivered unscored.
 4. Ask if user wants to execute or copy
 
 ```
@@ -62,7 +65,7 @@ After interview completes, immediately:
 Ask via `AskUserQuestion`. **Max 5 questions total.**
 
 **Standard questions** (priority order — drop lower ones if task-specific questions are needed):
-1. Task type: Build Feature / Fix Bug / Refactor / Write Tests / API Work / UI / Security / Docs / Content / Research / Multi-Agent
+1. Task type: Build Feature / Fix Bug / Refactor / Write Tests / API Work / UI / Design loop / Security / Docs / Content / Research / Multi-Agent
    - If user selects **Multi-Agent** while currently in **Single mode**, immediately transition to **Repromptverse Phase 1 (Team Plan)** and confirm team execution mode (Parallel vs Sequential).
 2. Execution mode: Single Agent / Team (Parallel) / Team (Sequential) / Let RePrompter decide
 3. Motivation: User-facing / Internal tooling / Bug fix / Exploration / Skip *(drop first if space needed)*
@@ -75,7 +78,7 @@ Ask via `AskUserQuestion`. **Max 5 questions total.**
 
 ### Single mode pattern pack (Microsoft-inspired)
 
-Apply these patterns even without multi-agent execution:
+Apply these patterns to spec-XML output, even without multi-agent execution. The prose shapes (One-Shot outcome-prose and the design loop) skip the spec contract and the evaluator loop.
 
 1. **Intent router** — map task to template with explicit priority rules
 2. **Constraint normalizer** — convert vague goals into measurable requirements/limits
@@ -138,7 +141,8 @@ Detect task type from input. Each type has a dedicated template in `references/`
 | Refactor | `refactor-template.md` | Structural cleanup |
 | Testing | `testing-template.md` | Test writing |
 | API | `api-template.md` | Endpoint/API work |
-| UI | `ui-template.md` | UI components |
+| UI | `ui-template.md` | UI components (built to a spec) |
+| Design loop | `design-loop-template.md` | how a page **looks**: direction, screenshot critique, fix loop |
 | Security | `security-template.md` | Security audit/hardening |
 | Docs | `docs-template.md` | Documentation |
 | Content | `content-template.md` | Blog posts, articles, marketing copy |
@@ -153,7 +157,7 @@ Detect task type from input. Each type has a dedicated template in `references/`
 | Reverse | `reverse-template.md` | Reverse-engineered prompt from exemplar output |
 | Team Brief | `team-brief-template.md` | Team orchestration brief |
 
-**Priority** (most specific wins): marketing-swarm > engineering-swarm > ops-swarm > research-swarm > repromptverse > api > security > ui > testing > bugfix > refactor > content > docs > research > feature. For multi-agent tasks, use the best-fit swarm template + `repromptverse-template` + `team-brief-template`, then type-specific templates for each agent sub-prompt.
+**Priority** (most specific wins): marketing-swarm > engineering-swarm > ops-swarm > research-swarm > repromptverse > api > security > design-loop > ui > testing > bugfix > refactor > content > docs > research > feature. Design-loop beats ui because the two answer different questions: reach for `design-loop-template.md` when the ask is about how a whole page **looks** ("redesign our landing page", "this looks like AI slop", "make the marketing site not templated"), and for `ui-template.md` when the ask is a component built to a spec (props, variants, states). A bounded change inside an existing visual direction is still spec-XML, not the design loop. For multi-agent tasks, use the best-fit swarm template + `repromptverse-template` + `team-brief-template`, then type-specific templates for each agent sub-prompt.
 
 **How it works:** Read the matching template from `references/{type}-template.md`, then fill it with task-specific context. Templates are NOT loaded into context by default — only read on demand when generating a prompt. If the template file is not found, fall back to the Base XML Structure below.
 
@@ -221,7 +225,7 @@ only when that skill is installed; otherwise stay completely silent about it.
 
 ## Quality scoring
 
-**Always show before/after metrics:**
+**Always show before/after metrics for spec-XML prompts.** One-Shot outcome-prose and design-loop prompts are not scored.
 
 | Dimension | Weight | Criteria |
 |-----------|--------|----------|

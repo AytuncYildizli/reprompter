@@ -10,7 +10,7 @@ description: |
 
 # RePrompter — `/goal`, Workflow script, and headless-relay delivery
 
-> Mode skill of the `reprompter` plugin. Entry/routing: `../reprompter/SKILL.md`. Generate the spec prompt with `../reprompter-improve/SKILL.md`, then apply the format below. Content below is verbatim from root SKILL.md lines 58-211 (`/goal`), 212-356 (Workflow script) and 1481-1558 (headless-relay). `references/workflow-template.md` and `references/runtime/claude-workflow-runtime.md` are copied alongside; Repromptverse Option H is in `../reprompter-team/references/runtime-options.md`. `scripts/<name>` paths resolve to the bundled `../reprompter/scripts/<name>` (e.g. `node ../reprompter/scripts/workflow-command.js --help`).
+> Mode skill of the `reprompter` plugin. Entry/routing: `../reprompter/SKILL.md`. Generate the spec prompt with `../reprompter-improve/SKILL.md`, then apply the format below. Content below is verbatim from root SKILL.md lines 60-213 (`/goal`), 214-358 (Workflow script) and 1495-1572 (headless-relay). `references/workflow-template.md` and `references/runtime/claude-workflow-runtime.md` are copied alongside; Repromptverse Option H is in `../reprompter-team/references/runtime-options.md`. `scripts/<name>` paths resolve to the bundled `../reprompter/scripts/<name>` (e.g. `node ../reprompter/scripts/workflow-command.js --help`).
 >
 > **Required reading:** `../reprompter/references/advanced-features.md`. The always-on rules in `../reprompter/SKILL.md` → "Core shared rules" (context check, uncertainty permission, WHAT not HOW) apply before any `/goal` compression or workflow compile.
 

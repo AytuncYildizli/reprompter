@@ -64,3 +64,21 @@ test("contract layer is preserved even when total budget is very small", () => {
   assert.match(result.promptContext, /Layer 1: Task Contract/);
   assert.ok(result.manifest.totalUsedTokens > 0);
 });
+
+test("budget that empty layers cannot use goes to the layers that have entries", () => {
+  const codeFacts = Array.from(
+    { length: 12 },
+    (_, i) => `src/auth/module${i}.ts: ` + "exports verifySession(token) which checks expiry, issuer, audience and revocation list; called by middleware/auth.ts and api/routes/*.ts. ".repeat(2)
+  );
+  const result = buildAgentContext(
+    { id: "agent-3", role: "Auditor", domain: "security" },
+    { task: "Audit auth" },
+    { codeFacts },
+    { totalTokens: 1400 }
+  );
+
+  const repoLayer = result.manifest.layers.find((layer) => layer.name === "repo_facts");
+  assert.ok(result.manifest.totalUsedTokens <= 1400);
+  assert.equal(repoLayer.entriesUsed, 12);
+  assert.equal(repoLayer.truncated, false);
+});

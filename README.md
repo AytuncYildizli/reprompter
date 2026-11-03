@@ -8,7 +8,7 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-13.1.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-13.3.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-344%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
@@ -33,7 +33,7 @@ RePrompter is a prompt engineering skill for AI coding agents. It takes rough, l
 
 **Where the result goes.** Improve outputs can be pasted (default), compressed to a `/goal` command (Codex, Claude Code, Hermes), compiled to a runnable Claude `.workflow.js`, or delivered to another model via [headless-relay](https://github.com/dorukardahan/headless-relay). Build runs as one prompt or splits across a team. Everything that used to be a separate "lane" is now one of these — a format the result takes or the way it executes.
 
-**Nothing was removed.** Team execution (`repromptverse`, `smart run`, swarm triggers), the `/goal` and Workflow formats, cross-model relay delivery, and Reverse mode (extract the prompt DNA from a great output) all work exactly as before — see [SKILL.md](SKILL.md). v13 changed the map, not the machinery: every v12 trigger still routes to its intent. The one behavior change is honest and opt-out — a clearly whole-product "reprompt this" now offers an autonomous build prompt (say "spec" for the old structured, scored output); bounded and ambiguous asks stay spec-XML exactly as before.
+**Nothing was removed.** Team execution (`repromptverse`, `smart run`, swarm triggers), the `/goal` and Workflow formats, cross-model relay delivery, and Reverse mode (extract the prompt DNA from a great output) all work exactly as before — see [SKILL.md](SKILL.md). v13 changed the map, not the machinery: every v12 trigger still routes to its intent once RePrompter is selected. Selection itself is narrower in v13.3.0: a request has to ask for RePrompter ("reprompt this", "one-shot this", "tek promptla", "reverse reprompt"), so a generic "build me a whole app" or "vibe a game" stays an ordinary build request. The one behavior change is honest and opt-out — a clearly whole-product "reprompt this" now offers an autonomous build prompt (say "spec" for the old structured, scored output); bounded and ambiguous asks stay spec-XML exactly as before.
 
 ---
 
@@ -523,7 +523,7 @@ Hermes asks for first-use approval per `(event, command)`; non-TTY runs need `HE
 
 Ambient flags: `REPROMPTER_AMBIENT=1` explicitly enables nudges and outcome recording; unset, empty, `0`, and every other value keep them off. `REPROMPTER_AMBIENT_THRESHOLD` changes the default score threshold (`5`), `REPROMPTER_AMBIENT_COOLDOWN_MIN` changes the per-session cooldown (`15`), and `REPROMPTER_TELEMETRY=0` disables the privacy-safe gate local outcome log. Runtime-wide hook kill switches still win globally. The gate fails open on malformed input, timeout, or internal failure and never persists prompt or transcript text.
 
-Migration from releases that auto-registered hooks, including v13.1.0 and v13.2.0: update or reinstall the plugin so its generated `hooks.json` becomes empty. If you manually copied either old hook into a user settings file, remove it to eliminate the process spawn on normal turns. Keeping the entry is safe while `REPROMPTER_AMBIENT` is unset because the script now exits before reading stdin, but only removing the entry guarantees zero hook-process latency. Add the opt-in settings above only if you want ambient suggestions; `/reprompter:reprompter` does not depend on them.
+Migration from releases that auto-registered hooks (v13.1.0 and earlier): update or reinstall the plugin so its generated `hooks.json` becomes empty. If you manually copied either old hook into a user settings file, remove it to eliminate the process spawn on normal turns. Keeping the entry is safe while `REPROMPTER_AMBIENT` is unset because the script now exits before reading stdin, but only removing the entry guarantees zero hook-process latency. Add the opt-in settings above only if you want ambient suggestions; `/reprompter:reprompter` does not depend on them.
 
 ### Repromptverse
 

@@ -39,7 +39,7 @@ Prompting guidance: use clear sectioning (XML default; Markdown headers equally 
 - Maintain backward compatibility with {existing features}
 - Do not add unrelated refactoring or "improvements" outside the feature scope
 - Do not introduce new dependencies when existing libraries suffice
-- Do not skip edge case handling for the sake of quick delivery
+- Handle every edge case named in the requirements and every state the code can actually reach; do not add guards for states it cannot reach
 </constraints>
 
 <output_format>
@@ -101,7 +101,7 @@ Users frequently request search on the products page. Current browsing-only expe
 - Preserve existing URL structure
 - Do not add unrelated refactoring or "improvements" outside the feature scope
 - Do not introduce new dependencies when existing libraries suffice
-- Do not skip edge case handling for the sake of quick delivery
+- Handle every edge case named in the requirements and every state the code can actually reach; do not add guards for states it cannot reach
 </constraints>
 
 <output_format>

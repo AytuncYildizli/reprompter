@@ -3,9 +3,9 @@
 
 const DEFAULT_MODEL_CATALOG = [
   {
-    id: "anthropic/claude-opus-4",
+    id: "anthropic/claude-opus-5-5",
     provider: "anthropic",
-    maxContextK: 200,
+    maxContextK: 1000,
     metrics: {
       reasoning: 10,
       reliability: 10,
@@ -16,9 +16,9 @@ const DEFAULT_MODEL_CATALOG = [
     },
   },
   {
-    id: "anthropic/claude-sonnet-4",
+    id: "anthropic/claude-sonnet-5-5",
     provider: "anthropic",
-    maxContextK: 200,
+    maxContextK: 1000,
     metrics: {
       reasoning: 8,
       reliability: 8,
@@ -29,9 +29,9 @@ const DEFAULT_MODEL_CATALOG = [
     },
   },
   {
-    id: "openai/gpt-5",
+    id: "openai/gpt-6-astra",
     provider: "openai",
-    maxContextK: 200,
+    maxContextK: 1050,
     metrics: {
       reasoning: 9,
       reliability: 9,
@@ -42,9 +42,9 @@ const DEFAULT_MODEL_CATALOG = [
     },
   },
   {
-    id: "openai/gpt-5-mini",
+    id: "openai/gpt-6-luna",
     provider: "openai",
-    maxContextK: 200,
+    maxContextK: 1050,
     metrics: {
       reasoning: 7,
       reliability: 7,
@@ -55,7 +55,7 @@ const DEFAULT_MODEL_CATALOG = [
     },
   },
   {
-    id: "google/gemini-2.5-pro",
+    id: "google/gemini-4-argon",
     provider: "google",
     maxContextK: 1000,
     metrics: {
@@ -68,7 +68,7 @@ const DEFAULT_MODEL_CATALOG = [
     },
   },
   {
-    id: "google/gemini-2.5-flash",
+    id: "google/gemini-3.8-flash",
     provider: "google",
     maxContextK: 1000,
     metrics: {
@@ -266,30 +266,27 @@ function scoreModel(model, requirements, policyConfig = {}) {
 function buildFallbackChain(rankedModels, primary, options = {}) {
   const maxFallbacks = Number(options.maxFallbacks || 3);
   const diversifyProviders = options.diversifyProviders !== false;
+  const neededTokens = Number(options.requestedContextTokens || 0);
 
   const chain = [];
   const usedProviders = new Set([primary.provider]);
-
-  for (const model of rankedModels) {
-    if (model.id === primary.id) continue;
-    if (chain.length >= maxFallbacks) break;
-
-    if (diversifyProviders && usedProviders.size === 1 && usedProviders.has(model.provider)) {
-      continue;
-    }
-
-    chain.push(model);
-    usedProviders.add(model.provider);
-  }
-
-  if (chain.length < maxFallbacks) {
-    for (const model of rankedModels) {
-      if (model.id === primary.id) continue;
-      if (chain.length >= maxFallbacks) break;
-      if (chain.some((item) => item.id === model.id)) continue;
+  const take = (pool, diversify) => {
+    for (const model of pool) {
+      if (chain.length >= maxFallbacks) return;
+      if (chain.includes(model)) continue;
+      if (diversify && usedProviders.size === 1 && usedProviders.has(model.provider)) continue;
       chain.push(model);
+      usedProviders.add(model.provider);
     }
-  }
+  };
+
+  // A fallback that can hold the request outranks provider diversity.
+  const others = rankedModels.filter((model) => model.id !== primary.id);
+  const fitting = others.filter((model) => model.maxContextK * 1000 >= neededTokens);
+  take(fitting, diversifyProviders);
+  take(fitting, false);
+  take(others, diversifyProviders);
+  take(others, false);
 
   return chain;
 }
@@ -312,7 +309,11 @@ function resolveModelForAgent(agentSpec = {}, taskSpec = {}, policyConfig = {}) 
   const fallback = buildFallbackChain(
     ranked.map((entry) => entry.model),
     primary,
-    { maxFallbacks: policyConfig.maxFallbacks || 3, diversifyProviders: true }
+    {
+      maxFallbacks: policyConfig.maxFallbacks || 3,
+      diversifyProviders: true,
+      requestedContextTokens: requirements.requestedContextTokens,
+    }
   );
 
   const reason = [

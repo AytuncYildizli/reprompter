@@ -37,13 +37,13 @@ Prompting guidance: use clear sectioning (XML default; Markdown headers equally 
 </requirements>
 
 <reasoning>
-Before researching, consider:
-1. What do I already know about this topic?
+Evidence standards for this research:
+1. Which facts may have changed since your training data (versions, prices, benchmarks, maintenance status)? Check those against current sources, even where you feel sure.
 2. What are the most reliable sources for this information?
-3. What biases or assumptions might affect my analysis?
+3. What biases or assumptions might affect the analysis?
 4. What would constitute strong vs weak evidence?
 
-Use this as a systematic checklist before forming conclusions; summarize rationale concisely in the final output.
+Summarize the rationale for each conclusion concisely in the final output.
 </reasoning>
 
 <methodology>
@@ -132,10 +132,10 @@ ORM choice will affect the entire data layer for the next 2+ years. Wrong choice
 </requirements>
 
 <reasoning>
-Before researching, consider:
-1. What do I already know?
-   - Prisma: Mature, schema-first, generates client
-   - Drizzle: Newer, TypeScript-first, SQL-like syntax
+Evidence standards:
+1. Facts that may have changed since training, to check against current sources:
+   - Current major versions and release cadence of Prisma and Drizzle
+   - Current Next.js App Router support and recent benchmark results for each
 
 2. Most reliable sources:
    - Official documentation (both)
@@ -211,7 +211,7 @@ For complex analysis, expand the planning checklist:
 ```xml
 <reasoning>
 ## Pre-Analysis
-- What do I know? {existing knowledge}
+- What may have changed since training? {versions, prices, benchmarks to re-check against current sources}
 - What don't I know? {gaps to fill}
 - What might I be wrong about? {assumptions to test}
 
@@ -225,6 +225,6 @@ For complex analysis, expand the planning checklist:
 - Weight criteria by: {importance ranking}
 - Final decision based on: {decision framework}
 
-Think through each step, then provide concise rationale summaries with citations (do not expose hidden internal reasoning).
+In the final output, give a concise rationale with citations for each conclusion.
 </reasoning>
 ```

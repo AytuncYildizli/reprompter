@@ -113,16 +113,16 @@ function deriveDomainFromProfile(profile) {
 function buildStaticModelPlan(options = {}) {
   const staticModel = options.staticModel || {
     provider: "anthropic",
-    model: "anthropic/claude-sonnet-4",
-    maxContextK: 200,
+    model: "anthropic/claude-sonnet-5-5",
+    maxContextK: 1000,
     capabilityTier: "static",
   };
 
   const fallbackChain = Array.isArray(options.staticFallbackChain)
     ? options.staticFallbackChain
     : [
-        { provider: "openai", model: "openai/gpt-5-mini", maxContextK: 200 },
-        { provider: "google", model: "google/gemini-2.5-flash", maxContextK: 1000 },
+        { provider: "openai", model: "openai/gpt-6-luna", maxContextK: 1050 },
+        { provider: "google", model: "google/gemini-3.8-flash", maxContextK: 1000 },
       ];
 
   return {
@@ -347,7 +347,8 @@ function buildExecutionPlan(rawTask, options = {}) {
   const contextStart = Date.now();
   const contextPlan = featureFlags.layeredContext
     ? buildAgentContext(agentSpec, taskSpec, options.repoFacts || {}, {
-        totalTokens: options.totalContextTokens || 1400,
+        // 1% of the selected model's window, never below the old fixed 1400.
+        totalTokens: options.totalContextTokens || Math.max(1400, (modelPlan.selected.maxContextK || 0) * 10),
         layerBudgets: options.layerBudgets,
       })
     : buildMinimalContext(agentSpec, taskSpec);
