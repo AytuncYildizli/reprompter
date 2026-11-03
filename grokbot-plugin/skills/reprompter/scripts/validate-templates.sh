@@ -16,8 +16,8 @@ TEMPLATE_DIR="references"
 # Files in references/ that are NOT prompt templates and should be skipped
 # by this validator. Keep alphabetical.
 EXCEPTION_TEMPLATES=(
-  "oneshot-template.md"  # prose-only by design: a long autonomous run needs a staffing plan, not a spec to satisfy
   "design-loop-template.md"  # prose-only by design: a design pass needs a direction and a critic, not a spec
+  "oneshot-template.md"  # prose-only by design: a long autonomous run needs a staffing plan, not a spec to satisfy
   "outcome-schema.md"    # schema spec for flywheel outcome capture, not a prompt template
   "team-brief-template.md"  # Markdown-only by design
 )

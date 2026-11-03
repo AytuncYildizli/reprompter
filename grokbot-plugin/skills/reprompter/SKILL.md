@@ -2,7 +2,7 @@
 name: reprompter
 description: |
   Two intents: Improve ("reprompt this") emits a scored spec prompt; Build ("one-shot this") emits a build prompt for a whole app/game/site. Entry point that routes to the reprompter-* mode skills.
-  Use when: explicit "reprompt" or "clean up this prompt", "before /goal", prompt extraction, or a named Reprompter build/team/workflow request such as "repromptverse", "reprompter teams", "one-shot this", swarm, or workflow preflight. Quoted keywords and ordinary audit, review, research, multi-agent, or parallel implementation requests do not select it.
+  Use when: explicit "reprompt" or "clean up this prompt", "before /goal", prompt extraction ("reverse reprompt", "prompt dna", "extract prompt from"), or a named Reprompter request such as "repromptverse", "reprompter teams", "smart run", "run with quality", "one-shot this", "one-shot a X", "tek promptla", "compile to workflow", swarm, or workflow preflight. Quoted keywords and ordinary audit, review, research, multi-agent, or parallel implementation requests do not select it.
   Don't use for simple Q&A, casual chat, or execution-only tasks.
   Outputs: structured XML/Markdown prompt + before/after score; /goal command card (Codex/Claude Code/Hermes); optional team brief + per-agent prompts + Agent Cards; Reverse Extraction Card; Workflow Command Card + runnable .workflow.js (Workflow preflight lane / Option H).
   Target score: spec >= 7/10; per-agent >= 8/10.
@@ -12,7 +12,7 @@ metadata:
 
 # RePrompter v13.3.0
 
-> **Your prompt sucks. Let's fix that.** Two intents — improve my prompt, or build this whole thing — with `/goal`, Workflow, team execution and cross-model delivery as places the result can go. **v13 (RePrompter v2) restructures six lanes into two intents: a specifiability router picks spec-XML or an autonomous build prompt inside Improve, and Build can run as one prompt or split across a team. Every v12 trigger keeps working.**
+> **Your prompt sucks. Let's fix that.** Two intents — improve my prompt, or build this whole thing — with `/goal`, Workflow, team execution and cross-model delivery as places the result can go. **v13 (RePrompter v2) restructures six lanes into two intents: a specifiability router picks spec-XML or an autonomous build prompt inside Improve, and Build can run as one prompt or split across a team. Every v12 trigger that asks for RePrompter keeps working; generic build phrases such as "vibe a game" route to Build once RePrompter is selected but no longer select it on their own.**
 
 ---
 
@@ -22,16 +22,16 @@ Users learn two sentences. Everything else is machinery underneath them.
 
 | Intent | Trigger | What happens |
 |--------|---------|-------------|
-| **Improve** — "make my prompt better" | "reprompt this", "clean up this prompt" | Interview → the specifiability router picks the shape: **spec-XML** when the done-state is enumerable up front (bugfix with a repro, endpoint with a contract, bounded feature), **outcome-prose** in the One-Shot shape when done can only be judged against a quality bar (whole product, "like X", aesthetic outcome) → score (spec-XML only) → output-format step |
+| **Improve** — "make my prompt better" | "reprompt this", "clean up this prompt" | Interview → the specifiability router picks the shape: **spec-XML** when the done-state is enumerable up front (bugfix with a repro, endpoint with a contract, bounded feature), **outcome-prose** in the One-Shot shape when done can only be judged against a quality bar (whole product, "like X"), or in the **design-loop** shape when the ask is how a page looks → score (spec-XML only) → output-format step |
 | **Build** — "build this whole thing" | "one-shot this", "one-shot a X", "tek promptla", "tek seferde", "vibe a game", "build me a whole app/game/site" | Plain-language interview (max 4) → done-list brief → execution choice: **one prompt** (default; finishes in one session, maximal/loop opt-in) or **split across a team** (the brief seeds Repromptverse: done-list becomes the team's success criteria, the harsh checker becomes the evaluator) |
 
-**Output formats (Improve):** these apply to **spec-XML results only** — an outcome-prose build brief is delivered as-is (it must not be compressed to `/goal` or compiled to a workflow, which would discard its staffing plan and checklist). paste (default) · compress to a `/goal <objective>` command (Codex CLI, Claude Code v2.1.139+, Hermes) · compile to a runnable `.workflow.js` (Claude Workflow tool) · deliver to another model via headless-relay (post-output step). The `/goal` and Workflow sections below define these formats; their triggers ("before /goal", "workflow preflight", "compile to workflow", "dynamic workflow", ...) jump straight to Improve with that format.
+**Output formats (Improve):** these apply to **spec-XML results only** — an outcome-prose build brief or a design-loop prompt is delivered as-is (it must not be compressed to `/goal` or compiled to a workflow, which would discard its staffing plan, its critic and its checklist). paste (default) · compress to a `/goal <objective>` command (Codex CLI, Claude Code v2.1.139+, Hermes) · compile to a runnable `.workflow.js` (Claude Workflow tool) · deliver to another model via headless-relay (post-output step). The `/goal` and Workflow sections below define these formats; their triggers ("before /goal", "workflow preflight", "compile to workflow", "dynamic workflow", ...) jump straight to Improve with that format.
 
 **Team execution (Build and beyond):** "repromptverse", "reprompter teams", "smart run", "smart agents", "run with quality" and the swarm triggers route to the Repromptverse machinery below — either standalone as today, or seeded by a Build brief.
 
 **Advanced:** Reverse mode (extract the prompt DNA from a great output — "reverse reprompt", "prompt dna") keeps working exactly as before and feeds the flywheel; it lives in its own section below.
 
-**Specifiability rule (Improve):** when the router picks outcome-prose, announce it in one line — "This looks like a whole-product ask — generating an autonomous build prompt; say 'spec' for the structured version." — and switch shapes if the user objects. Outcome-prose always keeps a constraints sentence (the home for "never touch auth"); it is not scored on the six dimensions.
+**Specifiability rule (Improve):** the prose shapes (outcome-prose and the design loop) are exempt from every spec-XML rule in this file; see the precedence rule under Shape decision. When the router picks outcome-prose, announce it in one line — "This looks like a whole-product ask — generating an autonomous build prompt; say 'spec' for the structured version." — and switch shapes if the user objects. Outcome-prose always keeps a constraints sentence (the home for "never touch auth"); it is not scored on the six dimensions.
 
 Only inside an already-selected RePrompter workflow: if the prompt being improved mentions 2+ systems, "audit", or "parallel", ask: "This looks like a multi-agent task. Want to use Repromptverse mode?" This cue chooses between Single and Repromptverse after skill selection; it never selects the skill. Quoted keywords, ordinary audits, and parallel implementation requests do not select RePrompter or trigger this offer.
 
