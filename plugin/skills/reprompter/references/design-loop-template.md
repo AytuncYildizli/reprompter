@@ -76,7 +76,7 @@ The interview's third question decides which paragraphs you emit, because a user
 - **restyle inside the current direction** — keep the direction paragraph but pin the existing colours and faces in it rather than choosing new ones.
 - **change the direction** — emit all of it.
 
-If the user gave no inspectable reference, drop that sentence rather than inventing one. If the ask is a new page rather than a redesign, say "Build" instead of "Redesign" and drop the git-history clause.
+If the user gave no inspectable reference, drop that sentence rather than inventing one. If the ask is a new page rather than a redesign, say "Build" instead of "Redesign". Keep the git-history sentence: it is a guard against reading history, not a redesign step.
 
 ### Filling the blanks
 

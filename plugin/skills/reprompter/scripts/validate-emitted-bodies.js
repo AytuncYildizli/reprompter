@@ -182,6 +182,7 @@ const DESIGN = [
   ['the no-browser case stops instead of inventing screenshots', /do not describe screenshots you did not take/i],
   ['the chosen face is verified as loaded and rendering, not merely declared', /loaded and is rendering/i],
   ['contrast is computed, with a number', /4\.5:1/],
+  ['contrast covers every piece of text, not only the body copy', /every piece of text/i],
   ['the craft floor reaches the run', /concentric/i],
   ['the quality floor reaches the run', /390px/i],
   ['states are walked only where the page has them', /only where the page has them/i],
