@@ -195,8 +195,17 @@ const DESIGN = [
   ['the done-list is actually stated', /\[done-list/],
   ['lifecycle cleanup is checked where the page has one', /still firing/i],
   ['git history is opt-in and path-only', /unless the user asks you to/i],
+  ['stagger timing reaches the craft floor', /100ms on infrequent entrances/i],
+  ['quartiles are the filmstrip minimum, denser where things enter or leave', /quartiles are the minimum/i],
+  ['motion is reviewed slowed down where the runtime can reach it', /tenth of normal speed/i],
 ];
 check('design-loop body', DESIGN_BODY, DESIGN);
+
+// [hard negative] is captured verbatim, negation included. A negation word in front
+// of the slot turns "never touch the tokens" into "never never touch the tokens".
+if (/\b(never|not|don't|avoid)\s+\*\*\[hard negative\]/i.test(DESIGN_BODY)) {
+  failures.push('design-loop body: a negation precedes [hard negative], so the user\'s verbatim "never ..." gains a second negation');
+}
 
 // "fix what's broken" drops the direction paragraph. A load-bearing negative that
 // lives in it goes with it, silently, taking a constraint the user stated out loud.
