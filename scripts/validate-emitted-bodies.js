@@ -146,6 +146,7 @@ const DESIGN_BODY = bodyAfter('## The prompt', designLines);
  *  whether an assembly path can drop it. */
 function blockquoteParagraphs(src, anchor) {
   const start = src.findIndex((l) => l.startsWith(anchor));
+  if (start === -1) throw new Error(`design-loop body not found: ${anchor}`);
   const paras = [];
   let current = [];
   for (let i = start; i < src.length && src[i].startsWith('>'); i++) {
