@@ -161,7 +161,7 @@ function main() {
   for (const check of CHECKS) {
     const excluded = new Set(check.exclude || []);
     const targets = excludeSelf(check.files.flatMap(walk)).filter(
-      (file) => !excluded.has(path.relative(REPO_ROOT, file))
+      (file) => !excluded.has(path.relative(REPO_ROOT, file).split(path.sep).join("/"))
     );
     const allHits = [];
     for (const file of targets) {
