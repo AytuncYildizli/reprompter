@@ -210,6 +210,6 @@ echo "broken scripts: $broken_scripts"
 echo
 echo "SUMMARY: missing=$missing stale=$stale broken_links=$broken_links broken_refs=$broken_refs broken_scripts=$broken_scripts"
 if [ "$missing" != 0 ] || { [ "$stale" != skipped ] && [ "$stale" != 0 ]; }; then
-  echo "To re-sync: put each MISSING root line in the mode skill SPLIT-MAP.md names, update or remove each STALE line, run bash grokbot-plugin/sync-copies.sh --apply, then git hash-object SKILL.md > grokbot-plugin/SPLIT-BASE and rerun this check."
+  echo "To re-sync: put each MISSING root line in the mode skill SPLIT-MAP.md names, update or remove each STALE line, run bash grokbot-plugin/sync-copies.sh --apply, then git hash-object -w SKILL.md > grokbot-plugin/SPLIT-BASE and rerun this check."
 fi
 [ "$missing" -eq 0 ] && { [ "$stale" = skipped ] || [ "$stale" -eq 0 ]; } && [ "$broken_links" -eq 0 ] && [ "$broken_refs" -eq 0 ] && [ "$broken_scripts" -eq 0 ]
