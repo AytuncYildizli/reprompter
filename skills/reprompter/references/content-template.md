@@ -32,8 +32,7 @@ Prompting guidance: use clear sectioning (XML default; Markdown headers equally 
 - {Topics or claims to avoid}
 - {Brand guidelines to follow}
 - {Factual accuracy — cite sources if needed}
-- {No AI-sounding language: avoid "delve", "landscape", "leverage", "paradigm", "robust"}
-- Do not use filler phrases or corporate buzzwords
+- {Plain, direct prose in the brand voice: where a literal phrase is available, use it instead of a metaphor, flourish, filler phrase, or buzzword}
 - Do not make claims without supporting evidence
 </constraints>
 
@@ -87,7 +86,7 @@ Prompting guidance: use clear sectioning (XML default; Markdown headers equally 
 - No FUD about competitors — factual comparisons only
 - Include real code examples (TypeScript preferred)
 - Cite benchmarks or user surveys where available
-- No AI-sounding language: avoid "delve", "landscape", "leverage", "paradigm"
+- Plain, direct prose: where a literal phrase is available, use it instead of a metaphor or buzzword
 - Do not claim "best" without quantifiable evidence
 - Disclose any affiliate or business relationships
 </constraints>

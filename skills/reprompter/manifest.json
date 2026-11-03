@@ -10,15 +10,15 @@
   },
   "source": {
     "root_skill": "SKILL.md",
-    "root_skill_sha256": "2e5ea0a16a6df39fede197977db74fb626cf5a9cbafaa8e09bdf9d928279e5ea",
+    "root_skill_sha256": "1f207dfee32d7a8731830cd9d03dadca16aed70be1472c82f9db5549f664684f",
     "sanitizer": "scripts/hermes-sanitizer.json",
     "sanitizer_sha256": "c46cf3fa0f7333745443b61eadbabe41e52014243b8213ffb328d9d609e4a297"
   },
   "files": [
     {
       "path": "SKILL.md",
-      "source_sha256": "2e5ea0a16a6df39fede197977db74fb626cf5a9cbafaa8e09bdf9d928279e5ea",
-      "generated_sha256": "b6e5b2b56e6d5d05b624078c48e6b12d9c8c05a3f12d864fc3fd6b4ee0ca45e2"
+      "source_sha256": "1f207dfee32d7a8731830cd9d03dadca16aed70be1472c82f9db5549f664684f",
+      "generated_sha256": "3b126a10a7dc294ebe7944cd0d88a3c737b573a9e9e71fb01c05ad4c184490da"
     },
     {
       "path": "references/api-template.md",
@@ -32,8 +32,8 @@
     },
     {
       "path": "references/content-template.md",
-      "source_sha256": "c37dc760b4037bfc70a7cfec9141c625f68288c73baadee11865c1f4012c6b82",
-      "generated_sha256": "c37dc760b4037bfc70a7cfec9141c625f68288c73baadee11865c1f4012c6b82"
+      "source_sha256": "92e41752572e9ad104f14200e8b6c0297a5e606b75594ecfbcd9ad6fe8c687ba",
+      "generated_sha256": "92e41752572e9ad104f14200e8b6c0297a5e606b75594ecfbcd9ad6fe8c687ba"
     },
     {
       "path": "references/design-loop-template.md",
@@ -52,8 +52,8 @@
     },
     {
       "path": "references/feature-template.md",
-      "source_sha256": "c79fc2dabf813f1f21c672e3f8080172e173665215b54df66d4b520e521c23b6",
-      "generated_sha256": "c79fc2dabf813f1f21c672e3f8080172e173665215b54df66d4b520e521c23b6"
+      "source_sha256": "4c360c5392b411b976c8973241440d0070ef1f681538715e4d42bf127c2a675c",
+      "generated_sha256": "4c360c5392b411b976c8973241440d0070ef1f681538715e4d42bf127c2a675c"
     },
     {
       "path": "references/marketing-swarm-template.md",
@@ -77,8 +77,8 @@
     },
     {
       "path": "references/patterns/pattern-catalog.md",
-      "source_sha256": "548ac05ced15be3b0b320d7aa4dd9172e462051521f3e17b0be8caaace311997",
-      "generated_sha256": "548ac05ced15be3b0b320d7aa4dd9172e462051521f3e17b0be8caaace311997"
+      "source_sha256": "dc8f5533e21ce1d87b29789575fcdad39e534ebbcc3102f12005017a73232ad0",
+      "generated_sha256": "dc8f5533e21ce1d87b29789575fcdad39e534ebbcc3102f12005017a73232ad0"
     },
     {
       "path": "references/refactor-template.md",
@@ -97,8 +97,8 @@
     },
     {
       "path": "references/research-template.md",
-      "source_sha256": "b9c8ecdd16d6a6e974286062571882b81db5adf7a32c5cec4b811de70668e487",
-      "generated_sha256": "b9c8ecdd16d6a6e974286062571882b81db5adf7a32c5cec4b811de70668e487"
+      "source_sha256": "f24d49f5140ccf095e6a1c07dcb010192f18eeac88a178c0f3543d41728c65ed",
+      "generated_sha256": "f24d49f5140ccf095e6a1c07dcb010192f18eeac88a178c0f3543d41728c65ed"
     },
     {
       "path": "references/reverse-template.md",

@@ -1760,13 +1760,13 @@ Treat prompt/context engineering advancements as toggleable patterns (not fixed 
 Activate by task/domain/outcome profile and validate via benchmark fixtures.
 
 ### Token budget
-Keep generated prompts under ~2K tokens for single mode, ~1K per agent for Repromptverse. Longer prompts can rot the context window instead of improving quality. If a prompt exceeds budget, split into phases, cite source paths, or move long supporting material into references instead of inlining dumps.
+Size each generated prompt to what its executor needs: every fact that changes a decision, the reason behind each constraint, and, for a worker that starts with fresh context, everything it cannot see from the parent. What bloats a prompt is pasted bulk, not context: split long work into phases, cite source paths, or move long supporting material into references instead of inlining dumps.
 
 ### Uncertainty handling
-Always include explicit permission for the model to express uncertainty rather than fabricate:
-- Add to constraints: "If unsure about any requirement, ask for clarification rather than assuming"
+Tell the executing model what to do with uncertainty, so it neither invents an answer nor stops to wait:
+- Add to constraints: "Where the request is ambiguous, make the choice a careful colleague would make, state it as an assumption in your final report, and keep going. Raise a question only when different readings would lead to materially different work, and finish everything that does not depend on the answer first."
 - For research tasks: "Clearly label confidence levels (high/medium/low) for each finding"
-- For code tasks: "Flag any assumptions about the codebase with TODO comments"
+- For code tasks: "List any assumptions about the codebase in your final summary, not in code comments"
 
 ---
 

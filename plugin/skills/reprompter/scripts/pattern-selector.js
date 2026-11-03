@@ -50,7 +50,7 @@ const PATTERN_CATALOG = [
     id: "tool-description-quality",
     title: "Tool Description Quality",
     guidance:
-      "Write tool descriptions as if onboarding a new hire: make implicit context explicit, name when to use the tool, inputs/outputs, side effects, limits, and examples of good calls.",
+      "Write tool descriptions as if onboarding a new hire: make implicit context explicit, name when to use the tool and when not to, inputs/outputs, side effects, limits, and what it does not return. Keep worked examples and usage walkthroughs out of the description; put them in a skill or doc the agent loads when it needs them.",
     domains: ["all"],
     outcomes: ["all"],
     keywords: [
