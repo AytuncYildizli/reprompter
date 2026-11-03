@@ -29,10 +29,10 @@ Users learn two sentences. Everything else is machinery underneath them.
 
 | Intent | Trigger | What happens |
 |--------|---------|-------------|
-| **Improve** — "make my prompt better" | "reprompt this", "clean up this prompt" | Interview → the specifiability router picks the shape: **spec-XML** when the done-state is enumerable up front (bugfix with a repro, endpoint with a contract, bounded feature), **outcome-prose** in the One-Shot shape when done can only be judged against a quality bar (whole product, "like X", aesthetic outcome) → score (spec-XML only) → output-format step |
+| **Improve** — "make my prompt better" | "reprompt this", "clean up this prompt" | Interview → the specifiability router picks the shape: **spec-XML** when the done-state is enumerable up front (bugfix with a repro, endpoint with a contract, bounded feature), **outcome-prose** in the One-Shot shape when done can only be judged against a quality bar (whole product, "like X"), or in the **design-loop** shape when the ask is how a page looks → score (spec-XML only) → output-format step |
 | **Build** — "build this whole thing" | "one-shot this", "one-shot a X", "tek promptla", "tek seferde", "vibe a game", "build me a whole app/game/site" | Plain-language interview (max 4) → done-list brief → execution choice: **one prompt** (default; finishes in one session, maximal/loop opt-in) or **split across a team** (the brief seeds Repromptverse: done-list becomes the team's success criteria, the harsh checker becomes the evaluator) |
 
-**Output formats (Improve):** these apply to **spec-XML results only** — an outcome-prose build brief is delivered as-is (it must not be compressed to `/goal` or compiled to a workflow, which would discard its staffing plan and checklist). paste (default) · compress to a `/goal <objective>` command (Codex CLI, Claude Code v2.1.139+, Hermes) · compile to a runnable `.workflow.js` (Claude Workflow tool) · deliver to another model via headless-relay (post-output step). The `/goal` and Workflow sections below define these formats; their triggers ("before /goal", "workflow preflight", "compile to workflow", "dynamic workflow", ...) jump straight to Improve with that format.
+**Output formats (Improve):** these apply to **spec-XML results only** — an outcome-prose build brief or a design-loop prompt is delivered as-is (it must not be compressed to `/goal` or compiled to a workflow, which would discard its staffing plan, its critic and its checklist). paste (default) · compress to a `/goal <objective>` command (Codex CLI, Claude Code v2.1.139+, Hermes) · compile to a runnable `.workflow.js` (Claude Workflow tool) · deliver to another model via headless-relay (post-output step). The `/goal` and Workflow sections below define these formats; their triggers ("before /goal", "workflow preflight", "compile to workflow", "dynamic workflow", ...) jump straight to Improve with that format.
 
 **Team execution (Build and beyond):** "repromptverse", "reprompter teams", "smart run", "smart agents", "run with quality" and the swarm triggers route to the Repromptverse machinery below — either standalone as today, or seeded by a Build brief.
 
@@ -420,7 +420,7 @@ Transport is user-owned: put packs in a shared directory, rsync them, or move th
 After interview completes, immediately:
 1. Select template based on task type
 2. Generate the full polished prompt
-3. Show quality score (before/after table)
+3. Show quality score (before/after table) for spec-XML. Outcome-prose and design-loop prompts are delivered unscored.
 4. Ask if user wants to execute or copy
 
 ```
@@ -446,7 +446,7 @@ Ask via `AskUserQuestion`. **Max 5 questions total.**
 
 ### Single mode pattern pack (Microsoft-inspired)
 
-Apply these patterns even without multi-agent execution:
+Apply these patterns to spec-XML output, even without multi-agent execution. The prose shapes (One-Shot outcome-prose and the design loop) skip the spec contract and the evaluator loop.
 
 1. **Intent router** — map task to template with explicit priority rules
 2. **Constraint normalizer** — convert vague goals into measurable requirements/limits
@@ -1572,7 +1572,7 @@ Hard rules:
 
 ## Quality scoring
 
-**Always show before/after metrics:**
+**Always show before/after metrics for spec-XML prompts.** One-Shot outcome-prose and design-loop prompts are not scored.
 
 | Dimension | Weight | Criteria |
 |-----------|--------|----------|
