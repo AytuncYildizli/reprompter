@@ -117,8 +117,8 @@
     },
     {
       "path": "references/runtime/codex-runtime.md",
-      "source_sha256": "0dbbbbf9cc1b8272d344f8106881b468375865a9705cd12f4f3f65fb7c43d635",
-      "generated_sha256": "8f95c99dbc8c77ad350200e287abf0212c4c849bac5250a57eae81f6e9796232"
+      "source_sha256": "3b58d603cf5ec423b60e55e7d5f09a8cfb33925732430043abe1f8bb3de90b8a",
+      "generated_sha256": "611375279224ee7364bd575f3d7fa8f718bbe2bd387df370da9b5843bdc6b55f"
     },
     {
       "path": "references/runtime/context-layers.md",
@@ -137,8 +137,8 @@
     },
     {
       "path": "references/runtime/hermes-agent-runtime.md",
-      "source_sha256": "e965ccbce050c821e8b01a5f68872e517dfc34bb6c16cb936c024dbe6f25de56",
-      "generated_sha256": "07b1bb3668e86cda520e4a4081a1708c41f91e6171f4bb3bdbb325e4a1016ce1"
+      "source_sha256": "287b50171ba063e0b46743859bf39692425f5f9cfbe0d595ad18cebf570577fc",
+      "generated_sha256": "092ccde6766468619790551104aaa8940ee116512b6e1db30edf7dd077f9651f"
     },
     {
       "path": "references/security-template.md",
