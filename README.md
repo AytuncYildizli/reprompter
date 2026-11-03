@@ -8,7 +8,7 @@
 
 **Your prompt sucks. Let's fix that.**
 
-[![Version](https://img.shields.io/badge/version-13.1.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
+[![Version](https://img.shields.io/badge/version-13.3.0-0969da)](https://github.com/aytuncyildizli/reprompter/releases)
 [![License](https://img.shields.io/github/license/aytuncyildizli/reprompter?color=2da44e)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-344%20passing-2da44e)](#testing)
 [![Stars](https://img.shields.io/github/stars/aytuncyildizli/reprompter?style=flat&color=f0883e)](https://github.com/aytuncyildizli/reprompter/stargazers)
@@ -523,7 +523,7 @@ Hermes asks for first-use approval per `(event, command)`; non-TTY runs need `HE
 
 Ambient flags: `REPROMPTER_AMBIENT=1` explicitly enables nudges and outcome recording; unset, empty, `0`, and every other value keep them off. `REPROMPTER_AMBIENT_THRESHOLD` changes the default score threshold (`5`), `REPROMPTER_AMBIENT_COOLDOWN_MIN` changes the per-session cooldown (`15`), and `REPROMPTER_TELEMETRY=0` disables the privacy-safe gate local outcome log. Runtime-wide hook kill switches still win globally. The gate fails open on malformed input, timeout, or internal failure and never persists prompt or transcript text.
 
-Migration from releases that auto-registered hooks, including v13.1.0 and v13.2.0: update or reinstall the plugin so its generated `hooks.json` becomes empty. If you manually copied either old hook into a user settings file, remove it to eliminate the process spawn on normal turns. Keeping the entry is safe while `REPROMPTER_AMBIENT` is unset because the script now exits before reading stdin, but only removing the entry guarantees zero hook-process latency. Add the opt-in settings above only if you want ambient suggestions; `/reprompter:reprompter` does not depend on them.
+Migration from releases that auto-registered hooks (v13.1.0 and earlier): update or reinstall the plugin so its generated `hooks.json` becomes empty. If you manually copied either old hook into a user settings file, remove it to eliminate the process spawn on normal turns. Keeping the entry is safe while `REPROMPTER_AMBIENT` is unset because the script now exits before reading stdin, but only removing the entry guarantees zero hook-process latency. Add the opt-in settings above only if you want ambient suggestions; `/reprompter:reprompter` does not depend on them.
 
 ### Repromptverse
 

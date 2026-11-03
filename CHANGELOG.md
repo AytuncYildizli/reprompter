@@ -1,6 +1,19 @@
-## Unreleased — Ambient hooks default off
+## v13.3.0 (2026-11-04) — Current models, and ambient hooks off by default
 
-### Fixed
+The first release since v13.1.0. It also ships the design loop, written as v13.2.0 in August and never published on its own.
+
+### Fixed — written for models that have moved on
+
+- **A technique current Claude models reject.** Output format control told readers to prefill the assistant turn with `{` to force JSON. Claude 4.6 and later return HTTP 400 for that request. It now points at structured outputs (`output_config.format`), or at the format stated in the prompt.
+- **Routing to models that are about to disappear.** The capability catalog listed `gpt-5`, `gpt-5-mini` and `gemini-2.5-pro/flash`, which OpenAI and Google retire in December 2026, and version-less Claude 4 names. The Claude slots name the exact current models, `claude-opus-5-5` and `claude-sonnet-5-5`, which pass through OpenClaw's model normalizer unchanged. Aliases were tried first and `sonnet` did not resolve, because it is not a built-in OpenClaw alias; the pinned-id lint now exempts only the two routing tables. The other slots move to `gpt-6-astra`, `gpt-6-luna`, `gemini-4-argon` and `gemini-3.8-flash`, checked against the providers' model and deprecation pages on 2026-11-04. The provider benchmark picks the same provider and tier for every route as before.
+- **A fallback that cannot hold the request.** The fallback chain preferred provider diversity over fit, so a request near 1M tokens got three fallbacks too small for it. A fallback that fits now comes first; with no context requirement the chain is unchanged.
+- **Worker context truncated while budget sat unused.** Layered context gave empty layers a share of the budget. Empty layers now get none, and the runtime's default context budget is 1% of the selected model's window instead of a fixed 1400 tokens (never lower).
+- **Codex examples pinned `gpt-5.4`.** Role files now omit `model` and inherit the configured default, which also sidesteps the model-leak issue the Codex runtime doc describes. Shell and config examples use a `<codex-model>` placeholder that fails loudly if pasted.
+- **Seven prompt-audit findings** against the current Claude family. Generated prompts no longer tell the model to ask rather than assume; they say to make the careful choice, state it, and ask only when readings lead to materially different work. Assumptions go in the final summary, not TODO comments. The fixed ~2K / ~1K token caps are gone; the advice against pasted bulk stays. The research template checks facts that may have changed since training instead of starting from memory. "Think through each step" is gone. Tool descriptions drop worked examples and say when not to use the tool. The content template's banned-word list became one positive style line.
+- **Skill selection follows the request, not a keyword in it.** "Audit", "parallel" or a quoted log no longer select RePrompter, and neither do generic build phrases such as "vibe a game" or "build me a whole app"; they still route to Build once RePrompter is selected. Phrases that ask for RePrompter itself ("one-shot this", "tek promptla", "reverse reprompt", "smart run") still select it. The multi-agent cue now only chooses Single vs Repromptverse once the skill is already selected.
+- **Design loop: a verbatim "never" gained a second "never".** The build paragraph read "Build it, and never [hard negative]" while the slot holds the user's words, so "never touch the colour tokens" became "never never touch". Stagger timing, quartiles as the filmstrip minimum, and the slowed-down motion review now reach the pasted text. `validate:emitted-bodies` asserts all four. Found by an independent verification pass.
+
+### Fixed — ambient hooks default off
 
 - Claude Code plugin packages no longer auto-register `UserPromptSubmit` or `Stop`. The generated hook manifest is empty, so installing RePrompter adds zero hook-process latency to ordinary turns while `/reprompter:reprompter` remains packaged and unchanged.
 - `scripts/prompt-gate.js` and `scripts/stop-gate.js` now require exact `REPROMPTER_AMBIENT=1` and return before reading stdin when it is absent. This makes stale/manual hook registrations fail open immediately instead of waiting on the previous 3-second internal deadline or 10-second harness timeout.
@@ -12,7 +25,7 @@
 
 - Update or reinstall the Claude plugin to replace the old generated hook registrations with an empty manifest. Remove any manually copied ambient hook entries to eliminate their process-spawn overhead. Users who want ambient suggestions must add the documented hooks and `REPROMPTER_AMBIENT=1`; explicit `/reprompter:reprompter` use needs no migration.
 
-## v13.2.0 (2026-08-02) — The design loop
+## v13.2.0 (written 2026-08-02, first shipped in v13.3.0) — The design loop
 
 ### Added
 
