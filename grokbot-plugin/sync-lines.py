@@ -12,7 +12,10 @@ working tree, and applies only edits it can place without guessing:
 - New lines go after a root body line that has exactly one such copy outside
   frontmatter and code fences.
 
-Two edits aimed at one split line, and everything else, are UNPLACED. --apply is all or nothing: with any
+Two edits aimed at one split line, new text with a relative link or path that
+would need rewriting for the split, and everything else, are UNPLACED. Copies
+of root reference and script files are left to sync-copies.sh. After --apply
+the tool runs verify-split.sh and restores every file if it fails. --apply is all or nothing: with any
 UNPLACED edit it writes no file, leaves SPLIT-BASE alone and exits 1.
 
 usage: python3 grokbot-plugin/sync-lines.py [--apply]
@@ -30,7 +33,18 @@ if subprocess.run(["git", "cat-file", "-e", base_blob], capture_output=True).ret
     sys.exit(f"SPLIT-BASE blob {base_blob} is not in this clone. Fetch full history (git fetch --unshallow) and rerun.")
 old = subprocess.run(["git", "cat-file", "-p", base_blob], capture_output=True, text=True, check=True).stdout.split("\n")
 new = pathlib.Path("SKILL.md").read_text().split("\n")
-texts = {f: f.read_text().split("\n") for f in sorted(pathlib.Path("grokbot-plugin/skills").rglob("*.md"))}
+import re
+
+
+def owned_by_copies(f):
+    """A references/ or scripts/ file with a root counterpart belongs to sync-copies.sh."""
+    rel = pathlib.Path(*f.parts[3:])
+    return rel.parts[0] in ("references", "scripts") and rel.exists()
+
+
+texts = {f: f.read_text().split("\n") for f in sorted(pathlib.Path("grokbot-plugin/skills").rglob("*.md")) if not owned_by_copies(f)}
+originals = {f: f.read_text() for f in texts}
+RELATIVE_PATH = re.compile(r"\]\((?!https?:|mailto:|#)[^)]+\)|`(?:\.\./|references/)[^`]*`")
 apply = "--apply" in sys.argv
 root_body_start = [i for i, line in enumerate(old) if line == "---"][1] + 1
 
@@ -143,6 +157,11 @@ for (f, i, _), kinds in targets.items():
         unplaced.append(f"collision: {len(kinds)} edits target {f}:{i + 1}")
 
 for f, i, kind, payload in edits:
+    for line in [payload] if isinstance(payload, str) else (payload or []):
+        if RELATIVE_PATH.search(line):
+            unplaced.append(f"relative path needs rewriting for the split: {line[:80]!r}")
+
+for f, i, kind, payload in edits:
     shown = payload if isinstance(payload, str) else " | ".join(x[:60] for x in (payload or []) if x.strip())
     print(f"{kind.upper():6} {f}:{i + 1} {shown[:110]}")
 for u in unplaced:
@@ -164,6 +183,15 @@ if apply:
             else:
                 lines[i:i] = payload
         f.write_text("\n".join(lines))
+    base_file = pathlib.Path("grokbot-plugin/SPLIT-BASE")
+    previous_base = base_file.read_text()
     blob = subprocess.run(["git", "hash-object", "-w", "SKILL.md"], capture_output=True, text=True, check=True).stdout.strip()
-    pathlib.Path("grokbot-plugin/SPLIT-BASE").write_text(blob + "\n")
+    base_file.write_text(blob + "\n")
+    check = subprocess.run(["bash", "grokbot-plugin/verify-split.sh"], capture_output=True, text=True)
+    if check.returncode != 0:
+        for f, text in originals.items():
+            f.write_text(text)
+        base_file.write_text(previous_base)
+        summary = [l for l in check.stdout.splitlines() if l.startswith("SUMMARY")]
+        sys.exit(f"verify-split.sh failed after the sync, so every file was restored. {summary[0] if summary else ''}")
     print(f"SPLIT-BASE -> {blob}")
