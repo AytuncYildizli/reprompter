@@ -113,7 +113,7 @@ function deriveDomainFromProfile(profile) {
 function buildStaticModelPlan(options = {}) {
   const staticModel = options.staticModel || {
     provider: "anthropic",
-    model: "anthropic/sonnet",
+    model: "anthropic/claude-sonnet-5-5",
     maxContextK: 1000,
     capabilityTier: "static",
   };
@@ -347,7 +347,8 @@ function buildExecutionPlan(rawTask, options = {}) {
   const contextStart = Date.now();
   const contextPlan = featureFlags.layeredContext
     ? buildAgentContext(agentSpec, taskSpec, options.repoFacts || {}, {
-        totalTokens: options.totalContextTokens || 1400,
+        // 1% of the selected model's window, never below the old fixed 1400.
+        totalTokens: options.totalContextTokens || Math.max(1400, (modelPlan.selected.maxContextK || 0) * 10),
         layerBudgets: options.layerBudgets,
       })
     : buildMinimalContext(agentSpec, taskSpec);

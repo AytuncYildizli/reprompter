@@ -127,3 +127,12 @@ test("default model catalog stays populated", () => {
   assert.ok(Array.isArray(DEFAULT_MODEL_CATALOG));
   assert.ok(DEFAULT_MODEL_CATALOG.length >= 5);
 });
+
+test("a fallback that can hold the request comes before one that cannot", () => {
+  const needed = 1020000;
+  const plan = resolveModelForAgent({}, { task: "Summarize documents", contextTokens: needed });
+  const fits = (model) => model.maxContextK * 1000 >= needed;
+
+  assert.equal(fits(plan.selected), true);
+  assert.equal(fits(plan.fallbackChain[0]), true);
+});

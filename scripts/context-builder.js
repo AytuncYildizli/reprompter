@@ -138,16 +138,26 @@ function buildAgentContext(agentSpec = {}, taskSpec = {}, repoFacts = {}, budget
   const contract = buildContractLayer(agentSpec, taskSpec);
   const remainingBudget = Math.max(0, totalBudgetTokens - contract.usedTokens);
 
-  const secondaryBudgetTotal = split.repoFacts + split.references + split.priorArtifacts;
+  const codeFacts = repoFacts.codeFacts || repoFacts.projectFacts || [];
+  const references = repoFacts.references || [];
+  const priorArtifacts = repoFacts.priorArtifacts || [];
+
+  // An empty layer gets no share, so its budget goes to the layers that have entries.
+  const share = (entries, layerBudget) => (entries.length > 0 ? layerBudget : 0);
+  const repoFactShare = share(codeFacts, split.repoFacts);
+  const referencesShare = share(references, split.references);
+  const artifactsShare = share(priorArtifacts, split.priorArtifacts);
+
+  const secondaryBudgetTotal = repoFactShare + referencesShare + artifactsShare;
   const scale = secondaryBudgetTotal > 0 ? remainingBudget / secondaryBudgetTotal : 0;
 
-  const repoFactBudget = Math.floor(split.repoFacts * scale);
-  const referencesBudget = Math.floor(split.references * scale);
-  const artifactsBudget = Math.floor(split.priorArtifacts * scale);
+  const repoFactBudget = Math.floor(repoFactShare * scale);
+  const referencesBudget = Math.floor(referencesShare * scale);
+  const artifactsBudget = Math.floor(artifactsShare * scale);
 
-  const repoFactFit = fitEntriesToBudget(repoFacts.codeFacts || repoFacts.projectFacts || [], repoFactBudget);
-  const referenceFit = fitEntriesToBudget(repoFacts.references || [], referencesBudget);
-  const artifactFit = fitEntriesToBudget(repoFacts.priorArtifacts || [], artifactsBudget);
+  const repoFactFit = fitEntriesToBudget(codeFacts, repoFactBudget);
+  const referenceFit = fitEntriesToBudget(references, referencesBudget);
+  const artifactFit = fitEntriesToBudget(priorArtifacts, artifactsBudget);
 
   const sections = [contract.text];
 
