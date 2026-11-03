@@ -1,0 +1,269 @@
+# Grok CLI Runtime Contract
+
+Canonical reference for running Repromptverse on Grok CLI (xAI). Used by Phase 3 Option F (spawn_subagent in-session orchestration and shell-level `grok -p` parallelism).
+
+**Target:** Grok CLI 4.3+ (released April 2026 with stable `spawn_subagent`, `todo_write`, `ask_user_question`, headless `-p` mode, and sandbox profiles).
+
+---
+
+## ⚠️ Data egress: running Grok CLI inside your repo
+
+**Read before running Repromptverse on Grok CLI.** Options F1 (`spawn_subagent`) and F2
+(shell-level `grok -p`) run the Grok Build CLI **in the caller's project directory**. There are two
+distinct exposures (below). The consent gate governs the decision to run Grok here, but it **cannot
+undo egress that already happened**: it fires at Phase 3 auto-pick. For **F2** (`grok -p`) that is
+before the process launches, so consent is effective. For **F1** (`spawn_subagent`) the Grok session
+is already live in the repo by the time Option F is picked, so any session-start upload precedes
+consent — the only reliable protection for F1 is not to run Grok in a repo with private or sensitive
+code in the first place (see the F1 note below).
+
+**1. Historical whole-repo bundle — now off, but the reason the gate still exists.** Earlier shipped
+Grok Build versions, run inside a git repository, packaged the **entire tracked repo — full commit
+history and all tracked files, including a tracked `.env` — into a git bundle and uploaded it** to
+xAI-controlled Google Cloud Storage (bucket `grok-code-session-traces`, `POST /v1/storage`),
+independent of which files the workers read. Confirmed by xAI's own Grok account on X and by
+independent mitmproxy wire capture; it was **not** stopped by `--sandbox`, `--yolo`, a read-only
+profile, or `--disable-web-search`. xAI turned it off server-side on 2026-07-13 and, on 2026-07-15,
+open-sourced Grok Build (Apache-2.0); a source audit of the released code found the whole-repo bundle
+path **gone from source**. Two caveats keep this from being "fully resolved": the off-state is a
+reversible server flag xAI can flip back without notice, and the shipped binary cannot be verified
+against the open-sourced code (no reproducible build). Treat the bundle as *currently off but not
+guaranteed*.
+
+**2. Normal agentic model I/O — always true, today included.** Independent of the bundle,
+Repromptverse workers are agentic: they read, write, and run commands in the repo to do the task, and
+everything they touch goes to xAI as model context. This is inherent to running a cloud model in your
+repo and cannot be sandboxed away (`--sandbox strict` / tool-deny would stop the workers from doing
+their job). It applies on every Grok run regardless of the bundle's state. Full write-up, primary
+sources, and hardening: https://github.com/dorukardahan/headless-relay/blob/main/SECURITY.md
+
+**Required: warn once before Option F on a repo.** Before launching F1 or F2 while the working
+directory is inside a git repository, tell the user — once per session — that running Repromptverse
+on Grok CLI hands this repository's contents to xAI (and, on an older or unverified binary, could
+still bundle the whole repo + full history), and ask whether to proceed on Grok or route the run to
+another runtime. Proceed only on explicit consent. For private or sensitive code, prefer a different
+Repromptverse runtime (Option B / C / D on Claude / OpenClaw / Codex) or run Grok against a **non-git
+copy** of just the needed files, created **outside any git repository**. Removing a local `.git` is
+not enough if the copy is a subdirectory of the project: Git discovers the parent repo by walking up,
+so the working directory is still "inside a git repository". A `git clone`, worktree, or shallow
+checkout is likewise still a repository. Put the copy somewhere with no git ancestor (e.g. a fresh dir
+under `/tmp`) and verify before running Grok that `git -C <dir> rev-parse --is-inside-work-tree`
+returns non-zero. Note for F1: by the time Option F is auto-selected the Grok session is already
+running in the repo, so any session-start upload may have already happened — the only real mitigation
+there is to not run Grok in the repo in the first place.
+
+> The `Deliver via headless-relay` post-output step is unaffected: it delegates to the
+> headless-relay skill, which (v2.0.0+) runs Grok in an isolated non-git directory (fail-closed);
+> v3.0.0 additionally runs Grok under a hermetic `env -i` with a clean `HOME` and temp `GROK_HOME`
+> and its cross-tool config scan disabled, so your global `~/.grok` rules and machine files do not
+> leak into that delivery turn either.
+> Only the Repromptverse **execution** path (Option F, this file) runs Grok inside the repo.
+
+---
+
+## `/goal` preflight with RePrompter
+
+**Not supported on Grok CLI.**
+
+Grok CLI does not expose a native `/goal` slash command, thread-level persistent objective, or equivalent to Codex `features.goals` or Claude Code CLI v2.1.139+ `/goal`.
+
+Grok users must use:
+- **Single mode** (Smart Interview → structured prompt), or
+- **Repromptverse** (full team planning and execution via Option F)
+
+The generated prompt can then be fed to a subsequent `grok -p "..."` call or pasted into any other runtime.
+
+The Goal Command Card and `/goal <compressed summary>` compression flow are therefore disabled for Grok. The rest of the skill (Single, Repromptverse, Reverse) works identically.
+
+---
+
+## When to pick F1 (spawn_subagent) vs F2 (shell-level)
+
+| Situation | Pick |
+|-----------|------|
+| Agents share high-level context via `fork_context`; one synthesis output expected | F1 |
+| Need per-agent log files, model-compatible effort overrides, or named sessions (`-s`) | F2 |
+| Orchestrating from CI / headless script outside an interactive Grok session | F2 |
+| You want fresh context per worker without re-ingesting the full codebase | F1 |
+| Running under heavy sandbox (`read-only` or `strict`) and want isolated workers | F1 (with `capability_mode="read-only"`) |
+| Cross-agent messaging required mid-run | Neither — fall back to Option B (TeamCreate in Claude Code) or use parent-orchestrated file handoff |
+
+---
+
+## F1: Native subagents via `spawn_subagent` (in-session orchestration)
+
+### Prerequisites
+
+Subagents are enabled by default in Grok 4.3+.
+
+Optional configuration in `~/.grok/config.toml`:
+
+```toml
+[subagents]
+enabled = true
+default_model = "grok-build"
+max_depth = 2
+
+[subagents.toggle]
+explore = true
+plan = true
+
+[subagents.models]
+explore = "grok-build"   # lighter model for research workers
+```
+
+### Recommended invocation for Repromptverse roles
+
+Use the `spawn_subagent` tool (documented as `task` tool in the user guide) with these parameters:
+
+```text
+spawn_subagent(
+  description="Repromptverse {role} worker for {taskname}",
+  subagent_type="general-purpose",     # or "explore" / "plan"
+  persona="implementer",               # or "researcher", "reviewer", custom
+  fork_context=true,                   # Gives the worker the original user prompt + interviewContext
+  capability_mode="execute",           # or "read-write" / "read-only"
+  prompt="You are the {role} agent on the rpt-{taskname} team.
+
+[PASTE THE FULL PHASE-2 REPROMTED XML PROMPT HERE]
+
+Write your complete findings to the exact file /tmp/rpt-{taskname}-{role}.md
+Use file:line citations for every claim.
+Do not speculate. Finish by going idle after writing the artifact."
+)
+```
+
+**Why these parameters:**
+- `fork_context=true` — the subagent receives a copy of the parent's conversation history (the original rough prompt, Smart/Dimension Interview answers, team plan, etc.) without the orchestrator having to repeat everything in the prompt.
+- `persona` — shapes tone and output style (implementer is pragmatic, researcher is thorough).
+- `capability_mode` — restricts the worker (read-only for pure analysis agents is safest).
+
+### Concurrency
+
+Grok manages subagent concurrency via the TUI (Tasks pane with Ctrl+T) and config. Keep fan-out reasonable (4–6 agents) to avoid context and rate-limit pressure. Each subagent has an independent context window.
+
+### Depth
+
+Default depth limit prevents runaway nesting. Repromptverse orchestrators should stay at depth 1 (orchestrator spawns workers, workers do not spawn further subagents unless explicitly needed).
+
+### Status Line during F1
+
+The orchestrator uses `todo_write` for its own tracking + periodically runs `list_dir` or `run_command` with `ls /tmp/rpt-{taskname}-*.md` (excluding `.prompt.md` and `.stdout` files) to build the compact status line:
+
+```
+Agents: ✅ 3/5  ⏳ 1/5  🔄 1/5 (retry 1)
+```
+
+### Retries
+
+Re-spawn only the failing agent with a delta prompt (Phase 4 of Repromptverse). Do not re-spawn the whole fleet.
+
+### Known gotchas (Grok 4.3 as of May 2026)
+
+- Subagents are fully independent sessions. There is no built-in `SendMessage` equivalent between them mid-run. All coordination must go through the parent orchestrator or shared artifact files in `/tmp`.
+- `fork_context` copies history at spawn time. Later parent context is not automatically visible to already-running subagents.
+- Sandbox profiles are inherited by subagents. If the parent was started with `--sandbox read-only`, workers cannot write `/tmp/rpt-*.md` unless the profile explicitly allows `/tmp`.
+- `--effort` / `--reasoning-effort` are headless-only and model-dependent. Do not pass them to the default `grok-build` model unless you have verified support, because unsupported models reject the request before any worker starts.
+- Tool allow-listing via `--tools` / `--disallowed-tools` in headless mode also affects subagent spawning (`Agent(explore)` syntax).
+- `todo_write` calls made by a subagent are local to that subagent's session and not automatically visible in the parent's Tasks pane.
+- When using custom personas or roles, the definition must exist in `~/.grok/personas/*.toml` or `~/.grok/roles/*.toml`, otherwise spawn fails (fail-closed).
+
+---
+
+## F2: Shell-level `grok -p` (external orchestration)
+
+### Invocation (recommended pattern)
+
+> Reminder: this runs `grok` inside your repo, so its contents go to xAI as model context (and, on an
+> older or unverified binary, the whole repo + git history could still be bundled — see "Data egress"
+> above). Warn the user once and get consent before running it on a real repo.
+
+```bash
+TASKNAME="audit-2026-05"
+MODEL="grok-build"
+AGENTS=(researcher implementer reviewer)
+
+for role in "${AGENTS[@]}"; do
+  grok -p "
+You are the ${role} agent on the rpt-${TASKNAME} team.
+
+[PASTE THE FULL PHASE-2 REPROMTED XML PROMPT FOR THIS ROLE]
+
+Write your complete findings to the exact file /tmp/rpt-${TASKNAME}-${role}.md.
+Use file:line citations. Do not speculate.
+" \
+    --yolo \
+    --sandbox workspace \
+    --model "$MODEL" \
+    --output-format json \
+    > "/tmp/rpt-${TASKNAME}-${role}.stdout" 2>&1 &
+done
+
+wait   # blocks until all backgrounded grok -p sessions finish
+```
+
+### Artifact contract (identical to all other runtimes)
+
+- Path: `/tmp/rpt-{taskname}-{agent-role}.md`
+- One writer per file.
+- The orchestrator (or external script) must verify the artifact exists after `wait` returns.
+- Exclude any `.prompt.md` or `.stdout` files when counting completed agents.
+
+### Status Line (same logic as Codex D2)
+
+```bash
+done=0
+for f in /tmp/rpt-${TASKNAME}-*.md; do
+  [ -e "$f" ] || continue
+  case "$f" in *.prompt.md|*.stdout) continue ;; esac
+  done=$((done + 1))
+done
+echo "Agents: ✅ $done/${#AGENTS[@]}  ⏳ $((${#AGENTS[@]} - done))/${#AGENTS[@]}"
+```
+
+### Retries & failure handling
+
+Re-run only the failing agent's `grok -p` command with a delta prompt. Inspect its `.stdout` for the error.
+
+If `wait` hangs, `kill` the specific PID and retry that agent.
+
+### Concurrency cap
+
+Default to 4 or `sysctl -n hw.ncpu` (macOS) / `nproc` (Linux), whichever is lower. More than 4–5 concurrent Grok sessions against the same account can hit rate limits.
+
+Use a FIFO semaphore exactly like the Codex D2 example in `codex-runtime.md` when you need a hard cap.
+
+---
+
+## What Grok CLI does NOT provide (as of 4.3)
+
+- Native `TeamCreate` / `SendMessage` / `TeamDelete` team abstraction with cross-agent messaging inside a single session (use `spawn_subagent` + shared `/tmp` files + parent orchestration instead).
+- A `/goal` slash command or persistent thread objective.
+- A built-in `TaskList` that is automatically shared across `spawn_subagent` workers (derive status from artifact files or `todo_write` in the orchestrator only).
+- Full hook matcher aliases for every Claude-style tool name (only `Bash`, `Read`, `Edit`, `Write`, `Grep` have automatic mapping; advanced names like `TeamCreate`, `Agent`, `SendMessage` require explicit translation in the Grok-specific instructions).
+- Automatic cross-subagent communication primitives (subagents are independent sessions).
+
+When any of the above are required, fall back to Option B (TeamCreate in Claude Code) or Option E (sequential).
+
+---
+
+## Sources
+
+All accessed 2026-05-15:
+
+- `~/.grok/docs/user-guide/08-skills.md`
+- `~/.grok/docs/user-guide/04-slash-commands.md`
+- `~/.grok/docs/user-guide/15-subagents.md`
+- `~/.grok/docs/user-guide/13-headless-mode.md`
+- `~/.grok/docs/user-guide/10-hooks.md`
+- `~/.grok/docs/user-guide/17-sandbox.md`
+- Phase 1 Architecture Design Doc (`/tmp/grok-cli-support-design.md`)
+- Live Grok 4.3 tool surface and config system (April 2026 release)
+
+---
+
+**End of Grok CLI Runtime Contract**
+
+This document is additive. It does not modify any behavior for users on Claude Code, Codex CLI, or OpenClaw.
+
+**Auto-selection:** The central "Runtime auto-pick" decision tree in SKILL.md (Phase 3 Execute lane) now includes an explicit Order-1 check for the Grok tool surface. When `spawn_subagent` is present together with at least two of `run_command`, `todo_write`, `ask_user_question` in the current toolset, Repromptverse **automatically routes to Option F** (this contract) without any manual instruction. You only need to read this file the first time you see the Grok Support section activate in a Repromptverse run.

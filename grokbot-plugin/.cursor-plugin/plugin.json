@@ -1,0 +1,32 @@
+{
+  "name": "reprompter",
+  "displayName": "RePrompter",
+  "version": "13.1.0",
+  "description": "Prompt engineering skills: improve a rough prompt into a scored spec prompt, one-shot a whole app/game/site, run Repromptverse agent teams, reverse-engineer prompt DNA, and emit /goal commands or Workflow scripts.",
+  "author": {
+    "name": "Aytunc Yildizli"
+  },
+  "homepage": "https://github.com/AytuncYildizli/reprompter",
+  "repository": "https://github.com/AytuncYildizli/reprompter",
+  "license": "MIT",
+  "keywords": [
+    "prompt-engineering",
+    "reprompt",
+    "prompt",
+    "one-shot",
+    "multi-agent",
+    "agent-teams",
+    "repromptverse",
+    "goal",
+    "workflow"
+  ],
+  "category": "productivity",
+  "tags": [
+    "prompts",
+    "prompt-engineering",
+    "agents",
+    "orchestration",
+    "quality"
+  ],
+  "skills": "./skills/"
+}
