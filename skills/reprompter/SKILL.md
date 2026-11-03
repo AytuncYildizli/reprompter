@@ -2,7 +2,7 @@
 name: reprompter
 description: |
   Two intents: Improve ("reprompt this") emits a scored spec prompt; Build ("one-shot this") emits a build prompt for a whole app/game/site.
-  Use when: explicit "reprompt" or "clean up this prompt", "before /goal", prompt extraction, or a named Reprompter build/team/workflow request such as "repromptverse", "reprompter teams", "one-shot this", swarm, or workflow preflight. Quoted keywords and ordinary audit, review, research, multi-agent, or parallel implementation requests do not select it.
+  Use when: explicit "reprompt" or "clean up this prompt", "before /goal", prompt extraction ("reverse reprompt", "prompt dna", "extract prompt from"), or a named Reprompter request such as "repromptverse", "reprompter teams", "smart run", "run with quality", "one-shot this", "one-shot a X", "tek promptla", "compile to workflow", swarm, or workflow preflight. Quoted keywords and ordinary audit, review, research, multi-agent, or parallel implementation requests do not select it.
   Don't use for simple Q&A, casual chat, or execution-only tasks.
   Outputs: structured XML/Markdown prompt + before/after score; /goal command card (Codex/Claude Code/Hermes); optional team brief + per-agent prompts + Agent Cards; Reverse Extraction Card; Workflow Command Card + runnable .workflow.js (Workflow preflight lane / Option H).
   Target score: spec >= 7/10; per-agent >= 8/10.
@@ -19,7 +19,7 @@ metadata:
 
 # RePrompter v13.3.0
 
-> **Your prompt sucks. Let's fix that.** Two intents — improve my prompt, or build this whole thing — with `/goal`, Workflow, team execution and cross-model delivery as places the result can go. **v13 (RePrompter v2) restructures six lanes into two intents: a specifiability router picks spec-XML or an autonomous build prompt inside Improve, and Build can run as one prompt or split across a team. Every v12 trigger keeps working.**
+> **Your prompt sucks. Let's fix that.** Two intents — improve my prompt, or build this whole thing — with `/goal`, Workflow, team execution and cross-model delivery as places the result can go. **v13 (RePrompter v2) restructures six lanes into two intents: a specifiability router picks spec-XML or an autonomous build prompt inside Improve, and Build can run as one prompt or split across a team. Every v12 trigger that asks for RePrompter keeps working; generic build phrases such as "vibe a game" route to Build once RePrompter is selected but no longer select it on their own.**
 
 ---
 

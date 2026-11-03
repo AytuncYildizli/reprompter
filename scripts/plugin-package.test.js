@@ -76,6 +76,9 @@ test("skill discovery stays explicit while preserving supported Reprompter entry
     assert.match(skill, /Use when:.*"before \/goal"/);
     assert.match(skill, /Use when:.*"reprompter teams"/);
     assert.match(skill, /Use when:.*"one-shot this"/);
+    for (const phrase of ["one-shot a X", "tek promptla", "reverse reprompt", "prompt dna", "extract prompt from", "smart run", "run with quality", "compile to workflow"]) {
+      assert.ok(skill.split("\n").some((line) => line.includes("Use when:") && line.includes(`"${phrase}"`)), `description names "${phrase}"`);
+    }
     assert.doesNotMatch(skill, /multi-agent tasks, audits/);
     assert.doesNotMatch(skill, /Auto-detection: if task mentions 2\+ systems, "audit", or "parallel"/);
     assert.match(skill, /Only inside an already-selected RePrompter workflow:/);
