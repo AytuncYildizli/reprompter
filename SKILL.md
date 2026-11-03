@@ -1084,7 +1084,7 @@ Define each repromptverse role once as `~/.codex/agents/<name>.toml`:
 ```toml
 name = "rpt_audit_explorer"
 description = "Read-only exploration for Repromptverse audit fan-out."
-model = "gpt-5.4"
+# model = "<codex-model>"  # optional; when omitted the role inherits your configured default
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """
@@ -1131,7 +1131,7 @@ ls /tmp/rpt-{taskname}-*.prompt.md
 #    after `wait`).
 #    `--ephemeral` skips on-disk session state; recommended for
 #    isolated parallel runs (historical reference: closed issue #11435).
-MODEL="gpt-5.4"
+MODEL="<codex-model>"  # any model your Codex account serves
 for agent in planner critic synthesizer; do
   codex exec \
     --model "$MODEL" \
@@ -1624,16 +1624,16 @@ For both modes, RePrompter supports post-execution evaluation:
 
 ## Advanced features
 
-### Reasoning-friendly prompting (Claude 4.x)
+### Reasoning-friendly prompting
 Prompts should be less prescriptive about HOW. Focus on WHAT — clear task, requirements, constraints, success criteria. Let the model's own reasoning handle execution strategy.
 
 **Example:** Instead of "Step 1: read the file, Step 2: extract the function" → "Extract the authentication logic from auth.ts into a reusable middleware. Requirements: ..."
 
-### Response prefilling (API only)
-Prefill assistant response start to enforce format:
-- `{` → forces JSON output
-- `## Analysis` → skips preamble, starts with content
-- `| Column |` → forces table format
+### Output format control (API)
+Never end a request with a partial assistant turn to force a format. Current Claude models (4.6 and later) reject that prefill with HTTP 400.
+- JSON: use structured outputs (`output_config.format` with a JSON schema) when the caller owns the API request. Otherwise put the schema in the prompt and ask for JSON only.
+- Fixed opening or no preamble: say it in the system prompt ("Start with the `## Analysis` heading. No preamble.").
+- Tables: name the columns in the prompt.
 
 ### Context engineering
 Generated prompts should COMPLEMENT runtime context (CLAUDE.md, skills, MCP tools), not duplicate it. Before generating:
@@ -1878,7 +1878,7 @@ Install the skill under `~/.codex/skills/reprompter/` (same structure as `~/.cla
 
 ```toml
 # ~/.codex/config.toml
-model = "gpt-5.4"          # default model for agent runs
+model = "<codex-model>"    # default model for agent runs
 approval_policy = "never"  # for interactive Codex TUI only; `codex exec` already defaults to never in headless
 
 [features]

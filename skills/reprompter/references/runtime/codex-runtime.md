@@ -97,7 +97,7 @@ job_max_runtime_seconds = 1800
 # Codex agents directory/rpt_audit_explorer.toml
 name = "rpt_audit_explorer"
 description = "Read-only exploration for Repromptverse audit fan-out."
-model = "gpt-5.4"
+# model = "<codex-model>"  # optional; when omitted the role inherits your configured default
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """
@@ -177,7 +177,7 @@ codex exec \
 #!/usr/bin/env bash
 set -euo pipefail
 
-MODEL="gpt-5.4"
+MODEL="<codex-model>"  # any model your Codex account serves
 TASKNAME="audit-2026-04"
 AGENTS=(methodology code stats narrative attack-surface claims)
 

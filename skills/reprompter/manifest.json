@@ -10,15 +10,15 @@
   },
   "source": {
     "root_skill": "SKILL.md",
-    "root_skill_sha256": "2a1071121e0af1f35ad11c023149e5bbada06a137fd446348c9f08e66f5f7340",
+    "root_skill_sha256": "2e5ea0a16a6df39fede197977db74fb626cf5a9cbafaa8e09bdf9d928279e5ea",
     "sanitizer": "scripts/hermes-sanitizer.json",
     "sanitizer_sha256": "c46cf3fa0f7333745443b61eadbabe41e52014243b8213ffb328d9d609e4a297"
   },
   "files": [
     {
       "path": "SKILL.md",
-      "source_sha256": "2a1071121e0af1f35ad11c023149e5bbada06a137fd446348c9f08e66f5f7340",
-      "generated_sha256": "acfd82c5d4a2da72659cbc8aba74c48f157d2fc7765943da3a23c31d90afceff"
+      "source_sha256": "2e5ea0a16a6df39fede197977db74fb626cf5a9cbafaa8e09bdf9d928279e5ea",
+      "generated_sha256": "b6e5b2b56e6d5d05b624078c48e6b12d9c8c05a3f12d864fc3fd6b4ee0ca45e2"
     },
     {
       "path": "references/api-template.md",
@@ -117,8 +117,8 @@
     },
     {
       "path": "references/runtime/codex-runtime.md",
-      "source_sha256": "3b58d603cf5ec423b60e55e7d5f09a8cfb33925732430043abe1f8bb3de90b8a",
-      "generated_sha256": "611375279224ee7364bd575f3d7fa8f718bbe2bd387df370da9b5843bdc6b55f"
+      "source_sha256": "848a002514351aa529a2ab37b342dd5fd77605af67a677623881a30cab34c4e2",
+      "generated_sha256": "86559bc429a9d33d0fe6ce1c0b99dbc3052fa362927a12bf0669a30ded4456e1"
     },
     {
       "path": "references/runtime/context-layers.md",
