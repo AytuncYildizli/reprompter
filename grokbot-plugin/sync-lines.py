@@ -5,13 +5,14 @@ Diffs root SKILL.md between the blob in grokbot-plugin/SPLIT-BASE and the
 working tree, and applies only edits it can place without guessing:
 
 - A changed or deleted line is edited where the split holds a copy whose
-  nearest non-blank neighbours match the root's. The split repeats some lines
+  nearest non-blank neighbours match the root's, and only if root itself
+  has that line with those neighbours once. The split repeats some lines
   (headings in several mode skills, a fenced copy of the frontmatter), so a
   bare text match is not enough.
 - New lines go after a root body line that has exactly one such copy outside
   frontmatter and code fences.
 
-Everything else is printed as UNPLACED. --apply is all or nothing: with any
+Two edits aimed at one split line, and everything else, are UNPLACED. --apply is all or nothing: with any
 UNPLACED edit it writes no file, leaves SPLIT-BASE alone and exits 1.
 
 usage: python3 grokbot-plugin/sync-lines.py [--apply]
@@ -61,9 +62,24 @@ def neighbour(lines, i, step):
     return None
 
 
+def context(lines, i):
+    return lines[i], neighbour(lines, i, -1), neighbour(lines, i, 1)
+
+
+root_contexts = {}
+for _k in range(len(old)):
+    root_contexts.setdefault(context(old, _k), []).append(_k)
+
+
 def copies_of(k):
-    """Split copies of root line k whose nearest non-blank neighbours match the root's."""
-    line, before, after = old[k], neighbour(old, k, -1), neighbour(old, k, 1)
+    """Split copies of root line k whose nearest non-blank neighbours match the root's.
+
+    Empty when root itself repeats that line with the same neighbours, because
+    then no split copy can be tied to this occurrence.
+    """
+    if len(root_contexts[context(old, k)]) > 1:
+        return []
+    line, before, after = context(old, k)
     return [
         (f, i)
         for f, lines in texts.items()
@@ -118,6 +134,13 @@ for op, i1, i2, j1, j2 in difflib.SequenceMatcher(None, old, new, autojunk=False
         unplaced.append("insert: " + " | ".join(x[:60] for x in news if x.strip()))
         continue
     edits.append((slot[0], slot[1], "insert", news))
+
+targets = {}
+for f, i, kind, _ in edits:
+    targets.setdefault((f, i, kind == "insert"), []).append(kind)
+for (f, i, _), kinds in targets.items():
+    if len(kinds) > 1:
+        unplaced.append(f"collision: {len(kinds)} edits target {f}:{i + 1}")
 
 for f, i, kind, payload in edits:
     shown = payload if isinstance(payload, str) else " | ".join(x[:60] for x in (payload or []) if x.strip())
