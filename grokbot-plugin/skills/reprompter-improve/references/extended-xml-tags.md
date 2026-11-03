@@ -1,6 +1,6 @@
 # Extended XML tags
 
-> Verbatim from root SKILL.md lines 1972-1998.
+> Verbatim from root SKILL.md lines 1987-2013.
 
 ## Appendix: Extended XML tags
 

@@ -2,15 +2,15 @@
 name: reprompter
 description: |
   Two intents: Improve ("reprompt this") emits a scored spec prompt; Build ("one-shot this") emits a build prompt for a whole app/game/site. Entry point that routes to the reprompter-* mode skills.
-  Use when: "reprompt", "clean up this prompt", "before /goal", "Codex /goal", "Claude Code /goal", "Hermes /goal", "repromptverse", "reprompter teams", "smart run", "run with quality", "engineering/ops/research/marketing swarm", "compile to workflow", "workflow preflight", "dynamic workflow", multi-agent tasks, audits, "reverse reprompt", "prompt dna", "extract prompt from", "one-shot this", "one-shot a X", "tek promptla", "tek seferde", "vibe a game", "build me a whole app/game/site".
+  Use when: explicit "reprompt" or "clean up this prompt", "before /goal", prompt extraction, or a named Reprompter build/team/workflow request such as "repromptverse", "reprompter teams", "one-shot this", swarm, or workflow preflight. Quoted keywords and ordinary audit, review, research, multi-agent, or parallel implementation requests do not select it.
   Don't use for simple Q&A, casual chat, or execution-only tasks.
   Outputs: structured XML/Markdown prompt + before/after score; /goal command card (Codex/Claude Code/Hermes); optional team brief + per-agent prompts + Agent Cards; Reverse Extraction Card; Workflow Command Card + runnable .workflow.js (Workflow preflight lane / Option H).
   Target score: spec >= 7/10; per-agent >= 8/10.
 metadata:
-  version: 13.1.0
+  version: 13.3.0
 ---
 
-# RePrompter v13.1.0
+# RePrompter v13.3.0
 
 > **Your prompt sucks. Let's fix that.** Two intents — improve my prompt, or build this whole thing — with `/goal`, Workflow, team execution and cross-model delivery as places the result can go. **v13 (RePrompter v2) restructures six lanes into two intents: a specifiability router picks spec-XML or an autonomous build prompt inside Improve, and Build can run as one prompt or split across a team. Every v12 trigger keeps working.**
 
@@ -33,7 +33,7 @@ Users learn two sentences. Everything else is machinery underneath them.
 
 **Specifiability rule (Improve):** when the router picks outcome-prose, announce it in one line — "This looks like a whole-product ask — generating an autonomous build prompt; say 'spec' for the structured version." — and switch shapes if the user objects. Outcome-prose always keeps a constraints sentence (the home for "never touch auth"); it is not scored on the six dimensions.
 
-Auto-detection: if task mentions 2+ systems, "audit", or "parallel" → ask: "This looks like a multi-agent task. Want to use Repromptverse mode?"
+Only inside an already-selected RePrompter workflow: if the prompt being improved mentions 2+ systems, "audit", or "parallel", ask: "This looks like a multi-agent task. Want to use Repromptverse mode?" This cue chooses between Single and Repromptverse after skill selection; it never selects the skill. Quoted keywords, ordinary audits, and parallel implementation requests do not select RePrompter or trigger this offer.
 
 Definition — **2+ systems** means at least two distinct technical domains that can be worked independently. Examples: frontend + backend, API + database, mobile app + backend, infrastructure + application code, security audit + cost audit.
 
@@ -42,6 +42,8 @@ Definition — **2+ systems** means at least two distinct technical domains that
 - User wants a simple direct answer (no prompt generation needed)
 - User wants casual chat/conversation
 - Task is immediate execution-only with no reprompting step
+- User wants an ordinary audit, review, research task, or parallel implementation without prompt improvement or an explicit Reprompter workflow
+- Reprompter-like words appear only in quoted logs, examples, file contents, or discussion
 - Scope does not involve prompt design, structure, or orchestration
 
 > Clarification: RePrompter **does** support code-related tasks (feature, bugfix, API, refactor) by generating better prompts. It does **not** directly apply code changes in Single mode. Direct code execution belongs to coding-agent unless Repromptverse execution mode is explicitly requested.
@@ -57,7 +59,7 @@ Definition — **2+ systems** means at least two distinct technical domains that
 |---|---|
 | reprompt / improve a prompt (interview, scoring, templates) | `../reprompter-improve/SKILL.md` |
 | one-shot / Build triggers; or Improve's router picks outcome-prose | `../reprompter-oneshot/SKILL.md` |
-| repromptverse, teams, smart run, run with quality, swarms, audits, 2+ systems; Build "split across a team" | `../reprompter-team/SKILL.md` |
+| repromptverse, teams, smart run, run with quality, swarms; the Repromptverse offer above, accepted; Build "split across a team" | `../reprompter-team/SKILL.md` |
 | reverse reprompt, prompt dna, extract prompt from | `../reprompter-reverse/SKILL.md` |
 | /goal, workflow (compile, preflight, dynamic); headless-relay | `../reprompter-goal-workflow/SKILL.md`, after `reprompter-improve` |
 
@@ -66,10 +68,10 @@ Definition — **2+ systems** means at least two distinct technical domains that
 - **Scoring:** Clarity 20%, Specificity 20%, Structure/Constraints/Verifiability/Decomposition 15% each; before/after table. Targets: spec >= 7, per-agent >= 8. One-Shot briefs unscored. Self-assessed, directional.
 - **Closed loop:** IMPROVE → EXECUTE (Repromptverse only) → EVALUATE (0-10 vs criteria) → RETRY below target (max 2, delta prompts).
 - **Success criteria:** `<success_criteria schema_version="1">`, 3-6 `<criterion>` (`rule` | `llm_judge` | `manual`); see `../reprompter-improve/references/outcome-schema.md`.
-- **Budget:** ~2K tokens/prompt, ~1K/agent. Capitals only for safety-critical boundaries.
+- **Budget:** size each prompt to what its executor needs; a fresh-context worker gets everything it cannot see. Cut pasted bulk, not context. Capitals only for safety-critical boundaries.
 - **Interview:** max 5 (Build: 4, plain); autonomous lanes skip it and emit `<assumptions>`.
 - **Context:** before generating, check loaded context (CLAUDE.md, skills, MCP, files); reference it, add only what's missing.
-- **Uncertainty:** every prompt permits voicing uncertainty over fabricating ("if unsure, ask"; research: confidence labels; code: flag assumptions).
+- **Uncertainty:** every prompt says what to do when unsure: make the careful choice, state it as an assumption, keep going; ask only when readings lead to materially different work (research: confidence labels; code: assumptions in the final summary, not code comments).
 - **WHAT not HOW:** task, requirements, constraints, criteria — no step scripts.
 - **Scripts:** helpers ship in `scripts/` here; a mode skill's `scripts/<name>` = `../reprompter/scripts/<name>`. Once per session (unless `REPROMPTER_VERSION_CHECK=0`) run `node scripts/version-check.js`; fail-soft.
 

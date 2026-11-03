@@ -12,7 +12,7 @@ description: |
 > Mode skill of the `reprompter` plugin. Entry/routing: `../reprompter/SKILL.md`. Output formats beyond paste (`/goal` card, `.workflow.js`, headless-relay delivery): `../reprompter-goal-workflow/SKILL.md`. Whole-product builds: `../reprompter-oneshot/SKILL.md`. Multi-agent: `../reprompter-team/SKILL.md`. `scripts/<name>` paths resolve to the bundled `../reprompter/scripts/<name>` (e.g. `../reprompter/scripts/outcome-record.js`).
 >
 > **Required reading:** `../reprompter/references/advanced-features.md` (context engineering, uncertainty handling, token budget, Flywheel, pattern library). The always-on rules in `../reprompter/SKILL.md` → "Core shared rules" (context check, uncertainty permission, WHAT not HOW) apply to every generated prompt.
-> Every template named below lives in `references/` next to this file. Content below is verbatim from root SKILL.md (lines 358-591, 1560-1606) except where marked _Moved_.
+> Every template named below lives in `references/` next to this file. Content below is verbatim from root SKILL.md (lines 360-594, 1574-1620) except where marked _Moved_.
 
 ## Intent: Improve (Single prompt)
 
@@ -62,7 +62,7 @@ After interview completes, immediately:
 Ask via `AskUserQuestion`. **Max 5 questions total.**
 
 **Standard questions** (priority order — drop lower ones if task-specific questions are needed):
-1. Task type: Build Feature / Fix Bug / Refactor / Write Tests / API Work / UI / Security / Docs / Content / Research / Multi-Agent
+1. Task type: Build Feature / Fix Bug / Refactor / Write Tests / API Work / UI / Design loop / Security / Docs / Content / Research / Multi-Agent
    - If user selects **Multi-Agent** while currently in **Single mode**, immediately transition to **Repromptverse Phase 1 (Team Plan)** and confirm team execution mode (Parallel vs Sequential).
 2. Execution mode: Single Agent / Team (Parallel) / Team (Sequential) / Let RePrompter decide
 3. Motivation: User-facing / Internal tooling / Bug fix / Exploration / Skip *(drop first if space needed)*
@@ -138,7 +138,8 @@ Detect task type from input. Each type has a dedicated template in `references/`
 | Refactor | `refactor-template.md` | Structural cleanup |
 | Testing | `testing-template.md` | Test writing |
 | API | `api-template.md` | Endpoint/API work |
-| UI | `ui-template.md` | UI components |
+| UI | `ui-template.md` | UI components (built to a spec) |
+| Design loop | `design-loop-template.md` | how a page **looks**: direction, screenshot critique, fix loop |
 | Security | `security-template.md` | Security audit/hardening |
 | Docs | `docs-template.md` | Documentation |
 | Content | `content-template.md` | Blog posts, articles, marketing copy |
@@ -153,7 +154,7 @@ Detect task type from input. Each type has a dedicated template in `references/`
 | Reverse | `reverse-template.md` | Reverse-engineered prompt from exemplar output |
 | Team Brief | `team-brief-template.md` | Team orchestration brief |
 
-**Priority** (most specific wins): marketing-swarm > engineering-swarm > ops-swarm > research-swarm > repromptverse > api > security > ui > testing > bugfix > refactor > content > docs > research > feature. For multi-agent tasks, use the best-fit swarm template + `repromptverse-template` + `team-brief-template`, then type-specific templates for each agent sub-prompt.
+**Priority** (most specific wins): marketing-swarm > engineering-swarm > ops-swarm > research-swarm > repromptverse > api > security > design-loop > ui > testing > bugfix > refactor > content > docs > research > feature. Design-loop beats ui because the two answer different questions: reach for `design-loop-template.md` when the ask is about how a whole page **looks** ("redesign our landing page", "this looks like AI slop", "make the marketing site not templated"), and for `ui-template.md` when the ask is a component built to a spec (props, variants, states). A bounded change inside an existing visual direction is still spec-XML, not the design loop. For multi-agent tasks, use the best-fit swarm template + `repromptverse-template` + `team-brief-template`, then type-specific templates for each agent sub-prompt.
 
 **How it works:** Read the matching template from `references/{type}-template.md`, then fill it with task-specific context. Templates are NOT loaded into context by default — only read on demand when generating a prompt. If the template file is not found, fall back to the Base XML Structure below.
 

@@ -113,16 +113,16 @@ function deriveDomainFromProfile(profile) {
 function buildStaticModelPlan(options = {}) {
   const staticModel = options.staticModel || {
     provider: "anthropic",
-    model: "anthropic/claude-sonnet-4",
-    maxContextK: 200,
+    model: "anthropic/sonnet",
+    maxContextK: 1000,
     capabilityTier: "static",
   };
 
   const fallbackChain = Array.isArray(options.staticFallbackChain)
     ? options.staticFallbackChain
     : [
-        { provider: "openai", model: "openai/gpt-5-mini", maxContextK: 200 },
-        { provider: "google", model: "google/gemini-2.5-flash", maxContextK: 1000 },
+        { provider: "openai", model: "openai/gpt-6-luna", maxContextK: 1050 },
+        { provider: "google", model: "google/gemini-3.8-flash", maxContextK: 1000 },
       ];
 
   return {

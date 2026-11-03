@@ -3,9 +3,9 @@
 
 const DEFAULT_MODEL_CATALOG = [
   {
-    id: "anthropic/claude-opus-4",
+    id: "anthropic/opus",
     provider: "anthropic",
-    maxContextK: 200,
+    maxContextK: 1000,
     metrics: {
       reasoning: 10,
       reliability: 10,
@@ -16,9 +16,9 @@ const DEFAULT_MODEL_CATALOG = [
     },
   },
   {
-    id: "anthropic/claude-sonnet-4",
+    id: "anthropic/sonnet",
     provider: "anthropic",
-    maxContextK: 200,
+    maxContextK: 1000,
     metrics: {
       reasoning: 8,
       reliability: 8,
@@ -29,9 +29,9 @@ const DEFAULT_MODEL_CATALOG = [
     },
   },
   {
-    id: "openai/gpt-5",
+    id: "openai/gpt-6-astra",
     provider: "openai",
-    maxContextK: 200,
+    maxContextK: 1050,
     metrics: {
       reasoning: 9,
       reliability: 9,
@@ -42,9 +42,9 @@ const DEFAULT_MODEL_CATALOG = [
     },
   },
   {
-    id: "openai/gpt-5-mini",
+    id: "openai/gpt-6-luna",
     provider: "openai",
-    maxContextK: 200,
+    maxContextK: 1050,
     metrics: {
       reasoning: 7,
       reliability: 7,
@@ -55,7 +55,7 @@ const DEFAULT_MODEL_CATALOG = [
     },
   },
   {
-    id: "google/gemini-2.5-pro",
+    id: "google/gemini-4-argon",
     provider: "google",
     maxContextK: 1000,
     metrics: {
@@ -68,7 +68,7 @@ const DEFAULT_MODEL_CATALOG = [
     },
   },
   {
-    id: "google/gemini-2.5-flash",
+    id: "google/gemini-3.8-flash",
     provider: "google",
     maxContextK: 1000,
     metrics: {

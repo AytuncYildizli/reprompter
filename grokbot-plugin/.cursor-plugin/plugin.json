@@ -1,7 +1,7 @@
 {
   "name": "reprompter",
   "displayName": "RePrompter",
-  "version": "13.1.0",
+  "version": "13.3.0",
   "description": "Prompt engineering skills: improve a rough prompt into a scored spec prompt, one-shot a whole app/game/site, run Repromptverse agent teams, reverse-engineer prompt DNA, and emit /goal commands or Workflow scripts.",
   "author": {
     "name": "Aytunc Yildizli"

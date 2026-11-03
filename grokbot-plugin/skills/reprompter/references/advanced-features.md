@@ -1,19 +1,19 @@
 # Advanced features (shared)
 
-> Verbatim from root SKILL.md lines 1608-1754. Shared by every RePrompter mode skill and **required reading** for each of them; the always-on rules (context engineering, uncertainty handling, reasoning-friendly WHAT-not-HOW, token budget) are summarized in `../SKILL.md` → "Core shared rules". The `scripts/` helpers named here are bundled in `../scripts/` (`<skill-dir>` below is this plugin's `skills/reprompter`); `npm run` commands need the full RePrompter repo checkout.
+> Verbatim from root SKILL.md lines 1622-1768. Shared by every RePrompter mode skill and **required reading** for each of them; the always-on rules (context engineering, uncertainty handling, reasoning-friendly WHAT-not-HOW, token budget) are summarized in `../SKILL.md` → "Core shared rules". The `scripts/` helpers named here are bundled in `../scripts/` (`<skill-dir>` below is this plugin's `skills/reprompter`); `npm run` commands need the full RePrompter repo checkout.
 
 ## Advanced features
 
-### Reasoning-friendly prompting (Claude 4.x)
+### Reasoning-friendly prompting
 Prompts should be less prescriptive about HOW. Focus on WHAT — clear task, requirements, constraints, success criteria. Let the model's own reasoning handle execution strategy.
 
 **Example:** Instead of "Step 1: read the file, Step 2: extract the function" → "Extract the authentication logic from auth.ts into a reusable middleware. Requirements: ..."
 
-### Response prefilling (API only)
-Prefill assistant response start to enforce format:
-- `{` → forces JSON output
-- `## Analysis` → skips preamble, starts with content
-- `| Column |` → forces table format
+### Output format control (API)
+Never end a request with a partial assistant turn to force a format. Current Claude models (4.6 and later) reject that prefill with HTTP 400.
+- JSON: use structured outputs (`output_config.format` with a JSON schema) when the caller owns the API request. Otherwise put the schema in the prompt and ask for JSON only.
+- Fixed opening or no preamble: say it in the system prompt ("Start with the `## Analysis` heading. No preamble.").
+- Tables: name the columns in the prompt.
 
 ### Context engineering
 Generated prompts should COMPLEMENT runtime context (CLAUDE.md, skills, MCP tools), not duplicate it. Before generating:
@@ -142,12 +142,12 @@ Treat prompt/context engineering advancements as toggleable patterns (not fixed 
 Activate by task/domain/outcome profile and validate via benchmark fixtures.
 
 ### Token budget
-Keep generated prompts under ~2K tokens for single mode, ~1K per agent for Repromptverse. Longer prompts can rot the context window instead of improving quality. If a prompt exceeds budget, split into phases, cite source paths, or move long supporting material into references instead of inlining dumps.
+Size each generated prompt to what its executor needs: every fact that changes a decision, the reason behind each constraint, and, for a worker that starts with fresh context, everything it cannot see from the parent. What bloats a prompt is pasted bulk, not context: split long work into phases, cite source paths, or move long supporting material into references instead of inlining dumps.
 
 ### Uncertainty handling
-Always include explicit permission for the model to express uncertainty rather than fabricate:
-- Add to constraints: "If unsure about any requirement, ask for clarification rather than assuming"
+Tell the executing model what to do with uncertainty, so it neither invents an answer nor stops to wait:
+- Add to constraints: "Where the request is ambiguous, make the choice a careful colleague would make, state it as an assumption in your final report, and keep going. Raise a question only when different readings would lead to materially different work, and finish everything that does not depend on the answer first."
 - For research tasks: "Clearly label confidence levels (high/medium/low) for each finding"
-- For code tasks: "Flag any assumptions about the codebase with TODO comments"
+- For code tasks: "List any assumptions about the codebase in your final summary, not in code comments"
 
 ---

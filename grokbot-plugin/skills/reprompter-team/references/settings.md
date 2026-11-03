@@ -1,6 +1,6 @@
 # RePrompter team — settings reference
 
-> Part of `reprompter-team` (`../SKILL.md`). Verbatim from root SKILL.md lines 1832-1922.
+> Part of `reprompter-team` (`../SKILL.md`). Verbatim from root SKILL.md lines 1847-1937.
 
 ## Settings (for Repromptverse mode)
 
@@ -33,7 +33,7 @@ Install the skill under `~/.codex/skills/reprompter/` (same structure as `~/.cla
 
 ```toml
 # ~/.codex/config.toml
-model = "gpt-5.4"          # default model for agent runs
+model = "<codex-model>"    # default model for agent runs
 approval_policy = "never"  # for interactive Codex TUI only; `codex exec` already defaults to never in headless
 
 [features]

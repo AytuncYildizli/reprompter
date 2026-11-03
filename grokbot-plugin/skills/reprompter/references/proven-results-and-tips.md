@@ -1,6 +1,6 @@
 # Proven results, tips, test scenarios
 
-> Verbatim from root SKILL.md lines 1926-1969. `TESTING.md` is at the root of the RePrompter repo.
+> Verbatim from root SKILL.md lines 1941-1984. `TESTING.md` is at the root of the RePrompter repo.
 
 ## Proven results
 

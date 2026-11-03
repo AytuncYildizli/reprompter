@@ -1,6 +1,6 @@
 # Flywheel bias injection and fleet sync
 
-> Verbatim from root SKILL.md lines 384-415 (Intent: Improve → Process step 5). `scripts/outcome-record.js` is bundled as `../../reprompter/scripts/outcome-record.js`; `npm run flywheel:*` needs the full RePrompter repo checkout.
+> Verbatim from root SKILL.md lines 386-417 (Intent: Improve → Process step 5). `scripts/outcome-record.js` is bundled as `../../reprompter/scripts/outcome-record.js`; `npm run flywheel:*` needs the full RePrompter repo checkout.
 
 #### Flywheel bias injection (v3 read-path)
 
