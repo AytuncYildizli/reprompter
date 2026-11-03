@@ -16,6 +16,10 @@ jobs:
           - '24.22.1'
     steps:
       - uses: actions/checkout@v4
+        with:
+          # verify-split.sh reads the root SKILL.md blob recorded in
+          # grokbot-plugin/SPLIT-BASE, which a shallow clone may not have.
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
