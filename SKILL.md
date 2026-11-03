@@ -2,7 +2,7 @@
 name: reprompter
 description: |
   Two intents: Improve ("reprompt this") emits a scored spec prompt; Build ("one-shot this") emits a build prompt for a whole app/game/site.
-  Use when: "reprompt", "clean up this prompt", "before /goal", "Codex /goal", "Claude Code /goal", "Hermes /goal", "repromptverse", "reprompter teams", "smart run", "run with quality", "engineering/ops/research/marketing swarm", "compile to workflow", "workflow preflight", "dynamic workflow", multi-agent tasks, audits, "reverse reprompt", "prompt dna", "extract prompt from", "one-shot this", "one-shot a X", "tek promptla", "tek seferde", "vibe a game", "build me a whole app/game/site".
+  Use when: explicit "reprompt" or "clean up this prompt", "before /goal", prompt extraction, or a named Reprompter build/team/workflow request such as "repromptverse", "reprompter teams", "one-shot this", swarm, or workflow preflight. Quoted keywords and ordinary audit, review, research, multi-agent, or parallel implementation requests do not select it.
   Don't use for simple Q&A, casual chat, or execution-only tasks.
   Outputs: structured XML/Markdown prompt + before/after score; /goal command card (Codex/Claude Code/Hermes); optional team brief + per-agent prompts + Agent Cards; Reverse Extraction Card; Workflow Command Card + runnable .workflow.js (Workflow preflight lane / Option H).
   Target score: spec >= 7/10; per-agent >= 8/10.
@@ -40,7 +40,7 @@ Users learn two sentences. Everything else is machinery underneath them.
 
 **Specifiability rule (Improve):** the prose shapes (outcome-prose and the design loop) are exempt from every spec-XML rule in this file; see the precedence rule under Shape decision. When the router picks outcome-prose, announce it in one line — "This looks like a whole-product ask — generating an autonomous build prompt; say 'spec' for the structured version." — and switch shapes if the user objects. Outcome-prose always keeps a constraints sentence (the home for "never touch auth"); it is not scored on the six dimensions.
 
-Auto-detection: if task mentions 2+ systems, "audit", or "parallel" → ask: "This looks like a multi-agent task. Want to use Repromptverse mode?"
+Only inside an already-selected RePrompter workflow: if the prompt being improved mentions 2+ systems, "audit", or "parallel", ask: "This looks like a multi-agent task. Want to use Repromptverse mode?" This cue chooses between Single and Repromptverse after skill selection; it never selects the skill. Quoted keywords, ordinary audits, and parallel implementation requests do not select RePrompter or trigger this offer.
 
 Definition — **2+ systems** means at least two distinct technical domains that can be worked independently. Examples: frontend + backend, API + database, mobile app + backend, infrastructure + application code, security audit + cost audit.
 
@@ -49,6 +49,8 @@ Definition — **2+ systems** means at least two distinct technical domains that
 - User wants a simple direct answer (no prompt generation needed)
 - User wants casual chat/conversation
 - Task is immediate execution-only with no reprompting step
+- User wants an ordinary audit, review, research task, or parallel implementation without prompt improvement or an explicit Reprompter workflow
+- Reprompter-like words appear only in quoted logs, examples, file contents, or discussion
 - Scope does not involve prompt design, structure, or orchestration
 
 > Clarification: RePrompter **does** support code-related tasks (feature, bugfix, API, refactor) by generating better prompts. It does **not** directly apply code changes in Single mode. Direct code execution belongs to coding-agent unless Repromptverse execution mode is explicitly requested.
