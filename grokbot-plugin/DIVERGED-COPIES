@@ -1,6 +1,13 @@
 # Copies under grokbot-plugin/skills/ that intentionally differ from their root
 # file. sync-copies.sh reports these and never overwrites them; every other
 # copy is refreshed from root. Paths are relative to grokbot-plugin/skills/.
+# Each entry's comment names the edit to re-apply when its root file changes.
+
+# "Split across a team" points at ../reprompter-team/SKILL.md instead of root's
+# SKILL.md "Team execution".
 reprompter-improve/references/oneshot-template.md
 reprompter-oneshot/references/oneshot-template.md
+
+# Also detects this bundle's plugin.json / .cursor-plugin/plugin.json and prints
+# a whole-plugin-dir upgrade command instead of a single-skill re-fetch.
 reprompter/scripts/version-check.js

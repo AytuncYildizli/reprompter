@@ -6,7 +6,7 @@
 set -euo pipefail
 apply="${1:-}"
 cd "$(git rev-parse --show-toplevel)"
-diverged_list="$(grep -vE '^\s*(#|$)' grokbot-plugin/DIVERGED-COPIES || true)"
+diverged_list="$(awk 'NF && $1 !~ /^#/ {print $1}' grokbot-plugin/DIVERGED-COPIES)"
 stale=0 current=0 diverged=0 split_only=0
 while IFS= read -r copy; do
   inner="${copy#grokbot-plugin/skills/}"
