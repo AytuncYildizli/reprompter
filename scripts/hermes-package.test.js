@@ -121,6 +121,27 @@ test("generated Hermes package has no broken package-local path references", () 
   }
 });
 
+test("Hermes installer accepts every support path SKILL.md references", () => {
+  // Port of _referenced_support_paths in Hermes tools/skills_hub_models.py: a referenced path
+  // that exists in the tree as anything but a regular file makes `hermes skills install` reject
+  // the whole bundle ("files no longer exist upstream").
+  const packageRoot = path.join(repoRoot, "skills/reprompter");
+  const skillMd = fs.readFileSync(path.join(packageRoot, "SKILL.md"), "utf8").replace(/\\/g, "/");
+  const hermesLocalLink = /(?:\]\(|`|(?:^|[\s"']))((?:references|templates|scripts|assets|examples)\/[^\s)`"'<>]+)/gm;
+
+  for (const match of skillMd.matchAll(hermesLocalLink)) {
+    const candidate = match[1].replace(/[.,;:]+$/, "");
+    const rel = candidate.split(/[?#]/)[0].replace(/\/+$/, "");
+    if (/[*?[\]<>]/.test(rel) || !/[A-Za-z0-9]$/.test(rel)) continue;
+    const full = path.join(packageRoot, rel);
+    if (!fs.existsSync(full)) continue;
+    assert.ok(
+      fs.lstatSync(full).isFile(),
+      `skills/reprompter/SKILL.md references ${candidate}, which is not a regular file; Hermes rejects the bundle. Name a file instead.`,
+    );
+  }
+});
+
 test("packager rejects output path traversal", () => {
   assert.throws(() => packager.ensureInsideOutDir("../escape.md"), /Hermes package output directory/);
   assert.throws(() => packager.ensureInsideOutDir("/tmp/escape.md"), /Hermes package output directory/);

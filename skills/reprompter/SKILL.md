@@ -397,7 +397,7 @@ When the flag is set, between the interview and the template pick:
 3. **Only bias on `confidence ∈ {"medium", "high"}` AND `sampleCount >= 3`.** Low-confidence recommendations add noise without signal; treat them as cold start.
 4. When biasing:
    - Prefer `recipe.vector.templateId` over the default intent-routed template.
-   - Adopt `recipe.vector.patterns` alongside anything you would have picked from `references/patterns/`.
+   - Adopt `recipe.vector.patterns` alongside anything you would have picked from `references/patterns/pattern-catalog.md`.
    - Match `recipe.vector.capabilityTier` in your reasoning about downstream execution.
 5. Announce the decision in one line before the generate step so the user sees what happened:
    > Flywheel: preferring `<template>` + `[patterns]` based on N past runs (score X/10, <confidence> confidence)
