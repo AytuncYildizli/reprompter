@@ -96,9 +96,7 @@ Extra copies made so in-file paths resolve:
 - `reprompter-improve/references/runtime/claude-workflow-runtime.md` (named by the `workflow-template.md` chunk 1 copied into `reprompter-improve/references/`).
 - `reprompter-oneshot/references/ui-template.md` (named by the One-Shot design-loop section).
 
-Copies that intentionally differ from their root file (re-apply these edits when refreshing them):
-- `reprompter-improve/references/oneshot-template.md` and `reprompter-oneshot/references/oneshot-template.md`: "Split across a team" points at `../reprompter-team/SKILL.md` instead of root's `SKILL.md "Team execution"`.
-- `reprompter/scripts/version-check.js`: also detects this bundle's `plugin.json` / `.cursor-plugin/plugin.json` and prints a whole-plugin-dir upgrade command instead of a single-skill re-fetch.
+Copies that intentionally differ from their root file are listed in `DIVERGED-COPIES`, each with the edit to re-apply when its root file changes.
 
 `scripts/...` paths named in the copied text (`scripts/intent-router.js`, `scripts/run-supervisor.js`, `scripts/validate-tool-refs.js`, ...) resolve to `reprompter/scripts/`, a copy of the Claude plugin's runtime bundle (`plugin/skills/reprompter/scripts/`: same files, tests excluded). Mode skills reach them as `../reprompter/scripts/<name>`; `verify-split.sh` checks every referenced script and local `require()` exists. `npm run` commands still need the full repo checkout.
 
