@@ -12,13 +12,13 @@
     "root_skill": "SKILL.md",
     "root_skill_sha256": "17fb7d59568b985b5611d03ddbe689981bfd7021ff8ffab67ccaf2e78b25c8a1",
     "sanitizer": "scripts/hermes-sanitizer.json",
-    "sanitizer_sha256": "c46cf3fa0f7333745443b61eadbabe41e52014243b8213ffb328d9d609e4a297"
+    "sanitizer_sha256": "38ce7e03cfb6a3dd6d334b1a52decddf7c655751243a5ed4e53556abe4050b32"
   },
   "files": [
     {
       "path": "SKILL.md",
       "source_sha256": "17fb7d59568b985b5611d03ddbe689981bfd7021ff8ffab67ccaf2e78b25c8a1",
-      "generated_sha256": "bfb4c87f2c1c3ebb8c657163b10a287121712b57d959cedc98224bbed5473503"
+      "generated_sha256": "2ae4ab40282358f5bfe060e56d5034028d906925536ca7e1c84992572e970fe2"
     },
     {
       "path": "references/api-template.md",
