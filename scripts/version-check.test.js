@@ -22,7 +22,7 @@ const {
 } = require("./version-check");
 
 const PLUGIN_MIGRATION_TIP =
-  "Claude Code users: RePrompter is now installable as a plugin (auto-updates + automatic ambient-gate setup): /plugin marketplace add AytuncYildizli/reprompter, then /plugin install reprompter@reprompter - and remove this copy afterwards so it does not shadow the plugin skill.";
+  "Claude Code users: RePrompter is now installable as a plugin (auto-updates): /plugin marketplace add AytuncYildizli/reprompter, then /plugin install reprompter@reprompter - and remove this copy afterwards so it does not shadow the plugin skill.";
 
 function tmpFile(name, contents) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "rpt-vc-"));

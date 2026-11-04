@@ -64,17 +64,21 @@ function loadConfig() {
   return { config, raw };
 }
 
-function applyReplacements(content, replacements) {
+function applyReplacements(content, replacements, hits) {
   let result = content;
-  for (const rule of replacements) {
+  for (const [index, rule] of replacements.entries()) {
     if (!rule || typeof rule.pattern !== "string" || typeof rule.replacement !== "string") {
       throw new Error(`Invalid sanitizer rule: ${JSON.stringify(rule)}`);
     }
 
     if (rule.kind === "regex") {
-      result = result.replace(new RegExp(rule.pattern, rule.flags || "g"), rule.replacement);
+      const flags = rule.flags || "g";
+      hits[index] += (result.match(new RegExp(rule.pattern, flags.includes("g") ? flags : `${flags}g`)) || []).length;
+      result = result.replace(new RegExp(rule.pattern, flags), rule.replacement);
     } else if (rule.kind === "literal") {
-      result = result.split(rule.pattern).join(rule.replacement);
+      const parts = result.split(rule.pattern);
+      hits[index] += parts.length - 1;
+      result = parts.join(rule.replacement);
     } else {
       throw new Error(`Unsupported sanitizer rule kind: ${rule.kind}`);
     }
@@ -82,12 +86,12 @@ function applyReplacements(content, replacements) {
   return result;
 }
 
-function copySanitizedFile(relativePath, replacements) {
+function copySanitizedFile(relativePath, replacements, hits) {
   const source = ensureInsideRepo(relativePath);
   if (!fs.existsSync(source)) {
     throw new Error(`Missing package input: ${relativePath}`);
   }
-  const sanitized = applyReplacements(readUtf8(source), replacements);
+  const sanitized = applyReplacements(readUtf8(source), replacements, hits);
   writeFile(relativePath, sanitized);
   return {
     path: relativePath,
@@ -99,7 +103,8 @@ function copySanitizedFile(relativePath, replacements) {
 function main() {
   const { config, raw: configRaw } = loadConfig();
   const rootSkill = readUtf8(path.join(REPO_ROOT, "SKILL.md"));
-  const sanitizedSkill = applyReplacements(rootSkill, config.replacements);
+  const hits = config.replacements.map(() => 0);
+  const sanitizedSkill = applyReplacements(rootSkill, config.replacements, hits);
 
   removeDir(OUT_DIR);
   fs.mkdirSync(OUT_DIR, { recursive: true });
@@ -114,7 +119,17 @@ function main() {
   ];
 
   for (const reference of config.references) {
-    packagedFiles.push(copySanitizedFile(reference, config.replacements));
+    packagedFiles.push(copySanitizedFile(reference, config.replacements, hits));
+  }
+
+  // A rule whose source text was reworded matches nothing and silently ships the unsanitized text.
+  const unmatched = config.replacements.filter((_, index) => hits[index] === 0);
+  if (unmatched.length > 0) {
+    throw new Error(
+      `hermes-sanitizer.json rules matched no packaged text; update each pattern to the current wording:\n${unmatched
+        .map((rule) => `  - ${rule._comment || rule.pattern.slice(0, 100)}`)
+        .join("\n")}`,
+    );
   }
 
   const manifest = {
