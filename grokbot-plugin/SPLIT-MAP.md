@@ -1,8 +1,8 @@
-# SPLIT-MAP — root `SKILL.md` (v13.3.0, 2086 lines) → `grokbot-plugin/`
+# SPLIT-MAP — root `SKILL.md` (v13.3.1, 2086 lines) → `grokbot-plugin/`
 
 Each row maps a root `SKILL.md` heading (line number) to where its text now lives. Paths are relative to `grokbot-plugin/skills/`. "Verbatim" means the line range was copied unchanged with `sed -n 'A,Bp'`. The only edits are added pointer lines and plugin-local headers.
 
-Status: every root heading is placed (chunk 1 + chunk 2), synced to v13.3.0. Run `bash grokbot-plugin/verify-split.sh` to check that every non-blank line of root `SKILL.md` appears in some file under `skills/`, that no line root has deleted since `SPLIT-BASE` survives here, and that relative links and backticked `references/` / `../` paths resolve.
+Status: every root heading is placed (chunk 1 + chunk 2), synced to v13.3.1. Run `bash grokbot-plugin/verify-split.sh` to check that every non-blank line of root `SKILL.md` appears in some file under `skills/`, that no line root has deleted since `SPLIT-BASE` survives here, and that relative links and backticked `references/` / `../` paths resolve.
 
 `SPLIT-BASE` holds the git blob id of the root `SKILL.md` this split was last synced against; line numbers below refer to that blob. To sync again: run `verify-split.sh`, put each MISSING root line in the mode skill this map names, update or remove each STALE line, then run `bash grokbot-plugin/sync-copies.sh --apply`, which refreshes every `references/` and `scripts/` copy from its root file except the intentional edits listed in `DIVERGED-COPIES` (add a path there when the split must keep its own version of a root file). Finish with `git hash-object -w SKILL.md > grokbot-plugin/SPLIT-BASE` (`-w` stores the blob, so the stale check can read it before you commit) and rerun `verify-split.sh`. Line placement stays a human step: which mode skill owns new root text is a judgment about the split, and an automated attempt failed six verification rounds. The line numbers below are from the last full remap and drift as root changes.
 
@@ -11,7 +11,7 @@ Status: every root heading is placed (chunk 1 + chunk 2), synced to v13.3.0. Run
 | Root lines | Root heading | New location | Notes |
 |---|---|---|---|
 | 1-18 | YAML frontmatter (name, description, compatibility, metadata) | `reprompter/references/original-frontmatter.md` | Verbatim in a yaml fence. Trigger list also kept verbatim in `reprompter/SKILL.md` frontmatter `description`. |
-| 20-22 | `# RePrompter v13.3.0` + tagline | `reprompter/SKILL.md` | Verbatim |
+| 20-22 | `# RePrompter v13.3.1` + tagline | `reprompter/SKILL.md` | Verbatim |
 | 26-45 | `## Two intents` | `reprompter/SKILL.md` | Verbatim |
 | 47-56 | `## Don't use when` | `reprompter/SKILL.md` | Verbatim |
 | 360-370 | `## Intent: Improve (Single prompt)` / `### Shape decision (specifiability router)` | `reprompter-improve/SKILL.md` | Verbatim |

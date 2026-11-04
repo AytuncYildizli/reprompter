@@ -7,10 +7,10 @@ description: |
   Outputs: structured XML/Markdown prompt + before/after score; /goal command card (Codex/Claude Code/Hermes); optional team brief + per-agent prompts + Agent Cards; Reverse Extraction Card; Workflow Command Card + runnable .workflow.js (Workflow preflight lane / Option H).
   Target score: spec >= 7/10; per-agent >= 8/10.
 metadata:
-  version: 13.3.0
+  version: 13.3.1
 ---
 
-# RePrompter v13.3.0
+# RePrompter v13.3.1
 
 > **Your prompt sucks. Let's fix that.** Two intents — improve my prompt, or build this whole thing — with `/goal`, Workflow, team execution and cross-model delivery as places the result can go. **v13 (RePrompter v2) restructures six lanes into two intents: a specifiability router picks spec-XML or an autonomous build prompt inside Improve, and Build can run as one prompt or split across a team. Every v12 trigger that asks for RePrompter keeps working; generic build phrases such as "vibe a game" route to Build once RePrompter is selected but no longer select it on their own.**
 
