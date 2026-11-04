@@ -1,3 +1,13 @@
+## v13.3.1 (2026-11-04) — Installs that work as documented
+
+### Fixed
+
+- **`hermes skills install` failed.** It printed "listed in the skills-sh index, but its files no longer exist upstream". SKILL.md named the directory `references/patterns/`, and since Hermes `d041ed7ab2` (2026-08-29) the installer rejects a bundle when SKILL.md references a directory. The line now names `references/patterns/pattern-catalog.md`. A new test ports Hermes' path extractor and fails on a directory or symlink reference. (#92)
+- **Plugin installs ran a version check that does nothing there.** On the first invocation in a session, the model ran `scripts/version-check.js`. In a plugin install that script exits silently, so the call only cost a tool call and a permission prompt. SKILL.md now tells the model to skip the check, and the migration nudge, from signals it already holds: the skill name `reprompter:reprompter`, or a base directory under `plugins/cache/`. A first version that said to look for `.claude-plugin/plugin.json` traded the call for a filesystem probe, which real sessions showed. (#93)
+- **A stale promise.** The migration nudge and the version-check notice offered "automatic ambient-gate setup". The plugin has shipped the gate off since v13.2.0. (#93)
+- **Hermes sanitizer rules could stop matching without a word.** A reworded paragraph made the Hermes package tell the model to run a script that Hermes installs do not ship. The packager now throws, naming the rule, when a rule matches nothing. Four rules that had matched nothing since May were deleted. They never changed the output. (#93)
+- **`grokbot-plugin/sync-copies.sh` overwrote protected copies when its manifest was missing or unreadable.** It now exits 2 before writing anything. (#91)
+
 ## v13.3.0 (2026-11-04) — Current models, and ambient hooks off by default
 
 The first release since v13.1.0. It also ships the design loop, written as v13.2.0 in August and never published on its own.
